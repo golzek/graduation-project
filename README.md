@@ -1,4 +1,4 @@
-# E-Learning Platform 🎓
+# E-Learning Platform 
 
 Вебплатформа для онлайн-навчання — дипломний проект.  
 **Стек:** NestJS · PostgreSQL · React · TypeScript · Docker
