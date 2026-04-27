@@ -1,0 +1,124 @@
+/* ── Global Reset & Theme ─────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black:   #0a0a0a;
+  --white:   #fafafa;
+  --gray-50: #f5f5f5;
+  --gray-100:#ebebeb;
+  --gray-200:#d6d6d6;
+  --gray-400:#9a9a9a;
+  --gray-600:#5a5a5a;
+  --gray-800:#2a2a2a;
+  --accent:  #0a0a0a;   /* скрізь чорне */
+  --accent-inv: #fafafa;
+
+  --font: 'DM Sans', 'Helvetica Neue', sans-serif;
+  --mono: 'DM Mono', 'Courier New', monospace;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
+}
+
+html { font-size: 15px; -webkit-font-smoothing: antialiased; }
+
+body {
+  font-family: var(--font);
+  background: var(--white);
+  color: var(--black);
+  line-height: 1.6;
+}
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+input, textarea, select { font-family: inherit; }
+
+/* ── Typography ───────────────────────────────────────── */
+h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 600; letter-spacing: -0.03em; line-height: 1.15; }
+h2 { font-size: clamp(1.3rem, 3vw, 1.8rem); font-weight: 600; letter-spacing: -0.02em; }
+h3 { font-size: 1.1rem; font-weight: 600; }
+
+/* ── Buttons ──────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 6px; padding: 10px 20px;
+  font-size: 0.875rem; font-weight: 500; letter-spacing: 0.01em;
+  border-radius: var(--radius-md); border: 1.5px solid transparent;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.btn-primary {
+  background: var(--black); color: var(--white);
+  border-color: var(--black);
+}
+.btn-primary:hover { background: var(--gray-800); border-color: var(--gray-800); }
+.btn-primary:disabled { background: var(--gray-200); color: var(--gray-400); border-color: var(--gray-200); cursor: not-allowed; }
+
+.btn-outline {
+  background: transparent; color: var(--black);
+  border-color: var(--gray-200);
+}
+.btn-outline:hover { border-color: var(--black); }
+
+.btn-ghost {
+  background: transparent; color: var(--gray-600);
+  border-color: transparent;
+}
+.btn-ghost:hover { color: var(--black); background: var(--gray-50); }
+
+.btn-sm { padding: 6px 14px; font-size: 0.8rem; }
+.btn-lg { padding: 14px 28px; font-size: 1rem; }
+.btn-full { width: 100%; }
+
+/* ── Inputs ───────────────────────────────────────────── */
+.input {
+  width: 100%; padding: 10px 14px;
+  background: var(--white); color: var(--black);
+  border: 1.5px solid var(--gray-200); border-radius: var(--radius-md);
+  font-size: 0.9rem; outline: none;
+  transition: border-color 0.15s;
+}
+.input:focus { border-color: var(--black); }
+.input::placeholder { color: var(--gray-400); }
+
+.label {
+  display: block; margin-bottom: 6px;
+  font-size: 0.8rem; font-weight: 500;
+  color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.05em;
+}
+
+/* ── Cards ────────────────────────────────────────────── */
+.card {
+  background: var(--white);
+  border: 1.5px solid var(--gray-100);
+  border-radius: var(--radius-lg);
+}
+.card:hover { border-color: var(--gray-200); box-shadow: var(--shadow-sm); }
+
+/* ── Badges ───────────────────────────────────────────── */
+.badge {
+  display: inline-block; padding: 2px 8px;
+  font-size: 0.7rem; font-weight: 500; letter-spacing: 0.05em;
+  border-radius: 99px; text-transform: uppercase;
+  border: 1px solid var(--gray-200); color: var(--gray-600);
+}
+
+/* ── Divider ──────────────────────────────────────────── */
+.divider { border: none; border-top: 1px solid var(--gray-100); margin: 24px 0; }
+
+/* ── Progress bar ─────────────────────────────────────── */
+.progress-track {
+  height: 4px; background: var(--gray-100);
+  border-radius: 99px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; background: var(--black);
+  border-radius: 99px; transition: width 0.5s ease;
+}
+
+/* ── Google Font import ───────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
