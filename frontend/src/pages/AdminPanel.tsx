@@ -19,7 +19,6 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
   return res.json();
 }
 
-// --- Типи ---
 type Tab = 'stats' | 'users' | 'courses' | 'reviews';
 
 interface PlatformStats {
@@ -60,9 +59,6 @@ interface PendingReview {
   course: { title: string };
 }
 
-// =============================================
-//   ГОЛОВНИЙ КОМПОНЕНТ
-// =============================================
 export function AdminPanel() {
   const [tab, setTab] = useState<Tab>('stats');
 
@@ -75,7 +71,6 @@ export function AdminPanel() {
 
   return (
     <div style={s.page}>
-      {/* Сайдбар */}
       <aside style={s.sidebar}>
         <div style={s.logo}>⚙️ Адмін</div>
         <nav>
@@ -92,7 +87,6 @@ export function AdminPanel() {
         </nav>
       </aside>
 
-      {/* Основний контент */}
       <main style={s.main}>
         {tab === 'stats'   && <StatsTab />}
         {tab === 'users'   && <UsersTab />}
@@ -103,9 +97,6 @@ export function AdminPanel() {
   );
 }
 
-// =============================================
-//   СТАТИСТИКА
-// =============================================
 function StatsTab() {
   const [stats, setStats] = useState<PlatformStats | null>(null);
 
@@ -123,7 +114,6 @@ function StatsTab() {
     <div>
       <h2 style={s.pageTitle}>Статистика платформи</h2>
 
-      {/* Топ-метрики */}
       <div style={s.statsGrid}>
         {[
           { label: 'Всього користувачів', value: stats.totalUsers, icon: '👤', sub: `+${stats.newUsersThisMonth} цього місяця`, color: '#4f46e5' },
@@ -141,7 +131,6 @@ function StatsTab() {
       </div>
 
       <div style={s.twoCol}>
-        {/* Розподіл по ролях */}
         <div style={s.card}>
           <h3 style={s.cardTitle}>Користувачі по ролях</h3>
           {Object.entries(stats.usersByRole).map(([role, count]) => {
@@ -161,7 +150,6 @@ function StatsTab() {
           })}
         </div>
 
-        {/* Реєстрації за тиждень */}
         <div style={s.card}>
           <h3 style={s.cardTitle}>Реєстрації за 7 днів</h3>
           <MiniBarChart data={stats.registrationsByDay} color="#4f46e5" />
@@ -174,9 +162,6 @@ function StatsTab() {
   );
 }
 
-// =============================================
-//   КОРИСТУВАЧІ
-// =============================================
 function UsersTab() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [search, setSearch] = useState('');
@@ -279,9 +264,6 @@ function UsersTab() {
   );
 }
 
-// =============================================
-//   КУРСИ
-// =============================================
 function CoursesTab() {
   const [courses, setCourses] = useState<AdminCourse[]>([]);
   const [search, setSearch] = useState('');
@@ -385,9 +367,6 @@ function CoursesTab() {
   );
 }
 
-// =============================================
-//   ВІДГУКИ (МОДЕРАЦІЯ)
-// =============================================
 function ReviewsTab() {
   const [reviews, setReviews] = useState<PendingReview[]>([]);
 
@@ -446,9 +425,6 @@ function ReviewsTab() {
   );
 }
 
-// =============================================
-//   ДОПОМІЖНІ
-// =============================================
 function MiniBarChart({ data, color }: { data: { date: string; count: number }[]; color: string }) {
   const max = Math.max(...data.map((d) => d.count), 1);
   return (

@@ -1,4 +1,3 @@
-// ── payment.controller.ts ─────────────────────────────────
 import {
   Controller, Post, Get, Body, Param,
   UseGuards, RawBodyRequest, Req, HttpCode,
@@ -22,7 +21,6 @@ export class PaymentController {
     @InjectRepository(Enrollment) private enrollmentRepo: Repository<Enrollment>,
   ) {}
 
-  // POST /payments/create/:courseId  — створити форму оплати
   @Post('create/:courseId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT')
@@ -34,7 +32,7 @@ export class PaymentController {
     const course = await this.courseRepo.findOne({ where: { id: courseId } });
     if (!course) return { error: 'Курс не знайдено' };
 
-    // Безкоштовний курс — просто записуємо без оплати
+
     if (Number(course.price) === 0) {
       const exists = await this.enrollmentRepo.findOne({
         where: { userId: user.id, courseId },
@@ -47,7 +45,7 @@ export class PaymentController {
       return { free: true, message: 'Записаний безкоштовно' };
     }
 
-    // Платний курс — генеруємо форму LiqPay
+
     const orderId = `order_${courseId}_${user.id}_${uuidv4().slice(0, 8)}`;
     const form = this.liqpay.createPaymentForm({
       orderId,
@@ -65,7 +63,7 @@ export class PaymentController {
     };
   }
 
-  // POST /payments/callback  — webhook від LiqPay (без авторизації)
+
   @Post('callback')
   @HttpCode(200)
   @ApiOperation({ summary: 'Webhook від LiqPay (не викликати вручну)' })
@@ -73,7 +71,6 @@ export class PaymentController {
     try {
       const result = this.liqpay.verifyCallback(body.data, body.signature);
 
-      // Обробляємо тільки успішні платежі
       if (result.status !== 'success' && result.status !== 'sandbox') {
         return { ok: false, status: result.status };
       }
@@ -81,7 +78,7 @@ export class PaymentController {
       const { courseId, userId } = result;
       if (!courseId || !userId) return { ok: false, error: 'Missing info' };
 
-      // Перевіряємо чи вже записаний (щоб уникнути дублів)
+
       const exists = await this.enrollmentRepo.findOne({
         where: { userId, courseId },
       });
@@ -99,13 +96,13 @@ export class PaymentController {
 
       return { ok: true };
     } catch (err) {
-      // Не повертаємо 4xx — LiqPay буде повторювати запит
+
       console.error('LiqPay callback error:', err.message);
       return { ok: false, error: err.message };
     }
   }
 
-  // GET /payments/status/:courseId  — чи записаний юзер на курс
+
   @Get('status/:courseId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT')

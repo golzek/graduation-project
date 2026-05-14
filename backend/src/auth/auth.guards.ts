@@ -8,7 +8,7 @@ import { SetMetadata, createParamDecorator } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserRole } from '../users/user.entity';
 
-// --- JWT Strategy ---
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly authService: AuthService, config: ConfigService) {
@@ -26,7 +26,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 }
 
-// --- Guards ---
+
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {}
 
@@ -49,7 +49,7 @@ export class RolesGuard implements CanActivate {
   }
 }
 
-// --- CurrentUser decorator ---
+
 export const CurrentUser = createParamDecorator(
   (_: unknown, ctx: ExecutionContext) => ctx.switchToHttp().getRequest().user,
 );

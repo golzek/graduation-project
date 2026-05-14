@@ -1,4 +1,3 @@
-// ── certificate.controller.ts ──────────────────────────────
 import { Controller, Post, Get, Param, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { CertificateService } from './certificate.service';

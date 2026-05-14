@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { apiFetch } from '../context/AuthContext';
 
 interface VideoUploaderProps {
-  onUploaded: (key: string) => void;  // повертає storage key для збереження в lesson
+  onUploaded: (key: string) => void;
   accept?: string;
 }
 
@@ -31,7 +31,6 @@ export function VideoUploader({ onUploaded, accept = 'video/mp4,video/webm,video
     const token = localStorage.getItem('accessToken');
 
     try {
-      // Використовуємо XMLHttpRequest для відстеження прогресу
       const key = await new Promise<string>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
 
@@ -80,7 +79,6 @@ export function VideoUploader({ onUploaded, accept = 'video/mp4,video/webm,video
 
   return (
     <div>
-      {/* Зона перетягування */}
       <div
         onDragOver={e => { e.preventDefault(); setDragging(true);  }}
         onDragLeave={() => setDragging(false)}

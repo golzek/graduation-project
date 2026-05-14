@@ -25,7 +25,6 @@ export class CourseController {
   findMy(@CurrentUser() u: any) { return this.svc.findMyCourses(u.id); }
 
   @Get('progress/update')
-  // placeholder — actual endpoint is PATCH below
   findProgress() { return null; }
 
   @Get(':id')

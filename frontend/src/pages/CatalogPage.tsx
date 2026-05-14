@@ -25,7 +25,6 @@ export function CatalogPage() {
 
   return (
     <div style={s.page}>
-      {/* Hero */}
       <div style={s.hero}>
         <div style={s.heroInner}>
           <h1 style={s.heroTitle}>Каталог курсів</h1>
@@ -40,7 +39,6 @@ export function CatalogPage() {
       </div>
 
       <div style={s.body}>
-        {/* Фільтри */}
         <aside style={s.aside}>
           <div style={s.filterGroup}>
             <p style={s.filterLabel}>Рівень</p>
@@ -64,7 +62,6 @@ export function CatalogPage() {
           </div>
         </aside>
 
-        {/* Сітка */}
         <main style={s.main}>
           {loading && <div style={s.loader}>Завантаження...</div>}
           {!loading && courses.length === 0 && (
@@ -95,7 +92,6 @@ function CourseCard({ course }: { course: Course }) {
   };
   return (
     <Link to={`/courses/${course.id}`} style={s.card}>
-      {/* Thumbnail placeholder */}
       <div style={s.thumb}>
         <span style={s.thumbLetter}>{course.title[0]}</span>
       </div>

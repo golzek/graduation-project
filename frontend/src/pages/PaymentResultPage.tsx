@@ -2,14 +2,11 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { apiFetch } from '../context/AuthContext';
 
-// LiqPay перенаправляє на /payment/result?order_id=...&status=success
 export function PaymentResultPage() {
   const [params] = useSearchParams();
   const status  = params.get('status');
   const orderId = params.get('order_id') ?? '';
 
-  // Витягуємо courseId з orderId (формат: order_{courseId}_{userId}_{suffix})
-  // courseId — UUID (без підкреслень), тому parts[1] завжди правильний
   const parts    = orderId.split('_');
   const courseId = parts.length >= 4 ? parts[1] : (parts[1] ?? '');
 
@@ -18,11 +15,10 @@ export function PaymentResultPage() {
   const [attempts, setAttempts] = useState(0);
   const timerRef                = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const MAX_ATTEMPTS = 10;   // 10 спроб
-  const INTERVAL_MS  = 3000; // кожні 3 секунди = до 30 сек очікування
+  const MAX_ATTEMPTS = 10;
+  const INTERVAL_MS  = 3000;
 
   useEffect(() => {
-    // Якщо LiqPay явно повідомив про помилку — одразу показуємо
     if (status === 'failure' || status === 'error') {
       setState('failure');
       return;
@@ -47,8 +43,6 @@ export function PaymentResultPage() {
       } catch {}
 
       if (attempt >= MAX_ATTEMPTS) {
-        // Якщо LiqPay сказав success але enrollment не з'явився —
-        // показуємо success (webhook міг затриматись, але гроші вже списались)
         if (status === 'success' || status === 'sandbox') {
           setState('success');
         } else {

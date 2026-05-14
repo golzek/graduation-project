@@ -19,7 +19,6 @@ const MAX_IMAGE_MB = 5;
 export class UploadController {
   constructor(private readonly storage: StorageService) {}
 
-  // POST /upload/video  — завантажити відео уроку
   @Post('video')
   @UseGuards(RolesGuard)
   @Roles(UserRole.TEACHER, UserRole.ADMIN)
@@ -42,7 +41,6 @@ export class UploadController {
     return { key, message: 'Відео завантажено. Використовуй key як contentUrl уроку.' };
   }
 
-  // GET /upload/video-url/:key  — отримати підписаний URL для відтворення
   @Get('video-url/:key(*)')
   @ApiOperation({ summary: 'Отримати тимчасовий URL для відтворення відео (1 год)' })
   async getVideoUrl(@Param('key') key: string) {
@@ -50,7 +48,6 @@ export class UploadController {
     return { url };
   }
 
-  // POST /upload/image  — завантажити зображення (thumbnail курсу / аватар)
   @Post('image')
   @UseInterceptors(FileInterceptor('file', {
     limits: { fileSize: MAX_IMAGE_MB * 1024 * 1024 },

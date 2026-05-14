@@ -15,7 +15,6 @@ export class CertificateService {
     @InjectRepository(Course)      private courseRepo:     Repository<Course>,
     @InjectRepository(Enrollment)  private enrollmentRepo: Repository<Enrollment>,
     @InjectRepository(Progress)    private progressRepo:   Repository<Progress>,
-    // ← StorageService тепер глобальний, просто інжектуємо
     private readonly storage: StorageService,
   ) {}
 
@@ -45,7 +44,6 @@ export class CertificateService {
 
     const verifyCode = randomBytes(12).toString('hex').toUpperCase();
 
-    // Генеруємо PDF і одразу зберігаємо в R2/S3
     const pdfBuffer = await this.generatePdf({
       studentName: user.name,
       courseName:  course.title,
@@ -54,7 +52,6 @@ export class CertificateService {
       issuedAt: new Date(),
     });
 
-    // Зберігаємо PDF в хмарне сховище
     const pdfUrl = await this.storage.uploadBuffer(
       pdfBuffer,
       `${verifyCode}.pdf`,

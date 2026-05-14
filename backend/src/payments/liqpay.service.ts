@@ -28,7 +28,6 @@ export class LiqPayService {
     this.resultUrl  = config.get('LIQPAY_RESULT_URL',  'http://localhost:3001/payment/result');
   }
 
-  // --- Генерує data+signature для форми оплати ---
   createPaymentForm(params: {
     orderId:     string;
     amount:      number;
@@ -46,7 +45,6 @@ export class LiqPayService {
       order_id:    params.orderId,
       result_url:  this.resultUrl,
       server_url:  this.serverUrl,
-      // Зберігаємо courseId і userId в info для callback
       info: JSON.stringify({ courseId: params.courseId, userId: params.userId }),
     };
 
@@ -60,7 +58,6 @@ export class LiqPayService {
     };
   }
 
-  // --- Верифікація callback від LiqPay ---
   verifyCallback(data: string, signature: string): {
     valid: boolean;
     payload: any;

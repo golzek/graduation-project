@@ -12,22 +12,20 @@ import { TeacherDashboard } from './pages/TeacherDashboard';
 import { AdminPanel } from './pages/AdminPanel';
 import { PaymentResultPage } from './pages/PaymentResultPage';
 import { CourseCreatePage } from './pages/CourseCreatePage';
+import {StudentDashboard} from "./pages/StudentDashboard";
 
 function AppRoutes() {
   return (
     <Routes>
-      {/* Без navbar */}
       <Route path="/login"    element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      {/* Адмін — окремий layout без navbar */}
       <Route path="/admin/*" element={
         <ProtectedRoute roles={['admin']}>
           <AdminPanel />
         </ProtectedRoute>
       }/>
 
-      {/* З navbar */}
       <Route path="/*" element={
         <>
           <Navbar />
@@ -50,6 +48,12 @@ function AppRoutes() {
             <Route path="/teacher" element={
               <ProtectedRoute roles={['teacher', 'admin']}>
                 <TeacherDashboard />
+              </ProtectedRoute>
+            }/>
+
+            <Route path="/student" element={
+              <ProtectedRoute roles={['student', 'admin']}>
+                <StudentDashboard />
               </ProtectedRoute>
             }/>
 

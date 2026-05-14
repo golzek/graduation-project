@@ -28,9 +28,6 @@ interface Cert {
   course: { id: string; title: string; author: { name: string } };
 }
 
-// =============================================
-//   МОЇ СЕРТИФІКАТИ
-// =============================================
 export function MyCertificatesPage() {
   const { user } = useAuth();
   const [certs, setCerts] = useState<Cert[]>([]);
@@ -78,7 +75,6 @@ function CertCard({ cert }: { cert: Cert }) {
 
   return (
     <div style={s.card}>
-      {/* Декоративна шапка */}
       <div style={s.cardTop}>
         <span style={{ fontSize: 36 }}>🏆</span>
         <p style={s.cardTopLabel}>Сертифікат</p>
@@ -107,9 +103,6 @@ function CertCard({ cert }: { cert: Cert }) {
   );
 }
 
-// =============================================
-//   ПУБЛІЧНА ВЕРИФІКАЦІЯ
-// =============================================
 export function VerifyCertPage() {
   const { code } = useParams<{ code: string }>();
   const [result, setResult] = useState<any>(null);

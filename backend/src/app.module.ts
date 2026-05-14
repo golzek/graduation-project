@@ -33,11 +33,8 @@ import { PaymentModule }     from './payments/payment.module';
         password: cfg.get('DB_PASSWORD', 'postgres'),
         database: cfg.get('DB_NAME',     'elearning'),
         entities: [User, Course, CourseModule, Lesson, Enrollment, Progress, Certificate, Review],
-        // Для розробки: true (автоматично оновлює схему)
-        // Для продакшну: false (використовуй npm run migration:run)
         synchronize: cfg.get('NODE_ENV') !== 'production',
         logging:     cfg.get('NODE_ENV') === 'development',
-        // Для продакшну підключаємо міграції
         migrations:  cfg.get('NODE_ENV') === 'production'
           ? ['dist/database/migrations/*.js']
           : [],

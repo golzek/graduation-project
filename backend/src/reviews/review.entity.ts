@@ -1,4 +1,3 @@
-// ── review.entity.ts ──────────────────────────────────────
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, Unique } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Course } from '../courses/course.entity';

@@ -36,7 +36,6 @@ export function CoursePage() {
 
   return (
     <div style={s.page}>
-      {/* Header */}
       <div style={s.header}>
         <div style={s.headerInner}>
           <div style={s.headerLeft}>
@@ -57,7 +56,6 @@ export function CoursePage() {
             </div>
           </div>
 
-          {/* Картка */}
           <div style={s.card}>
             <p style={s.cardPrice}>
               {Number(course.price) === 0 ? 'Безкоштовно' : `${course.price} ₴`}
@@ -88,9 +86,7 @@ export function CoursePage() {
         </div>
       </div>
 
-      {/* Body */}
       <div style={s.body}>
-        {/* Програма */}
         <aside style={s.sidebar}>
           <p style={s.sideTitle}>Програма</p>
           {course.modules.map(mod => (
@@ -101,7 +97,6 @@ export function CoursePage() {
           ))}
         </aside>
 
-        {/* Плеєр */}
         <div style={s.player}>
           {activeLesson
             ? <LessonPlayer lesson={activeLesson} isEnrolled={!!course.isEnrolled} />

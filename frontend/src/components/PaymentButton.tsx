@@ -22,13 +22,11 @@ export function PaymentButton({ courseId, price, title, onSuccess }: PaymentButt
     try {
       const res = await apiFetch<any>(`/payments/create/${courseId}`, { method: 'POST' });
 
-      // Безкоштовний курс — одразу успіх
       if (res.free) {
         onSuccess?.();
         return;
       }
 
-      // Платний — відкриваємо LiqPay форму в новому вікні
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = res.action;
@@ -50,7 +48,6 @@ export function PaymentButton({ courseId, price, title, onSuccess }: PaymentButt
       form.submit();
       document.body.removeChild(form);
 
-      // Після відкриття форми показуємо повідомлення
       form.submit();
       document.body.removeChild(form);
       setLoading(false);

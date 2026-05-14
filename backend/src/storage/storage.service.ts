@@ -17,8 +17,6 @@ export class StorageService {
   private readonly publicUrl: string;
 
   constructor(private readonly config: ConfigService) {
-    // Cloudflare R2 використовує S3-сумісний API
-    // Для AWS S3 просто не передавай endpoint
     this.client = new S3Client({
       region: config.get('S3_REGION', 'auto'),
       endpoint: config.get('S3_ENDPOINT'), // для R2: https://<accountid>.r2.cloudflarestorage.com
@@ -32,7 +30,6 @@ export class StorageService {
     this.publicUrl = config.get('S3_PUBLIC_URL', ''); // публічний домен бакету
   }
 
-  // --- Завантажити файл ---
   async upload(
     buffer: Buffer,
     originalName: string,
@@ -48,36 +45,29 @@ export class StorageService {
         Key:         filename,
         Body:        buffer,
         ContentType: mimeType,
-        // Публічний доступ для thumbnail/certificates, приватний для відео
         ACL: folder === 'videos' ? 'private' : 'public-read',
       }));
     } catch (err) {
       throw new InternalServerErrorException(`Помилка завантаження файлу: ${err.message}`);
     }
 
-    // Для публічних файлів повертаємо прямий URL
     if (folder !== 'videos') {
       return `${this.publicUrl}/${filename}`;
     }
 
-    // Для відео повертаємо key — URL генерується підписом при відтворенні
     return filename;
   }
 
-  // --- Підписаний URL для відео (діє 1 годину) ---
   async getSignedVideoUrl(key: string): Promise<string> {
     const command = new GetObjectCommand({ Bucket: this.bucket, Key: key });
     return getSignedUrl(this.client, command, { expiresIn: 3600 });
   }
 
-  // --- Видалити файл ---
   async delete(key: string): Promise<void> {
-    // Витягуємо key з повного URL якщо потрібно
     const fileKey = key.startsWith('http') ? key.split('/').slice(3).join('/') : key;
     await this.client.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: fileKey }));
   }
 
-  // --- Завантажити PDF буфер (для сертифікатів) ---
   async uploadBuffer(
     buffer: Buffer,
     filename: string,

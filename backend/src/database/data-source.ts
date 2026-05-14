@@ -2,7 +2,7 @@ import { DataSource } from 'typeorm';
 import { config } from 'dotenv';
 import { join } from 'path';
 
-config(); // завантажуємо .env
+config();
 
 import { User } from '../users/user.entity';
 import { Course, CourseModule, Lesson, Enrollment, Progress } from '../courses/course.entity';
@@ -18,6 +18,6 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME     ?? 'elearning',
   entities: [User, Course, CourseModule, Lesson, Enrollment, Progress, Certificate, Review],
   migrations: [join(__dirname, 'migrations', '*.{ts,js}')],
-  synchronize: false, // в продакшні — тільки міграції
+  synchronize: false,
   logging: false,
 });

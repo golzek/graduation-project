@@ -59,7 +59,7 @@ export function TeacherDashboard() {
 
   return (
     <div style={s.page}>
-      {/* Шапка */}
+
       <div style={s.header}>
         <div style={s.headerRow}>
           <div>
@@ -71,7 +71,7 @@ export function TeacherDashboard() {
       </div>
 
       <div style={s.body}>
-        {/* Загальні метрики */}
+
         <div style={s.metricsRow}>
           <MetricCard icon="📚" label="Курсів" value={stats.totalCourses} color="#4f46e5" />
           <MetricCard icon="👥" label="Студентів" value={stats.totalStudents} color="#0891b2" />
@@ -79,7 +79,7 @@ export function TeacherDashboard() {
           <MetricCard icon="🎓" label="Сертифікатів" value={stats.totalCertificates} color="#d97706" />
         </div>
 
-        {/* Детальна аналітика */}
+
         {stats.courses.length === 0 ? (
           <div style={s.empty}>
             <p>У тебе ще немає курсів</p>
@@ -87,7 +87,7 @@ export function TeacherDashboard() {
           </div>
         ) : (
           <div style={s.twoCol}>
-            {/* Список курсів */}
+
             <div style={s.courseList}>
               <h3 style={s.sectionTitle}>Мої курси</h3>
               {stats.courses.map((c) => (
@@ -109,12 +109,12 @@ export function TeacherDashboard() {
               ))}
             </div>
 
-            {/* Деталі вибраного курсу */}
+
             {selectedCourse && (
               <div style={s.courseDetail}>
                 <h3 style={s.sectionTitle}>{selectedCourse.title}</h3>
 
-                {/* Мета-метрики курсу */}
+
                 <div style={s.miniMetrics}>
                   <MiniMetric label="Студентів" value={selectedCourse.students} />
                   <MiniMetric label="Дохід" value={`${selectedCourse.revenue.toLocaleString()} ₴`} />
@@ -122,7 +122,7 @@ export function TeacherDashboard() {
                   <MiniMetric label="Сер. прогрес" value={`${selectedCourse.avgProgressPercent}%`} />
                 </div>
 
-                {/* Прогрес-бар середнього завершення */}
+
                 <div style={{ marginBottom: 24 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 6 }}>
                     <span style={{ color: '#6b7280' }}>Середнє завершення курсу</span>
@@ -133,7 +133,7 @@ export function TeacherDashboard() {
                   </div>
                 </div>
 
-                {/* Графік записів (мінімалістичний бар-чарт) */}
+
                 {selectedCourse.enrollsByDay.length > 0 && (
                   <div style={{ marginBottom: 24 }}>
                     <p style={s.chartTitle}>Записи за останні 30 днів</p>
@@ -141,7 +141,7 @@ export function TeacherDashboard() {
                   </div>
                 )}
 
-                {/* Топ уроків */}
+
                 {selectedCourse.topLessons.length > 0 && (
                   <div>
                     <p style={s.chartTitle}>Топ уроків за переглядами</p>
@@ -183,7 +183,6 @@ export function TeacherDashboard() {
   );
 }
 
-// --- Допоміжні компоненти ---
 
 function MetricCard({ icon, label, value, color }: { icon: string; label: string; value: any; color: string }) {
   return (

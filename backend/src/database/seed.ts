@@ -38,7 +38,6 @@ export async function seed(ds: DataSource): Promise<void> {
   await ds.getRepository(User).save([admin, teacher1, teacher2, student1, student2]);
   console.log('  Користувачів: 5');
 
-  // ── Курс 1 ───────────────────────────────────────────────
   const course1 = ds.getRepository(Course).create({
     title: 'React з нуля до Pro',
     description: 'Повний курс по React — від основ до хуків, контексту і оптимізації.',
@@ -64,7 +63,6 @@ export async function seed(ds: DataSource): Promise<void> {
     mkLesson(ds, { title: 'Практика: Todo App',      type: LessonType.VIDEO, moduleId: m3.id, orderIndex: 2, durationSec: 1200, isFree: false, contentUrl: null }),
   ]);
 
-  // ── Курс 2 ───────────────────────────────────────────────
   const course2 = ds.getRepository(Course).create({
     title: 'Backend: Node.js + NestJS',
     description: 'RESTful API з нуля. TypeORM, JWT, Swagger i деплой.',
@@ -86,7 +84,6 @@ export async function seed(ds: DataSource): Promise<void> {
     mkLesson(ds, { title: 'Dependency Injection',         type: LessonType.TEXT,  moduleId: m5.id, orderIndex: 2, durationSec: 0,   isFree: false, contentUrl: null, textContent: '<h2>DI</h2><p>NestJS використовує IoC контейнер.</p>' }),
   ]);
 
-  // ── Курс 3 ───────────────────────────────────────────────
   const course3 = ds.getRepository(Course).create({
     title: 'Git для початкiвцiв',
     description: 'Безкоштовний курс по Git i GitHub.',
@@ -105,7 +102,6 @@ export async function seed(ds: DataSource): Promise<void> {
   ]);
   console.log('  Курсiв: 3, Модулiв: 6, Урокiв: 18');
 
-  // ── Записи ───────────────────────────────────────────────
   await ds.getRepository(Enrollment).save([
     ds.getRepository(Enrollment).create({ userId: student1.id, courseId: course1.id, paidPrice: 799 }),
     ds.getRepository(Enrollment).create({ userId: student1.id, courseId: course3.id, paidPrice: 0   }),
@@ -114,14 +110,12 @@ export async function seed(ds: DataSource): Promise<void> {
   ]);
   console.log('  Записiв: 4');
 
-  // ── Прогрес ───────────────────────────────────────────────
   await ds.getRepository(Progress).save([
     ds.getRepository(Progress).create({ userId: student1.id, lessonId: gitLessons[0].id, completed: true,  watchedSec: 300 }),
     ds.getRepository(Progress).create({ userId: student1.id, lessonId: gitLessons[1].id, completed: true,  watchedSec: 480 }),
     ds.getRepository(Progress).create({ userId: student1.id, lessonId: gitLessons[2].id, completed: false, watchedSec: 200 }),
   ]);
 
-  // ── Вiдгуки ───────────────────────────────────────────────
   await ds.getRepository(Review).save([
     ds.getRepository(Review).create({ userId: student1.id, courseId: course1.id, rating: 5, body: 'Вiдмiнний курс! Рекомендую всiм.',        isApproved: true  }),
     ds.getRepository(Review).create({ userId: student2.id, courseId: course1.id, rating: 4, body: 'Дуже корисно, особливо роздiл про хуки.', isApproved: true  }),

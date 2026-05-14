@@ -10,13 +10,11 @@ export function Navbar() {
   return (
     <header style={s.header}>
       <nav style={s.nav}>
-        {/* Лого */}
         <Link to="/courses" style={s.logo}>
           <span style={s.logoDot} />
           LearnHub
         </Link>
 
-        {/* Посилання */}
         <div style={s.links}>
           <Link to="/courses" style={{ ...s.link, ...(active('/courses') ? s.linkActive : {}) }}>
             Курси
@@ -31,9 +29,13 @@ export function Navbar() {
               Кабінет
             </Link>
           )}
+          {(user?.role === 'student' || user?.role === 'admin') && (
+              <Link to="/student" style={{ ...s.link, ...(active('/student') ? s.linkActive : {}) }}>
+                Кабінет студента
+              </Link>
+          )}
         </div>
 
-        {/* Правий блок */}
         <div style={s.right}>
           {isAuthenticated ? (
             <>
