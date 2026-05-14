@@ -34,6 +34,7 @@ export class CertificateService {
     const allIds = course.modules.flatMap(m => m.lessons.map(l => l.id));
     if (!allIds.length) throw new BadRequestException('Курс не має уроків');
 
+
     const done = await this.progressRepo.createQueryBuilder('p')
       .where('p.user_id = :uid', { uid: user.id })
       .andWhere('p.lesson_id IN (:...ids)', { ids: allIds })
@@ -43,11 +44,25 @@ export class CertificateService {
       throw new BadRequestException(`Завершено ${done} з ${allIds.length} уроків. Потрібно 100%`);
 
     const verifyCode = randomBytes(12).toString('hex').toUpperCase();
-
+    function toLatyn(str: string): string {
+      const map: Record<string, string> = {
+        'а':'a','б':'b','в':'v','г':'h','ґ':'g','д':'d','е':'e','є':'ye',
+        'ж':'zh','з':'z','и':'y','і':'i','ї':'yi','й':'y','к':'k','л':'l',
+        'м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u',
+        'ф':'f','х':'kh','ц':'ts','ч':'ch','ш':'sh','щ':'shch','ь':'',
+        'ю':'yu','я':'ya','ё':'yo','э':'e','ъ':'','ы':'y',
+        'А':'A','Б':'B','В':'V','Г':'H','Ґ':'G','Д':'D','Е':'E','Є':'Ye',
+        'Ж':'Zh','З':'Z','И':'Y','І':'I','Ї':'Yi','Й':'Y','К':'K','Л':'L',
+        'М':'M','Н':'N','О':'O','П':'P','Р':'R','С':'S','Т':'T','У':'U',
+        'Ф':'F','Х':'Kh','Ц':'Ts','Ч':'Ch','Ш':'Sh','Щ':'Shch','Ь':'',
+        'Ю':'Yu','Я':'Ya','Ё':'Yo','Э':'E','Ъ':'','Ы':'Y',
+      };
+      return str.split('').map(c => map[c] ?? c).join('');
+    }
     const pdfBuffer = await this.generatePdf({
-      studentName: user.name,
-      courseName:  course.title,
-      authorName:  (course.author as any)?.name ?? 'Викладач',
+      studentName: toLatyn(user.name),
+      courseName:  toLatyn(course.title),
+      authorName:  toLatyn((course.author as any)?.name ?? 'Vykladach'),
       verifyCode,
       issuedAt: new Date(),
     });
@@ -102,25 +117,25 @@ export class CertificateService {
       doc.rect(24, 24, W-48, H-48).lineWidth(2).stroke('#c9a84c');
       doc.rect(30, 30, W-60, H-60).lineWidth(0.5).stroke('#c9a84c');
       doc.fontSize(40).fillColor('#1e1b4b').font('Helvetica-Bold')
-        .text('СЕРТИФІКАТ', 0, 80, { align: 'center' });
+          .text('SERTYFIKAT', 0, 80, { align: 'center' });
       doc.fontSize(14).fillColor('#6b7280').font('Helvetica')
-        .text('про успішне завершення курсу', 0, 132, { align: 'center' });
+          .text('pro uspishne zavershennia kursu', 0, 132, { align: 'center' });
       doc.moveTo(W*.2, 165).lineTo(W*.8, 165).lineWidth(1).stroke('#c9a84c');
       doc.fontSize(32).fillColor('#111827').font('Helvetica-Bold')
         .text(data.studentName, 0, 185, { align: 'center' });
       doc.fontSize(14).fillColor('#6b7280').font('Helvetica')
-        .text('успішно завершив(ла) курс', 0, 230, { align: 'center' });
+          .text('uspishno zavershy`v(la) kurs', 0, 230, { align: 'center' });
       doc.fontSize(22).fillColor('#4f46e5').font('Helvetica-Bold')
         .text(`«${data.courseName}»`, 0, 258, { align: 'center' });
-      const dateStr = data.issuedAt.toLocaleDateString('uk-UA', {
-        day: 'numeric', month: 'long', year: 'numeric',
-      });
+      const d = data.issuedAt;
+      const dateStr = `${d.getDate().toString().padStart(2,'0')}.${(d.getMonth()+1).toString().padStart(2,'0')}.${d.getFullYear()}`;
       doc.fontSize(12).fillColor('#6b7280').font('Helvetica')
-        .text(`Дата видачі: ${dateStr}`, 80, H-140);
-      doc.text(`Викладач: ${data.authorName}`, W/2, H-140, { align: 'center' });
+          .text(`Data vydachi: ${dateStr}`, 80, H-140);
+      doc.text(`Vykladach: ${data.authorName}`, W/2, H-140, { align: 'center' });
       doc.fontSize(10).fillColor('#9ca3af')
-        .text(`Код верифікації: ${data.verifyCode}`, 0, H-60, { align: 'center' });
+          .text(`Kod veryfikatsii: ${data.verifyCode}`, 0, H-60, { align: 'center' });
       doc.end();
     });
+
   }
 }

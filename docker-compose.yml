@@ -24,6 +24,8 @@ services:
     environment:
       DB_HOST: postgres
     ports: ['3000:3000']
+    volumes:
+      - uploads_data:/app/uploads
 
   frontend:
     build:
@@ -49,3 +51,4 @@ services:
 volumes:
   pgdata:
   pgadmin_data:
+  uploads_data:

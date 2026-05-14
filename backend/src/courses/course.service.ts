@@ -13,23 +13,23 @@ import {
 @Injectable()
 export class CourseService {
   constructor(
-    @InjectRepository(Course)       private courseRepo:     Repository<Course>,
-    @InjectRepository(CourseModule) private moduleRepo:     Repository<CourseModule>,
-    @InjectRepository(Lesson)       private lessonRepo:     Repository<Lesson>,
-    @InjectRepository(Enrollment)   private enrollmentRepo: Repository<Enrollment>,
-    @InjectRepository(Progress)     private progressRepo:   Repository<Progress>,
+      @InjectRepository(Course)       private courseRepo:     Repository<Course>,
+      @InjectRepository(CourseModule) private moduleRepo:     Repository<CourseModule>,
+      @InjectRepository(Lesson)       private lessonRepo:     Repository<Lesson>,
+      @InjectRepository(Enrollment)   private enrollmentRepo: Repository<Enrollment>,
+      @InjectRepository(Progress)     private progressRepo:   Repository<Progress>,
   ) {}
 
   async findAll(f: CourseFilterDto) {
     const { search, category, level, page = 1, limit = 12 } = f;
     const qb = this.courseRepo.createQueryBuilder('c')
-      .leftJoinAndSelect('c.author', 'author')
-      .where('c.status = :s', { s: CourseStatus.PUBLISHED });
+        .leftJoinAndSelect('c.author', 'author')
+        .where('c.status = :s', { s: CourseStatus.PUBLISHED });
     if (search)    qb.andWhere('(c.title ILIKE :q OR c.description ILIKE :q)', { q: `%${search}%` });
     if (category)  qb.andWhere('c.category = :category', { category });
     if (level)     qb.andWhere('c.level = :level', { level });
     const [data, total] = await qb.skip((page - 1) * limit).take(limit)
-      .orderBy('c.createdAt', 'DESC').getManyAndCount();
+        .orderBy('c.createdAt', 'DESC').getManyAndCount();
     return { data: data.map(this.safeAuthor), total, page, totalPages: Math.ceil(total / limit) };
   }
 
@@ -125,26 +125,39 @@ export class CourseService {
   }
 
   async updateProgress(dto: UpdateProgressDto, user: User) {
-    const lesson = await this.lessonRepo.findOne({ where: { id: dto.lessonId }, relations: ['module'] });
-    if (!lesson) throw new NotFoundException();
-    const enrolled = await this.enrollmentRepo.findOne({ where: { userId: user.id, courseId: lesson.module.courseId } });
+    const lesson = await this.lessonRepo.findOne({
+      where: { id: dto.lessonId },
+      relations: ['module'],
+    });
+    if (!lesson) throw new NotFoundException('Урок не знайдено');
+    if (!lesson.module) throw new NotFoundException('Модуль уроку не знайдено'); // Bug 2 guard
+
+    const enrolled = await this.enrollmentRepo.findOne({
+      where: { userId: user.id, courseId: lesson.module.courseId },
+    });
     if (!enrolled) throw new ForbiddenException('Спочатку запишись на курс');
-    let p = await this.progressRepo.findOne({ where: { userId: user.id, lessonId: dto.lessonId } });
-    if (!p) p = this.progressRepo.create({ userId: user.id, lessonId: dto.lessonId });
+
+    let p = await this.progressRepo.findOne({
+      where: { userId: user.id, lessonId: dto.lessonId },
+    });
+    if (!p) p = this.progressRepo.create({ userId: user.id, lessonId: dto.lessonId, watchedSec: 0 }); // Bug 1 fix
+
     p.completed  = dto.completed;
-    p.watchedSec = Math.max(p.watchedSec, dto.watchedSec);
+    p.watchedSec = Math.max(p.watchedSec ?? 0, dto.watchedSec ?? 0); // Bug 1 fix
     return this.progressRepo.save(p);
   }
-
   async getCourseProgress(courseId: string, userId: string) {
     const c = await this.courseRepo.findOne({ where: { id: courseId }, relations: ['modules', 'modules.lessons'] });
     if (!c) throw new NotFoundException();
     const ids = c.modules.flatMap(m => m.lessons.map(l => l.id));
     if (!ids.length) return { percent: 0, completedCount: 0, totalCount: 0 };
-    const done = await this.progressRepo.createQueryBuilder('p')
-      .where('p.user_id = :userId', { userId })
-      .andWhere('p.lesson_id IN (:...ids)', { ids })
-      .andWhere('p.completed = true').getCount();
+
+    const result = await this.progressRepo.query(
+        `SELECT COUNT(*) as done FROM progress WHERE user_id = $1 AND lesson_id = ANY($2) AND completed = true`,
+        [userId, ids],
+    );
+
+    const done = parseInt(result[0]?.done) || 0;
     return { percent: Math.round((done / ids.length) * 100), completedCount: done, totalCount: ids.length };
   }
 

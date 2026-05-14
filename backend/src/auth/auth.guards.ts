@@ -30,6 +30,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {}
 
+// Use this on routes that work for both guests and logged-in users
+@Injectable()
+export class OptionalJwtAuthGuard extends AuthGuard('jwt') {
+  handleRequest(err: any, user: any) {
+    // Never throw — just return null if not authenticated
+    return user || null;
+  }
+}
+
 export const ROLES_KEY = 'roles';
 export const Roles = (...roles: UserRole[]) => SetMetadata(ROLES_KEY, roles);
 
@@ -51,5 +60,5 @@ export class RolesGuard implements CanActivate {
 
 
 export const CurrentUser = createParamDecorator(
-  (_: unknown, ctx: ExecutionContext) => ctx.switchToHttp().getRequest().user,
+    (_: unknown, ctx: ExecutionContext) => ctx.switchToHttp().getRequest().user,
 );

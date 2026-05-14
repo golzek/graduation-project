@@ -1,17 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCourse, useCourseProgress, useCourseActions, Lesson, CourseModule } from '../hooks/useCourses';
-import { useAuth } from '../context/AuthContext';
+import { useAuth, apiFetch } from '../context/AuthContext';
 
 export function CoursePage() {
   const { id } = useParams<{ id: string }>();
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { course, loading, error } = useCourse(id!);
-  const progress = useCourseProgress(id!);
-  const { enroll } = useCourseActions();
+  const { progress, refresh: refreshProgress } = useCourseProgress(id!);
+  const { enroll, issueCertificate } = useCourseActions();
   const [enrolling, setEnrolling] = useState(false);
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
+  const [certModal, setCertModal] = useState<{ pdfUrl: string; verifyCode: string } | null>(null);
 
   useEffect(() => {
     if (course?.modules?.length) {
@@ -19,6 +20,22 @@ export function CoursePage() {
       if (first && (first.isFree || course.isEnrolled)) setActiveLesson(first);
     }
   }, [course]);
+  const handleProgressSaved = async () => {
+    refreshProgress();
+    try {
+      const updated = await apiFetch<{ percent: number }>(`/courses/${id}/progress`);
+      if (updated.percent === 100) {
+        console.log('100% — викликаємо issue...');
+        try {
+          const cert = await issueCertificate(id!);
+          setCertModal({ pdfUrl: cert.pdfUrl, verifyCode: cert.verifyCode });
+        }  catch (e: any) {
+        console.error('issue cert error:', e?.message);
+        setCertModal({ pdfUrl: '', verifyCode: '' });
+      }
+      }
+    } catch { /* ignore */ }
+  };
 
   const handleEnroll = async () => {
     if (!isAuthenticated) { navigate('/login'); return; }
@@ -35,80 +52,103 @@ export function CoursePage() {
   const totalDuration = course.modules.flatMap(m => m.lessons).reduce((a, l) => a + l.durationSec, 0);
 
   return (
-    <div style={s.page}>
-      <div style={s.header}>
-        <div style={s.headerInner}>
-          <div style={s.headerLeft}>
-            <p style={s.breadcrumb}>
-              <a href="/courses" style={{ color: '#9a9a9a' }}>Каталог</a>
-              {' / '}<span style={{ color: '#5a5a5a' }}>{course.category}</span>
-            </p>
-            <h1 style={s.title}>{course.title}</h1>
-            <p style={s.desc}>{course.description}</p>
-            <div style={s.meta}>
-              <span>{course.author?.name}</span>
-              <span style={s.dot}>·</span>
-              <span>{totalLessons} уроків</span>
-              <span style={s.dot}>·</span>
-              <span>{Math.round(totalDuration / 60)} хв</span>
-              <span style={s.dot}>·</span>
-              <span style={s.levelBadge}>{course.level}</span>
+      <div style={s.page}>
+        <div style={s.header}>
+          <div style={s.headerInner}>
+            <div style={s.headerLeft}>
+              <p style={s.breadcrumb}>
+                <a href="/courses" style={{ color: '#9a9a9a' }}>Каталог</a>
+                {' / '}<span style={{ color: '#5a5a5a' }}>{course.category}</span>
+              </p>
+              <h1 style={s.title}>{course.title}</h1>
+              <p style={s.desc}>{course.description}</p>
+              <div style={s.meta}>
+                <span>{course.author?.name}</span>
+                <span style={s.dot}>·</span>
+                <span>{totalLessons} уроків</span>
+                <span style={s.dot}>·</span>
+                <span>{Math.round(totalDuration / 60)} хв</span>
+                <span style={s.dot}>·</span>
+                <span style={s.levelBadge}>{course.level}</span>
+              </div>
+            </div>
+
+            <div style={s.card}>
+              <p style={s.cardPrice}>
+                {Number(course.price) === 0 ? 'Безкоштовно' : `${course.price} ₴`}
+              </p>
+
+              {progress && (
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#9a9a9a', marginBottom: 6 }}>
+                      <span>Прогрес</span><strong style={{ color: '#0a0a0a' }}>{progress.percent}%</strong>
+                    </div>
+                    <div style={s.progressTrack}>
+                      <div style={{ ...s.progressFill, width: `${progress.percent}%` }} />
+                    </div>
+                    <p style={{ fontSize: '0.75rem', color: '#9a9a9a', marginTop: 4 }}>
+                      {progress.completedCount} / {progress.totalCount} уроків
+                    </p>
+                  </div>
+              )}
+
+              {course.isEnrolled ? (
+                  <button style={s.btnOutline}>Продовжити навчання</button>
+              ) : (
+                  <button style={s.btnPrimary} onClick={handleEnroll} disabled={enrolling}>
+                    {enrolling ? 'Записуємось...' : Number(course.price) === 0 ? 'Записатись' : 'Придбати'}
+                  </button>
+              )}
             </div>
           </div>
+        </div>
 
-          <div style={s.card}>
-            <p style={s.cardPrice}>
-              {Number(course.price) === 0 ? 'Безкоштовно' : `${course.price} ₴`}
-            </p>
+        <div style={s.body}>
+          <aside style={s.sidebar}>
+            <p style={s.sideTitle}>Програма</p>
+            {course.modules.map(mod => (
+                <ModuleBlock key={mod.id} mod={mod}
+                             isEnrolled={!!course.isEnrolled}
+                             activeId={activeLesson?.id}
+                             onSelect={setActiveLesson} />
+            ))}
+          </aside>
 
-            {progress && (
-              <div style={{ marginBottom: 16 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#9a9a9a', marginBottom: 6 }}>
-                  <span>Прогрес</span><strong style={{ color: '#0a0a0a' }}>{progress.percent}%</strong>
+          <div style={s.player}>
+            {activeLesson
+                ? <LessonPlayer
+                    lesson={activeLesson}
+                    isEnrolled={!!course.isEnrolled}
+                    onProgressSaved={handleProgressSaved}
+                />
+                : <div style={s.playerEmpty}>
+                  <p style={{ color: '#9a9a9a', fontSize: '0.9rem' }}>
+                    {course.isEnrolled ? '← Вибери урок' : 'Запишись на курс для доступу до уроків'}
+                  </p>
                 </div>
-                <div style={s.progressTrack}>
-                  <div style={{ ...s.progressFill, width: `${progress.percent}%` }} />
-                </div>
-                <p style={{ fontSize: '0.75rem', color: '#9a9a9a', marginTop: 4 }}>
-                  {progress.completedCount} / {progress.totalCount} уроків
-                </p>
-              </div>
-            )}
-
-            {course.isEnrolled ? (
-              <button style={s.btnOutline}>Продовжити навчання</button>
-            ) : (
-              <button style={s.btnPrimary} onClick={handleEnroll} disabled={enrolling}>
-                {enrolling ? 'Записуємось...' : Number(course.price) === 0 ? 'Записатись' : 'Придбати'}
-              </button>
-            )}
+            }
           </div>
         </div>
-      </div>
-
-      <div style={s.body}>
-        <aside style={s.sidebar}>
-          <p style={s.sideTitle}>Програма</p>
-          {course.modules.map(mod => (
-            <ModuleBlock key={mod.id} mod={mod}
-              isEnrolled={!!course.isEnrolled}
-              activeId={activeLesson?.id}
-              onSelect={setActiveLesson} />
-          ))}
-        </aside>
-
-        <div style={s.player}>
-          {activeLesson
-            ? <LessonPlayer lesson={activeLesson} isEnrolled={!!course.isEnrolled} />
-            : <div style={s.playerEmpty}>
-                <p style={{ color: '#9a9a9a', fontSize: '0.9rem' }}>
-                  {course.isEnrolled ? '← Вибери урок' : 'Запишись на курс для доступу до уроків'}
-                </p>
+        {certModal && (
+            <div style={modal.overlay} onClick={() => setCertModal(null)}>
+              <div style={modal.box} onClick={e => e.stopPropagation()}>
+                <div style={modal.emoji}>🎓</div>
+                <h2 style={modal.title}>Вітаємо! Курс завершено</h2>
+                <p style={modal.sub}>Ви пройшли всі уроки курсу <strong>«{course.title}»</strong></p>
+                {certModal.pdfUrl && (
+                    <a href={certModal.pdfUrl} target="_blank" rel="noreferrer" style={modal.btnPrimary}>
+                      Завантажити сертифікат (PDF)
+                    </a>
+                )}
+                <a href="/certificates" style={modal.btnOutline}>Мої сертифікати</a>
+                {certModal.verifyCode && (
+                    <p style={modal.code}>Код верифікації: <code>{certModal.verifyCode}</code></p>
+                )}
+                <button style={modal.close} onClick={() => setCertModal(null)}>✕</button>
               </div>
-          }
-        </div>
+            </div>
+        )}
       </div>
-    </div>
   );
 }
 
@@ -119,25 +159,25 @@ function ModuleBlock({ mod, isEnrolled, activeId, onSelect }: {
   const [open, setOpen] = useState(true);
   const icons: Record<string, string> = { video: '▶', text: '文', quiz: '?' };
   return (
-    <div style={ms.block}>
-      <div style={ms.modHeader} onClick={() => setOpen(o => !o)}>
-        <span style={ms.modTitle}>{mod.title}</span>
-        <span style={ms.modCount}>{mod.lessons.length}</span>
+      <div style={ms.block}>
+        <div style={ms.modHeader} onClick={() => setOpen(o => !o)}>
+          <span style={ms.modTitle}>{mod.title}</span>
+          <span style={ms.modCount}>{mod.lessons.length}</span>
+        </div>
+        {open && mod.lessons.map(l => {
+          const locked  = !l.isFree && !isEnrolled;
+          const isActive = l.id === activeId;
+          return (
+              <div key={l.id}
+                   style={{ ...ms.lesson, ...(isActive ? ms.lessonActive : {}), ...(locked ? ms.lessonLocked : {}) }}
+                   onClick={() => !locked && onSelect(l)}>
+                <span style={ms.icon}>{locked ? '○' : icons[l.type]}</span>
+                <span style={ms.lessonTitle}>{l.title}</span>
+                {l.durationSec > 0 && <span style={ms.dur}>{Math.round(l.durationSec/60)}хв</span>}
+              </div>
+          );
+        })}
       </div>
-      {open && mod.lessons.map(l => {
-        const locked  = !l.isFree && !isEnrolled;
-        const isActive = l.id === activeId;
-        return (
-          <div key={l.id}
-            style={{ ...ms.lesson, ...(isActive ? ms.lessonActive : {}), ...(locked ? ms.lessonLocked : {}) }}
-            onClick={() => !locked && onSelect(l)}>
-            <span style={ms.icon}>{locked ? '○' : icons[l.type]}</span>
-            <span style={ms.lessonTitle}>{l.title}</span>
-            {l.durationSec > 0 && <span style={ms.dur}>{Math.round(l.durationSec/60)}хв</span>}
-          </div>
-        );
-      })}
-    </div>
   );
 }
 
@@ -154,42 +194,57 @@ const ms: Record<string, React.CSSProperties> = {
   dur:         { fontSize: '0.7rem', color: '#9a9a9a', flexShrink: 0 },
 };
 
-function LessonPlayer({ lesson, isEnrolled }: { lesson: Lesson; isEnrolled: boolean }) {
+function LessonPlayer({ lesson, isEnrolled, onProgressSaved }: {
+  lesson: Lesson; isEnrolled: boolean; onProgressSaved: () => void;
+}) {
   const { updateProgress } = useCourseActions();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [completed, setCompleted] = useState(false);
+
+  // Reset completed state when lesson changes
+  useEffect(() => { setCompleted(false); }, [lesson.id]);
+
+  const markDone = async (watchedSec: number) => {
+    if (completed || !isEnrolled) return;
+    setCompleted(true);
+    try {
+      await updateProgress(lesson.id, true, watchedSec);
+      onProgressSaved(); // Refresh progress bar in parent
+    } catch {
+      // silently ignore
+    }
+  };
 
   const handleTime = () => {
     const v = videoRef.current;
     if (!v || completed || !isEnrolled) return;
     if (v.currentTime / v.duration > 0.8) {
-      setCompleted(true);
-      updateProgress(lesson.id, true, Math.round(v.currentTime)).catch(() => {});
+      markDone(Math.round(v.currentTime));
     }
   };
 
   return (
-    <div style={ps.box}>
-      <h2 style={ps.title}>{lesson.title}</h2>
-      {lesson.type === 'video' && lesson.contentUrl && (
-        <video ref={videoRef} controls onTimeUpdate={handleTime}
-          style={{ width: '100%', borderRadius: 8, background: '#0a0a0a', marginBottom: 20 }}>
-          <source src={lesson.contentUrl} />
-        </video>
-      )}
-      {lesson.type === 'text' && lesson.textContent && (
-        <div style={ps.textContent}
-          dangerouslySetInnerHTML={{ __html: lesson.textContent }} />
-      )}
-      {isEnrolled && (
-        <button
-          style={completed ? ps.btnDone : ps.btnMark}
-          onClick={() => { setCompleted(true); updateProgress(lesson.id, true, lesson.durationSec).catch(()=>{}); }}
-          disabled={completed}>
-          {completed ? '✓ Завершено' : 'Позначити як завершений'}
-        </button>
-      )}
-    </div>
+      <div style={ps.box}>
+        <h2 style={ps.title}>{lesson.title}</h2>
+        {lesson.type === 'video' && lesson.contentUrl && (
+            <video ref={videoRef} controls onTimeUpdate={handleTime}
+                   style={{ width: '100%', borderRadius: 8, background: '#0a0a0a', marginBottom: 20 }}>
+              <source src={lesson.contentUrl} />
+            </video>
+        )}
+        {lesson.type === 'text' && lesson.textContent && (
+            <div style={ps.textContent}
+                 dangerouslySetInnerHTML={{ __html: lesson.textContent }} />
+        )}
+        {isEnrolled && (
+            <button
+                style={completed ? ps.btnDone : ps.btnMark}
+                onClick={() => markDone(lesson.durationSec)}
+                disabled={completed}>
+              {completed ? '✓ Завершено' : 'Позначити як завершений'}
+            </button>
+        )}
+      </div>
   );
 }
 
@@ -249,5 +304,33 @@ const s: Record<string, React.CSSProperties> = {
   playerEmpty: {
     border: '1.5px solid #ebebeb', borderRadius: 12,
     height: 320, display: 'flex', alignItems: 'center', justifyContent: 'center',
+  },
+};
+const modal: Record<string, React.CSSProperties> = {
+  overlay: {
+    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+  },
+  box: {
+    background: '#fff', borderRadius: 16, padding: '48px 40px', maxWidth: 440, width: '90%',
+    textAlign: 'center', position: 'relative', boxShadow: '0 24px 64px rgba(0,0,0,0.18)',
+  },
+  emoji:      { fontSize: '3rem', marginBottom: 12 },
+  title:      { fontSize: '1.4rem', fontWeight: 700, marginBottom: 8, letterSpacing: '-0.02em' },
+  sub:        { color: '#5a5a5a', fontSize: '0.9rem', lineHeight: 1.5, marginBottom: 28 },
+  btnPrimary: {
+    display: 'block', width: '100%', padding: '12px', background: '#0a0a0a', color: '#fafafa',
+    borderRadius: 8, fontSize: '0.9rem', fontWeight: 500, textDecoration: 'none',
+    marginBottom: 10, boxSizing: 'border-box' as const,
+  },
+  btnOutline: {
+    display: 'block', width: '100%', padding: '12px', background: 'transparent', color: '#0a0a0a',
+    border: '1.5px solid #ebebeb', borderRadius: 8, fontSize: '0.9rem', textDecoration: 'none',
+    marginBottom: 20, boxSizing: 'border-box' as const,
+  },
+  code:  { fontSize: '0.75rem', color: '#9a9a9a' },
+  close: {
+    position: 'absolute', top: 16, right: 16, background: 'none', border: 'none',
+    fontSize: '1.1rem', cursor: 'pointer', color: '#9a9a9a',
   },
 };

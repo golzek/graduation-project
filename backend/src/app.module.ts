@@ -33,12 +33,12 @@ import { PaymentModule }     from './payments/payment.module';
         password: cfg.get('DB_PASSWORD', 'postgres'),
         database: cfg.get('DB_NAME',     'elearning'),
         entities: [User, Course, CourseModule, Lesson, Enrollment, Progress, Certificate, Review],
-        synchronize: cfg.get('NODE_ENV') !== 'production',
-        logging:     cfg.get('NODE_ENV') === 'development',
-        migrations:  cfg.get('NODE_ENV') === 'production'
-          ? ['dist/database/migrations/*.js']
-          : [],
-        migrationsRun: cfg.get('NODE_ENV') === 'production',
+        synchronize: false,
+        logging: cfg.get('NODE_ENV') === 'development',
+        migrations: cfg.get('NODE_ENV') === 'production'
+            ? ['dist/database/migrations/*.js']
+            : ['src/database/migrations/*.ts'],
+        migrationsRun: true,
       }),
     }),
 

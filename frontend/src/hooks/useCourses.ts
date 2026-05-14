@@ -23,7 +23,7 @@ export function useCourses(params: Record<string, any> = {}) {
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState('');
   const query = new URLSearchParams(
-    Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== ''))
+      Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== ''))
   ).toString();
   useEffect(() => {
     setLoading(true);
@@ -46,19 +46,27 @@ export function useCourse(id: string) {
 
 export function useCourseProgress(courseId: string) {
   const [progress, setProgress] = useState<Progress | null>(null);
+  const [tick, setTick] = useState(0);
+
   useEffect(() => {
     if (!courseId || !localStorage.getItem('accessToken')) return;
     apiFetch<Progress>(`/courses/${courseId}/progress`).then(setProgress).catch(() => {});
-  }, [courseId]);
-  return progress;
+  }, [courseId, tick]);
+
+  const refresh = useCallback(() => setTick(t => t + 1), []);
+  return { progress, refresh };
 }
 
 export function useCourseActions() {
   const enroll = useCallback((courseId: string) =>
-    apiFetch(`/courses/${courseId}/enroll`, { method: 'POST' }), []);
+      apiFetch(`/courses/${courseId}/enroll`, { method: 'POST' }), []);
 
   const updateProgress = useCallback((lessonId: string, completed: boolean, watchedSec: number) =>
-    apiFetch('/courses/progress/save', { method: 'PATCH', body: JSON.stringify({ lessonId, completed, watchedSec }) }), []);
+      apiFetch('/courses/progress/save', { method: 'PATCH', body: JSON.stringify({ lessonId, completed, watchedSec }) }), []);
+  const issueCertificate = useCallback((courseId: string) =>
+      apiFetch<{ id: string; verifyCode: string; pdfUrl: string; issuedAt: string }>(
+          `/certificates/issue/${courseId}`, { method: 'POST' }
+      ), []);
 
-  return { enroll, updateProgress };
+  return { enroll, updateProgress, issueCertificate };
 }
