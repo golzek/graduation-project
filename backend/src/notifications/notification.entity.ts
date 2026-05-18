@@ -32,9 +32,10 @@ export class Notification {
 
     @Column({ type: 'text' }) message: string;
 
-    @Column({ default: false }) isRead: boolean;
+    @Column({ name: 'is_read', default: false }) isRead: boolean;
 
     @Column({ type: 'jsonb', nullable: true }) meta: Record<string, any> | null;
 
-    @CreateDateColumn() createdAt: Date;
+    @CreateDateColumn({ name: 'created_at' }) createdAt: Date;
+
 }

@@ -57,6 +57,26 @@ export function useCourseProgress(courseId: string) {
   return { progress, refresh };
 }
 
+export function useMyEnrollmentsProgress() {
+  const [progressMap, setProgressMap] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!localStorage.getItem('accessToken')) return;
+    setLoading(true);
+    apiFetch<{ courseId: string; percent: number }[]>('/courses/my/enrollments-progress')
+        .then(list => {
+          const map: Record<string, number> = {};
+          list.forEach(item => { map[item.courseId] = item.percent; });
+          setProgressMap(map);
+        })
+        .catch(() => {})
+        .finally(() => setLoading(false));
+  }, []);
+
+  return { progressMap, loading };
+}
+
 export function useCourseActions() {
   const enroll = useCallback((courseId: string) =>
       apiFetch(`/courses/${courseId}/enroll`, { method: 'POST' }), []);

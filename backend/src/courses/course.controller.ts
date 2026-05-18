@@ -24,6 +24,13 @@ export class CourseController {
   @ApiBearerAuth('JWT') @ApiOperation({ summary: 'Мої курси (викладач)' })
   findMy(@CurrentUser() u: any) { return this.svc.findMyCourses(u.id); }
 
+  @Get('my/enrollments-progress')
+  @UseGuards(JwtAuthGuard) @ApiBearerAuth('JWT')
+  @ApiOperation({ summary: 'Прогрес по всіх записаних курсах' })
+  myEnrollmentsProgress(@CurrentUser() u: any) {
+    return this.svc.findMyEnrollmentsProgress(u.id);
+  }
+
 
   @Patch('progress/save')
   @UseGuards(JwtAuthGuard) @ApiBearerAuth('JWT')

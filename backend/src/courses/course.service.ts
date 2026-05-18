@@ -77,6 +77,19 @@ export class CourseService {
     return this.courseRepo.find({ where: { authorId }, order: { createdAt: 'DESC' } });
   }
 
+  async findMyEnrollmentsProgress(userId: string): Promise<{ courseId: string; percent: number }[]> {
+    const enrollments = await this.enrollmentRepo.find({ where: { userId } });
+    if (!enrollments.length) return [];
+
+    const results = await Promise.all(
+        enrollments.map(async e => {
+          const p = await this.getCourseProgress(e.courseId, userId);
+          return { courseId: e.courseId, percent: p.percent };
+        }),
+    );
+    return results;
+  }
+
   async addModule(courseId: string, dto: CreateModuleDto, user: User) {
     const c = await this.courseRepo.findOne({ where: { id: courseId } });
     if (!c) throw new NotFoundException();
