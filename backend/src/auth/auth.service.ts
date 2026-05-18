@@ -6,13 +6,15 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 import { User } from '../users/user.entity';
 import { RegisterDto, LoginDto } from './auth.dto';
+import { NotificationService } from '../notifications/notification.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(User) private readonly userRepo: Repository<User>,
-    private readonly jwtService: JwtService,
-    private readonly config: ConfigService,
+      @InjectRepository(User) private readonly userRepo: Repository<User>,
+      private readonly jwtService: JwtService,
+      private readonly config: ConfigService,
+      private readonly notifSvc: NotificationService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -21,6 +23,7 @@ export class AuthService {
     const password = await bcrypt.hash(dto.password, 10);
     const user = this.userRepo.create({ ...dto, password });
     await this.userRepo.save(user);
+    this.notifSvc.notifyAdminsNewUser(user.name, user.email, user.id).catch(() => {});
     return this.buildResponse(user);
   }
 
@@ -59,15 +62,15 @@ export class AuthService {
 
   private accessToken(user: User) {
     return this.jwtService.sign(
-      { sub: user.id, email: user.email, role: user.role },
-      { secret: this.config.get('JWT_SECRET'), expiresIn: '15m' },
+        { sub: user.id, email: user.email, role: user.role },
+        { secret: this.config.get('JWT_SECRET'), expiresIn: '15m' },
     );
   }
 
   private refreshToken(user: User) {
     return this.jwtService.sign(
-      { sub: user.id },
-      { secret: this.config.get('JWT_REFRESH_SECRET'), expiresIn: '7d' },
+        { sub: user.id },
+        { secret: this.config.get('JWT_REFRESH_SECRET'), expiresIn: '7d' },
     );
   }
 }

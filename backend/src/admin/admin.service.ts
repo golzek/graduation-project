@@ -64,7 +64,17 @@ export class AdminService {
     const c = await this.courseRepo.findOne({ where: { id } });
     if (!c) throw new NotFoundException('Курс не знайдено');
     c.status = dto.status;
-    return this.courseRepo.save(c);
+    const saved = await this.courseRepo.save(c);
+
+    this.notifSvc
+        .notifyTeacherCourseStatusChanged(c.authorId, c.id, c.title, dto.status)
+        .catch(() => {});
+
+    if (dto.status === CourseStatus.PUBLISHED) {
+      this.notifSvc.notifyStudentsNewCourse(c.id, c.title).catch(() => {});
+    }
+
+    return saved;
   }
 
   async deleteCourse(id: string) {

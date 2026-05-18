@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { NotificationBell } from './NotificationBell';
 
 function LogoutModal({ onConfirm, onCancel }: { onConfirm: () => void; onCancel: () => void }) {
   return (
@@ -122,78 +123,81 @@ export function Navbar() {
                 {theme === 'dark' ? '☀️' : '🌙'}
               </button>
               {isAuthenticated ? (
-                  <div ref={dropRef} style={s.profileWrap}>
-                    <button
-                        style={s.profileBtn}
-                        onClick={() => setOpen(v => !v)}
-                        aria-expanded={open}
-                    >
-                      <div style={s.avatar}>{initials}</div>
-                      <span style={s.userName}>{user?.name}</span>
-                      <svg
-                          width="12" height="12" viewBox="0 0 12 12" fill="none"
-                          style={{ ...s.chevron, ...(open ? s.chevronOpen : {}) }}
-                      >
-                        <path d="M2 4l4 4 4-4" stroke="#9a9a9a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </button>
-
-                    <div style={{
-                      ...s.dropdown,
-                      ...(open ? s.dropdownOpen : s.dropdownClosed),
-                      background: theme === 'dark' ? '#1a1a1a' : '#fff',
-                      border: theme === 'dark' ? '1.5px solid #2a2a2a' : '1.5px solid #ebebeb',
-                      boxShadow: theme === 'dark' ? '0 8px 32px rgba(0,0,0,0.5)' : '0 8px 32px rgba(0,0,0,0.10)',
-                    }}>
-                      <div style={s.dropHeader}>
-                        <div style={{ ...s.avatar, ...s.avatarLg }}>{initials}</div>
-                        <div>
-                          <p style={s.dropName}>{user?.name}</p>
-                          <p style={s.dropRole}>{
-                            user?.role === 'teacher' ? 'Викладач'
-                                : user?.role === 'admin' ? 'Адміністратор'
-                                    : 'Студент'
-                          }</p>
-                        </div>
-                      </div>
-
-                      <div style={s.dropDivider} />
-
-                      <button style={s.dropItem} onClick={goToProfile}>
-                        <span style={s.dropIcon}>👤</span>
-                        {user?.role === 'teacher' || user?.role === 'admin'
-                            ? 'Кабінет викладача'
-                            : 'Кабінет студента'}
-                      </button>
-
-                      <Link to="/profile" style={s.dropItem} onClick={() => setOpen(false)}>
-                        <span style={s.dropIcon}>⚙️</span>
-                        Налаштування профілю
-                      </Link>
-
-                      <Link to="/certificates" style={s.dropItem} onClick={() => setOpen(false)}>
-                        <span style={s.dropIcon}>🏆</span>
-                        Мої сертифікати
-                      </Link>
-
-                      {user?.role === 'admin' && (
-                          <Link to="/admin" style={s.dropItem} onClick={() => setOpen(false)}>
-                            <span style={s.dropIcon}>🛡️</span>
-                            Адмін-панель
-                          </Link>
-                      )}
-
-                      <div style={s.dropDivider} />
-
+                  <>
+                    <NotificationBell />
+                    <div ref={dropRef} style={s.profileWrap}>
                       <button
-                          style={{ ...s.dropItem, ...s.dropItemDanger }}
-                          onClick={() => { setOpen(false); setShowLogout(true); }}
+                          style={s.profileBtn}
+                          onClick={() => setOpen(v => !v)}
+                          aria-expanded={open}
                       >
-                        <span style={s.dropIcon}>↩</span>
-                        Вийти
+                        <div style={s.avatar}>{initials}</div>
+                        <span style={s.userName}>{user?.name}</span>
+                        <svg
+                            width="12" height="12" viewBox="0 0 12 12" fill="none"
+                            style={{ ...s.chevron, ...(open ? s.chevronOpen : {}) }}
+                        >
+                          <path d="M2 4l4 4 4-4" stroke="#9a9a9a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
                       </button>
+
+                      <div style={{
+                        ...s.dropdown,
+                        ...(open ? s.dropdownOpen : s.dropdownClosed),
+                        background: theme === 'dark' ? '#1a1a1a' : '#fff',
+                        border: theme === 'dark' ? '1.5px solid #2a2a2a' : '1.5px solid #ebebeb',
+                        boxShadow: theme === 'dark' ? '0 8px 32px rgba(0,0,0,0.5)' : '0 8px 32px rgba(0,0,0,0.10)',
+                      }}>
+                        <div style={s.dropHeader}>
+                          <div style={{ ...s.avatar, ...s.avatarLg }}>{initials}</div>
+                          <div>
+                            <p style={s.dropName}>{user?.name}</p>
+                            <p style={s.dropRole}>{
+                              user?.role === 'teacher' ? 'Викладач'
+                                  : user?.role === 'admin' ? 'Адміністратор'
+                                      : 'Студент'
+                            }</p>
+                          </div>
+                        </div>
+
+                        <div style={s.dropDivider} />
+
+                        <button style={s.dropItem} onClick={goToProfile}>
+                          <span style={s.dropIcon}>👤</span>
+                          {user?.role === 'teacher' || user?.role === 'admin'
+                              ? 'Кабінет викладача'
+                              : 'Кабінет студента'}
+                        </button>
+
+                        <Link to="/profile" style={s.dropItem} onClick={() => setOpen(false)}>
+                          <span style={s.dropIcon}>⚙️</span>
+                          Налаштування профілю
+                        </Link>
+
+                        <Link to="/certificates" style={s.dropItem} onClick={() => setOpen(false)}>
+                          <span style={s.dropIcon}>🏆</span>
+                          Мої сертифікати
+                        </Link>
+
+                        {user?.role === 'admin' && (
+                            <Link to="/admin" style={s.dropItem} onClick={() => setOpen(false)}>
+                              <span style={s.dropIcon}>🛡️</span>
+                              Адмін-панель
+                            </Link>
+                        )}
+
+                        <div style={s.dropDivider} />
+
+                        <button
+                            style={{ ...s.dropItem, ...s.dropItemDanger }}
+                            onClick={() => { setOpen(false); setShowLogout(true); }}
+                        >
+                          <span style={s.dropIcon}>↩</span>
+                          Вийти
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  </>
               ) : (
                   <>
                     <Link to="/login" style={s.link}>Вхід</Link>
