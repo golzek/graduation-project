@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { StudentDashboardSkeleton } from '../components/Skeleton';
 import { Link } from 'react-router-dom';
 import { useAuth, apiFetch } from '../context/AuthContext';
 
@@ -101,7 +102,7 @@ export function StudentDashboard() {
         ? Math.round(Object.values(progresses).reduce((s, p) => s + p.percent, 0) / totalCourses)
         : 0;
 
-    if (loading) return <div style={s.loading}>Завантаження...</div>;
+    if (loading) return <StudentDashboardSkeleton />;
 
     return (
         <div style={s.page}>

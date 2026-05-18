@@ -3,6 +3,7 @@ import './styles/global.css';
 import { Navbar } from './components/Navbar';
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ToastProvider } from './components/Toast';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoginPage, RegisterPage } from './pages/AuthPages';
 import { CatalogPage } from './pages/CatalogPage';
@@ -13,7 +14,8 @@ import { AdminPanel } from './pages/AdminPanel';
 import { PaymentResultPage } from './pages/PaymentResultPage';
 import { CourseCreatePage } from './pages/CourseCreatePage';
 import { CourseEditPage } from './pages/CourseEditPage';
-import {StudentDashboard} from "./pages/StudentDashboard";
+import { StudentDashboard } from './pages/StudentDashboard';
+import { ProfilePage } from './pages/ProfilePage';
 
 function AppRoutes() {
   return (
@@ -63,6 +65,12 @@ function AppRoutes() {
                 </ProtectedRoute>
               }/>
 
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }/>
+
               <Route path="/payment/result" element={<PaymentResultPage />}/>
 
               <Route path="/forbidden" element={
@@ -85,7 +93,9 @@ export default function App() {
   return (
       <BrowserRouter>
         <AuthProvider>
-          <AppRoutes />
+          <ToastProvider>
+            <AppRoutes />
+          </ToastProvider>
         </AuthProvider>
       </BrowserRouter>
   );

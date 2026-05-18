@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { TeacherDashboardSkeleton } from '../components/Skeleton';
 import { Link } from 'react-router-dom';
 
 const API = process.env.REACT_APP_API_URL ?? 'http://localhost:3000';
@@ -47,7 +48,7 @@ export function TeacherDashboard() {
         .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div style={s.centered}>Завантаження аналітики...</div>;
+  if (loading) return <TeacherDashboardSkeleton />;
   if (fetchError) return (
       <div style={{ textAlign: 'center', padding: 80 }}>
         <p style={{ color: '#6b7280' }}>Не вдалося завантажити дані. Перевірте підключення до сервера.</p>

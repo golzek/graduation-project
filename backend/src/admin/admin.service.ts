@@ -22,9 +22,9 @@ export class UpdateCourseStatusDto {
 @Injectable()
 export class AdminService {
   constructor(
-    @InjectRepository(User)       private userRepo:       Repository<User>,
-    @InjectRepository(Course)     private courseRepo:     Repository<Course>,
-    @InjectRepository(Enrollment) private enrollmentRepo: Repository<Enrollment>,
+      @InjectRepository(User)       private userRepo:       Repository<User>,
+      @InjectRepository(Course)     private courseRepo:     Repository<Course>,
+      @InjectRepository(Enrollment) private enrollmentRepo: Repository<Enrollment>,
   ) {}
 
   getUsers(search?: string, role?: UserRole) {
@@ -51,8 +51,8 @@ export class AdminService {
 
   getCourses(search?: string, status?: CourseStatus) {
     const qb = this.courseRepo.createQueryBuilder('c')
-      .leftJoinAndSelect('c.author', 'author')
-      .select(['c.id','c.title','c.status','c.price','c.createdAt','author.id','author.name','author.email']);
+        .leftJoinAndSelect('c.author', 'author')
+        .select(['c.id','c.title','c.status','c.price','c.createdAt','author.id','author.name','author.email']);
     if (search) qb.andWhere('c.title ILIKE :s', { s: `%${search}%` });
     if (status) qb.andWhere('c.status = :status', { status });
     return qb.orderBy('c.createdAt', 'DESC').getMany();
@@ -76,20 +76,20 @@ export class AdminService {
       this.userRepo.count(), this.courseRepo.count(), this.enrollmentRepo.count(),
     ]);
     const usersByRole = await this.userRepo.createQueryBuilder('u')
-      .select('u.role','role').addSelect('COUNT(*)','count').groupBy('u.role').getRawMany();
+        .select('u.role','role').addSelect('COUNT(*)','count').groupBy('u.role').getRawMany();
     const rev = await this.enrollmentRepo.createQueryBuilder('e')
-      .select('SUM(e.paid_price)','total').getRawOne();
+        .select('SUM(e.paidPrice)','total').getRawOne();
     const newUsersThisMonth = await this.userRepo.createQueryBuilder('u')
-      .where("u.created_at > DATE_TRUNC('month', NOW())").getCount();
+        .where("u.createdAt > DATE_TRUNC('month', NOW())").getCount();
     const newCoursesThisMonth = await this.courseRepo.createQueryBuilder('c')
-      .where("c.created_at > DATE_TRUNC('month', NOW())").getCount();
+        .where("c.createdAt > DATE_TRUNC('month', NOW())").getCount();
     const registrationsByDay = await this.userRepo.createQueryBuilder('u')
-      .select("DATE_TRUNC('day', u.created_at)",'day').addSelect('COUNT(*)','count')
-      .where("u.created_at > NOW() - INTERVAL '7 days'")
-      .groupBy("DATE_TRUNC('day', u.created_at)").orderBy('day','ASC').getRawMany();
+        .select("DATE_TRUNC('day', u.\"createdAt\")",'day').addSelect('COUNT(*)','count')
+        .where("u.\"createdAt\" > NOW() - INTERVAL '7 days'")
+        .groupBy("DATE_TRUNC('day', u.\"createdAt\")").orderBy('day','ASC').getRawMany();
     return {
       totalUsers, totalCourses, totalEnrollments,
-      totalRevenue: parseFloat(rev.total) || 0,
+      totalRevenue: parseFloat(rev?.total) || 0,
       newUsersThisMonth, newCoursesThisMonth,
       usersByRole: Object.fromEntries(usersByRole.map(r => [r.role, parseInt(r.count)])),
       registrationsByDay: registrationsByDay.map(r => ({ date: r.day, count: parseInt(r.count) })),

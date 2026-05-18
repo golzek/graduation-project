@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useToast } from '../components/Toast';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCourse, useCourseProgress, useCourseActions, Lesson, CourseModule } from '../hooks/useCourses';
 import { useAuth, apiFetch } from '../context/AuthContext';
@@ -6,6 +7,7 @@ import { useAuth, apiFetch } from '../context/AuthContext';
 export function CoursePage() {
   const { id } = useParams<{ id: string }>();
   const { user, isAuthenticated } = useAuth();
+  const toast = useToast();
   const navigate = useNavigate();
   const { course, loading, error } = useCourse(id!);
   const { progress, refresh: refreshProgress } = useCourseProgress(id!);
@@ -30,9 +32,9 @@ export function CoursePage() {
           const cert = await issueCertificate(id!);
           setCertModal({ pdfUrl: cert.pdfUrl, verifyCode: cert.verifyCode });
         }  catch (e: any) {
-        console.error('issue cert error:', e?.message);
-        setCertModal({ pdfUrl: '', verifyCode: '' });
-      }
+          console.error('issue cert error:', e?.message);
+          setCertModal({ pdfUrl: '', verifyCode: '' });
+        }
       }
     } catch { /* ignore */ }
   };
@@ -41,7 +43,7 @@ export function CoursePage() {
     if (!isAuthenticated) { navigate('/login'); return; }
     setEnrolling(true);
     try { await enroll(id!); window.location.reload(); }
-    catch (e: any) { alert(e.message); }
+    catch (e: any) { toast.error(e.message ?? 'Помилка запису на курс'); }
     finally { setEnrolling(false); }
   };
 
@@ -201,7 +203,6 @@ function LessonPlayer({ lesson, isEnrolled, onProgressSaved }: {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [completed, setCompleted] = useState(false);
 
-  // Reset completed state when lesson changes
   useEffect(() => { setCompleted(false); }, [lesson.id]);
 
   const markDone = async (watchedSec: number) => {
@@ -209,9 +210,8 @@ function LessonPlayer({ lesson, isEnrolled, onProgressSaved }: {
     setCompleted(true);
     try {
       await updateProgress(lesson.id, true, watchedSec);
-      onProgressSaved(); // Refresh progress bar in parent
+      onProgressSaved();
     } catch {
-      // silently ignore
     }
   };
 

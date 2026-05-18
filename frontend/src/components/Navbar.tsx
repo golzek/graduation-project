@@ -2,12 +2,54 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+function LogoutModal({ onConfirm, onCancel }: { onConfirm: () => void; onCancel: () => void }) {
+  return (
+      <div style={m.overlay} onClick={onCancel}>
+        <div style={m.box} onClick={e => e.stopPropagation()}>
+          <p style={m.title}>Вийти з акаунту?</p>
+          <p style={m.sub}>Тебе буде перенаправлено на сторінку входу.</p>
+          <div style={m.btns}>
+            <button style={m.btnCancel} onClick={onCancel}>Скасувати</button>
+            <button style={m.btnConfirm} onClick={onConfirm}>Вийти</button>
+          </div>
+        </div>
+      </div>
+  );
+}
+
+const m: Record<string, React.CSSProperties> = {
+  overlay: {
+    position: 'fixed', inset: 0, zIndex: 9000,
+    background: 'rgba(0,0,0,0.35)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  },
+  box: {
+    background: '#fff', borderRadius: 14, padding: '28px 28px 22px',
+    width: 320, boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+  },
+  title: { fontSize: '1rem', fontWeight: 600, color: '#0a0a0a', marginBottom: 8 },
+  sub:   { fontSize: '0.875rem', color: '#9a9a9a', lineHeight: 1.5, marginBottom: 22 },
+  btns:  { display: 'flex', gap: 10 },
+  btnCancel: {
+    flex: 1, padding: '9px', borderRadius: 8,
+    border: '1.5px solid #ebebeb', background: 'transparent',
+    fontSize: '0.875rem', cursor: 'pointer', color: '#5a5a5a',
+  },
+  btnConfirm: {
+    flex: 1, padding: '9px', borderRadius: 8,
+    border: 'none', background: '#0a0a0a',
+    fontSize: '0.875rem', cursor: 'pointer', color: '#fafafa', fontWeight: 500,
+  },
+};
+
 export function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const loc = useLocation();
   const navigate = useNavigate();
   const active = (path: string) => loc.pathname.startsWith(path);
-  const [open, setOpen] = useState(false);
+
+  const [open, setOpen]             = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
   const dropRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -22,9 +64,10 @@ export function Navbar() {
 
   useEffect(() => { setOpen(false); }, [loc.pathname]);
 
-  const handleLogout = () => {
-    setOpen(false);
+  const handleLogoutConfirm = () => {
+    setShowLogout(false);
     logout();
+    navigate('/login');
   };
 
   const goToProfile = () => {
@@ -41,29 +84,36 @@ export function Navbar() {
       : '?';
 
   return (
-      <header style={s.header}>
-        <nav style={s.nav}>
-          <Link to="/courses" style={s.logo}>
-            <span style={s.logoDot} />
-            LearnHub
-          </Link>
+      <>
+        {showLogout && (
+            <LogoutModal
+                onConfirm={handleLogoutConfirm}
+                onCancel={() => setShowLogout(false)}
+            />
+        )}
 
-          <div style={s.links}>
-            <Link to="/courses" style={{ ...s.link, ...(active('/courses') ? s.linkActive : {}) }}>
-              Курси
+        <header style={s.header}>
+          <nav style={s.nav}>
+            <Link to="/courses" style={s.logo}>
+              <span style={s.logoDot} />
+              LearnHub
             </Link>
-            {isAuthenticated && (
-                <Link to="/certificates" style={{ ...s.link, ...(active('/certificates') ? s.linkActive : {}) }}>
-                  Сертифікати
-                </Link>
-            )}
-          </div>
 
-          <div style={s.right}>
-            {isAuthenticated ? (
-                <>
+            <div style={s.links}>
+              <Link to="/courses" style={{ ...s.link, ...(active('/courses') ? s.linkActive : {}) }}>
+                Курси
+              </Link>
+
+            </div>
+
+            <div style={s.right}>
+              {isAuthenticated ? (
                   <div ref={dropRef} style={s.profileWrap}>
-                    <button style={s.profileBtn} onClick={() => setOpen(v => !v)} aria-expanded={open}>
+                    <button
+                        style={s.profileBtn}
+                        onClick={() => setOpen(v => !v)}
+                        aria-expanded={open}
+                    >
                       <div style={s.avatar}>{initials}</div>
                       <span style={s.userName}>{user?.name}</span>
                       <svg
@@ -74,60 +124,66 @@ export function Navbar() {
                       </svg>
                     </button>
 
-                    {open && (
-                        <div style={s.dropdown}>
-                          <div style={s.dropHeader}>
-                            <div style={{ ...s.avatar, ...s.avatarLg }}>{initials}</div>
-                            <div>
-                              <p style={s.dropName}>{user?.name}</p>
-                              <p style={s.dropRole}>{
-                                user?.role === 'teacher' ? 'Викладач'
-                                    : user?.role === 'admin' ? 'Адміністратор'
-                                        : 'Студент'
-                              }</p>
-                            </div>
-                          </div>
-
-                          <div style={s.dropDivider} />
-
-                          <button style={s.dropItem} onClick={goToProfile}>
-                            <span style={s.dropIcon}>👤</span>
-                            {user?.role === 'teacher' || user?.role === 'admin'
-                                ? 'Кабінет викладача'
-                                : 'Кабінет студента'}
-                          </button>
-
-                          <Link to="/certificates" style={s.dropItem} onClick={() => setOpen(false)}>
-                            <span style={s.dropIcon}>🏆</span>
-                            Мої сертифікати
-                          </Link>
-
-                          {user?.role === 'admin' && (
-                              <Link to="/admin" style={s.dropItem} onClick={() => setOpen(false)}>
-                                <span style={s.dropIcon}>⚙️</span>
-                                Адмін-панель
-                              </Link>
-                          )}
-
-                          <div style={s.dropDivider} />
-
-                          <button style={{ ...s.dropItem, ...s.dropItemDanger }} onClick={handleLogout}>
-                            <span style={s.dropIcon}>↩</span>
-                            Вийти
-                          </button>
+                    <div style={{ ...s.dropdown, ...(open ? s.dropdownOpen : s.dropdownClosed) }}>
+                      <div style={s.dropHeader}>
+                        <div style={{ ...s.avatar, ...s.avatarLg }}>{initials}</div>
+                        <div>
+                          <p style={s.dropName}>{user?.name}</p>
+                          <p style={s.dropRole}>{
+                            user?.role === 'teacher' ? 'Викладач'
+                                : user?.role === 'admin' ? 'Адміністратор'
+                                    : 'Студент'
+                          }</p>
                         </div>
-                    )}
+                      </div>
+
+                      <div style={s.dropDivider} />
+
+                      <button style={s.dropItem} onClick={goToProfile}>
+                        <span style={s.dropIcon}>👤</span>
+                        {user?.role === 'teacher' || user?.role === 'admin'
+                            ? 'Кабінет викладача'
+                            : 'Кабінет студента'}
+                      </button>
+
+                      <Link to="/profile" style={s.dropItem} onClick={() => setOpen(false)}>
+                        <span style={s.dropIcon}>⚙️</span>
+                        Налаштування профілю
+                      </Link>
+
+                      <Link to="/certificates" style={s.dropItem} onClick={() => setOpen(false)}>
+                        <span style={s.dropIcon}>🏆</span>
+                        Мої сертифікати
+                      </Link>
+
+                      {user?.role === 'admin' && (
+                          <Link to="/admin" style={s.dropItem} onClick={() => setOpen(false)}>
+                            <span style={s.dropIcon}>🛡️</span>
+                            Адмін-панель
+                          </Link>
+                      )}
+
+                      <div style={s.dropDivider} />
+
+                      <button
+                          style={{ ...s.dropItem, ...s.dropItemDanger }}
+                          onClick={() => { setOpen(false); setShowLogout(true); }}
+                      >
+                        <span style={s.dropIcon}>↩</span>
+                        Вийти
+                      </button>
+                    </div>
                   </div>
-                </>
-            ) : (
-                <>
-                  <Link to="/login" style={s.link}>Вхід</Link>
-                  <Link to="/register" style={s.registerBtn}>Реєстрація</Link>
-                </>
-            )}
-          </div>
-        </nav>
-      </header>
+              ) : (
+                  <>
+                    <Link to="/login" style={s.link}>Вхід</Link>
+                    <Link to="/register" style={s.registerBtn}>Реєстрація</Link>
+                  </>
+              )}
+            </div>
+          </nav>
+        </header>
+      </>
   );
 }
 
@@ -151,14 +207,12 @@ const s: Record<string, React.CSSProperties> = {
   },
   logoDot: {
     width: 7, height: 7,
-    borderRadius: '50%', background: '#0a0a0a',
-    flexShrink: 0,
+    borderRadius: '50%', background: '#0a0a0a', flexShrink: 0,
   },
   links: { display: 'flex', gap: 2, flex: 1 },
   link: {
     padding: '5px 12px', borderRadius: 6,
     fontSize: '0.875rem', color: '#5a5a5a',
-    transition: 'color 0.1s',
   },
   linkActive: { color: '#0a0a0a', fontWeight: 500 },
   right: { display: 'flex', alignItems: 'center', gap: 8 },
@@ -167,14 +221,12 @@ const s: Record<string, React.CSSProperties> = {
     background: '#0a0a0a', color: '#fafafa',
     fontSize: '0.875rem', fontWeight: 500,
   },
-
-  // Profile trigger button
   profileWrap: { position: 'relative' },
   profileBtn: {
     display: 'flex', alignItems: 'center', gap: 8,
     background: 'transparent', border: '1.5px solid #ebebeb',
     borderRadius: 8, padding: '4px 10px 4px 5px',
-    cursor: 'pointer', transition: 'border-color 0.15s',
+    cursor: 'pointer',
   },
   avatar: {
     width: 28, height: 28, borderRadius: '50%',
@@ -183,28 +235,41 @@ const s: Record<string, React.CSSProperties> = {
     fontSize: '0.7rem', fontWeight: 600, flexShrink: 0,
   },
   userName: { fontSize: '0.8rem', color: '#3a3a3a', fontWeight: 500 },
-  chevron: { transition: 'transform 0.2s', flexShrink: 0 },
+  chevron: {
+    transition: 'transform 0.2s ease',
+    flexShrink: 0,
+  },
   chevronOpen: { transform: 'rotate(180deg)' },
 
-  // Dropdown panel
   dropdown: {
     position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-    width: 220,
+    width: 230,
     background: '#fff',
     border: '1.5px solid #ebebeb',
     borderRadius: 12,
-    boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.10)',
     overflow: 'hidden',
     zIndex: 200,
+    transformOrigin: 'top right',
+    transition: 'opacity 0.18s ease, transform 0.18s ease, visibility 0.18s',
+  },
+  dropdownOpen: {
+    opacity: 1,
+    transform: 'translateY(0) scale(1)',
+    visibility: 'visible' as const,
+    pointerEvents: 'all' as const,
+  },
+  dropdownClosed: {
+    opacity: 0,
+    transform: 'translateY(-6px) scale(0.97)',
+    visibility: 'hidden' as const,
+    pointerEvents: 'none' as const,
   },
   dropHeader: {
     display: 'flex', alignItems: 'center', gap: 12,
     padding: '14px 16px',
   },
-  avatarLg: {
-    width: 38, height: 38,
-    fontSize: '0.85rem',
-  },
+  avatarLg: { width: 38, height: 38, fontSize: '0.85rem' },
   dropName: { fontSize: '0.875rem', fontWeight: 600, color: '#0a0a0a', marginBottom: 1 },
   dropRole: { fontSize: '0.72rem', color: '#9a9a9a' },
   dropDivider: { height: 1, background: '#f0f0f0', margin: '0 12px' },
@@ -215,8 +280,7 @@ const s: Record<string, React.CSSProperties> = {
     background: 'transparent', border: 'none',
     textDecoration: 'none', cursor: 'pointer',
     textAlign: 'left' as const,
-    transition: 'background 0.1s',
   },
   dropItemDanger: { color: '#e53e3e' },
-  dropIcon: { fontSize: '0.9rem', width: 18, flexShrink: 0 },
+  dropIcon: { fontSize: '0.85rem', width: 18, flexShrink: 0 },
 };
