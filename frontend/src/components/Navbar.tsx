@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTheme } from '../context/ThemeContext';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -44,6 +45,7 @@ const m: Record<string, React.CSSProperties> = {
 
 export function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
+  const { theme, toggle } = useTheme();
   const loc = useLocation();
   const navigate = useNavigate();
   const active = (path: string) => loc.pathname.startsWith(path);
@@ -92,21 +94,33 @@ export function Navbar() {
             />
         )}
 
-        <header style={s.header}>
+        <header style={{
+          ...s.header,
+          background: theme === 'dark' ? 'rgba(17,17,17,0.92)' : 'rgba(250,250,250,0.92)',
+          borderBottom: theme === 'dark' ? '1px solid #2a2a2a' : '1px solid #ebebeb',
+        }}>
           <nav style={s.nav}>
-            <Link to="/courses" style={s.logo}>
+            <Link to="/courses" style={{ ...s.logo, color: theme === 'dark' ? '#f0f0f0' : '#0a0a0a' }}>
               <span style={s.logoDot} />
               LearnHub
             </Link>
 
             <div style={s.links}>
-              <Link to="/courses" style={{ ...s.link, ...(active('/courses') ? s.linkActive : {}) }}>
-                Курси
-              </Link>
-
             </div>
 
             <div style={s.right}>
+              <button
+                  onClick={toggle}
+                  style={{
+                    ...s.themeBtn,
+                    border: theme === 'dark' ? '1.5px solid #2a2a2a' : '1.5px solid #ebebeb',
+                    background: theme === 'dark' ? '#1a1a1a' : 'transparent',
+                  }}
+                  aria-label="Змінити тему"
+                  title={theme === 'dark' ? 'Світла тема' : 'Темна тема'}
+              >
+                {theme === 'dark' ? '☀️' : '🌙'}
+              </button>
               {isAuthenticated ? (
                   <div ref={dropRef} style={s.profileWrap}>
                     <button
@@ -124,7 +138,13 @@ export function Navbar() {
                       </svg>
                     </button>
 
-                    <div style={{ ...s.dropdown, ...(open ? s.dropdownOpen : s.dropdownClosed) }}>
+                    <div style={{
+                      ...s.dropdown,
+                      ...(open ? s.dropdownOpen : s.dropdownClosed),
+                      background: theme === 'dark' ? '#1a1a1a' : '#fff',
+                      border: theme === 'dark' ? '1.5px solid #2a2a2a' : '1.5px solid #ebebeb',
+                      boxShadow: theme === 'dark' ? '0 8px 32px rgba(0,0,0,0.5)' : '0 8px 32px rgba(0,0,0,0.10)',
+                    }}>
                       <div style={s.dropHeader}>
                         <div style={{ ...s.avatar, ...s.avatarLg }}>{initials}</div>
                         <div>
@@ -190,9 +210,7 @@ export function Navbar() {
 const s: Record<string, React.CSSProperties> = {
   header: {
     position: 'sticky', top: 0, zIndex: 100,
-    background: 'rgba(250,250,250,0.92)',
     backdropFilter: 'blur(12px)',
-    borderBottom: '1px solid #ebebeb',
   },
   nav: {
     maxWidth: 1160, margin: '0 auto',
@@ -202,7 +220,7 @@ const s: Record<string, React.CSSProperties> = {
   logo: {
     display: 'flex', alignItems: 'center', gap: 8,
     fontSize: '0.95rem', fontWeight: 600,
-    letterSpacing: '-0.02em', color: '#0a0a0a',
+    letterSpacing: '-0.02em',
     marginRight: 24,
   },
   logoDot: {
@@ -244,10 +262,7 @@ const s: Record<string, React.CSSProperties> = {
   dropdown: {
     position: 'absolute', top: 'calc(100% + 8px)', right: 0,
     width: 230,
-    background: '#fff',
-    border: '1.5px solid #ebebeb',
     borderRadius: 12,
-    boxShadow: '0 8px 32px rgba(0,0,0,0.10)',
     overflow: 'hidden',
     zIndex: 200,
     transformOrigin: 'top right',
@@ -283,4 +298,12 @@ const s: Record<string, React.CSSProperties> = {
   },
   dropItemDanger: { color: '#e53e3e' },
   dropIcon: { fontSize: '0.85rem', width: 18, flexShrink: 0 },
+  themeBtn: {
+    width: 32, height: 32,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    background: 'transparent',
+    borderRadius: 8, cursor: 'pointer', fontSize: '0.9rem',
+    transition: 'border-color 0.2s, background 0.2s',
+    flexShrink: 0,
+  },
 };

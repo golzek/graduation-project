@@ -1,4 +1,5 @@
 import { Controller, Get, Patch, Delete, Param, Body, Query, UseGuards } from '@nestjs/common';
+
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { AdminService, UpdateUserDto, UpdateCourseStatusDto } from './admin.service';
 import { JwtAuthGuard, RolesGuard, Roles } from '../auth/auth.guards';
@@ -15,7 +16,14 @@ export class AdminController {
 
   @Get('stats')
   @ApiOperation({ summary: 'Статистика платформи' })
-  stats() { return this.svc.getPlatformStats(); }
+  @ApiQuery({ name: 'period', required: false })
+  @ApiQuery({ name: 'from',   required: false })
+  @ApiQuery({ name: 'to',     required: false })
+  stats(
+      @Query('period') period?: string,
+      @Query('from')   from?: string,
+      @Query('to')     to?: string,
+  ) { return this.svc.getPlatformStats(from, to, period); }
 
   @Get('users')
   @ApiOperation({ summary: 'Список користувачів' })

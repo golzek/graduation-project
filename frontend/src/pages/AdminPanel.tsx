@@ -11,11 +11,17 @@ interface PlatformStats {
   totalCourses: number;
   totalEnrollments: number;
   totalRevenue: number;
-  newUsersThisMonth: number;
-  newCoursesThisMonth: number;
+  newUsersThisMonth: number | null;
+  newCoursesThisMonth: number | null;
+  periodLabel: string | null;
   usersByRole: Record<string, number>;
   registrationsByDay: { date: string; count: number }[];
+  granularity?: 'day' | 'month';
+  dateFrom?: string | null;
+  dateTo?: string | null;
 }
+
+type PeriodPreset = 'week' | 'month' | 'year' | 'custom';
 
 interface AdminUser {
   id: string;
@@ -88,14 +94,65 @@ export function AdminPanel() {
 }
 
 function StatsTab() {
-  const [stats, setStats] = useState<PlatformStats | null>(null);
+  const [stats, setStats]     = useState<PlatformStats | null>(null);
+  const [period, setPeriod]   = useState<PeriodPreset>('week');
+  const [customFrom, setFrom] = useState('');
+  const [customTo,   setTo]   = useState('');
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    apiFetch<PlatformStats>('/admin/stats').then(setStats).catch(console.error);
-  }, []);
+  const load = (p: PeriodPreset, from: string, to: string) => {
+    setLoading(true);
+    setStats(null);
+    const params = new URLSearchParams();
+    if (p !== 'custom') { params.set('period', p); }
+    else { if (from) params.set('from', from); if (to) params.set('to', to); }
+    apiFetch<PlatformStats>(`/admin/stats?${params}`)
+        .then(setStats).catch(console.error).finally(() => setLoading(false));
+  };
 
-  if (!stats) return (
+  useEffect(() => { load(period, customFrom, customTo); }, []);
+
+  const handlePeriod = (p: PeriodPreset) => {
+    setPeriod(p);
+    if (p !== 'custom') load(p, '', '');
+  };
+
+  const handleCustomApply = () => load('custom', customFrom, customTo);
+
+  const presets: { key: PeriodPreset; label: string }[] = [
+    { key: 'week',   label: '7 днів' },
+    { key: 'month',  label: 'Місяць' },
+    { key: 'year',   label: 'Рік' },
+    { key: 'custom', label: 'Довільний' },
+  ];
+
+  const periodSelector = (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, flexWrap: 'wrap' as const }}>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {presets.map(p => (
+              <button
+                  key={p.key}
+                  style={{ ...s.periodBtn, ...(period === p.key ? s.periodBtnActive : {}) }}
+                  onClick={() => handlePeriod(p.key)}
+              >{p.label}</button>
+          ))}
+        </div>
+        {period === 'custom' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <input type="date" className="input" style={{ padding: '4px 10px', fontSize: '0.8rem' }}
+                     value={customFrom} onChange={e => setFrom(e.target.value)} />
+              <span style={{ fontSize: '0.75rem', color: '#9a9a9a' }}>—</span>
+              <input type="date" className="input" style={{ padding: '4px 10px', fontSize: '0.8rem' }}
+                     value={customTo} onChange={e => setTo(e.target.value)} />
+              <button style={s.applyBtn} onClick={handleCustomApply}>Застосувати</button>
+            </div>
+        )}
+      </div>
+  );
+
+  if (loading || !stats) return (
       <div>
+        {periodSelector}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 24 }}>
           {[0,1,2,3].map(i => (
               <div key={i} style={s.card}>
@@ -108,16 +165,27 @@ function StatsTab() {
       </div>
   );
 
+  const pl = stats.periodLabel ?? null;
   const metrics = [
-    { label: 'Користувачів',  value: stats.totalUsers,                         sub: `+${stats.newUsersThisMonth} цього місяця` },
-    { label: 'Курсів',        value: stats.totalCourses,                        sub: `+${stats.newCoursesThisMonth} цього місяця` },
-    { label: 'Записів',       value: stats.totalEnrollments,                    sub: 'загалом' },
-    { label: 'Дохід',         value: `${stats.totalRevenue.toLocaleString('uk-UA')} ₴`, sub: 'загалом' },
+    {
+      label: 'Користувачів',
+      value: stats.totalUsers,
+      sub: pl ? pl : stats.newUsersThisMonth !== null ? `+${stats.newUsersThisMonth} цього місяця` : 'загалом',
+    },
+    {
+      label: 'Курсів',
+      value: stats.totalCourses,
+      sub: pl ? pl : stats.newCoursesThisMonth !== null ? `+${stats.newCoursesThisMonth} цього місяця` : 'загалом',
+    },
+    { label: 'Записів', value: stats.totalEnrollments, sub: pl || 'загалом' },
+    { label: 'Дохід',   value: `${stats.totalRevenue.toLocaleString('uk-UA')} ₴`, sub: pl || 'загалом' },
   ];
 
   return (
       <div>
         <p style={s.pageTitle}>Статистика платформи</p>
+
+        {periodSelector}
 
         <div style={s.metricsRow}>
           {metrics.map(m => (
@@ -132,30 +200,36 @@ function StatsTab() {
         <div style={s.twoCol}>
           <div style={s.card}>
             <p style={s.cardTitle}>Користувачі по ролях</p>
-            {Object.entries(stats.usersByRole).map(([role, count]) => {
-              const total = stats.totalUsers || 1;
-              const pct = Math.round((Number(count) / total) * 100);
+            {(() => {
               const roleLabel: Record<string, string> = { student: 'Студент', teacher: 'Викладач', admin: 'Адмін', moderator: 'Модератор' };
-              return (
-                  <div key={role} style={{ marginBottom: 14 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: 5 }}>
-                      <span style={{ fontWeight: 500 }}>{roleLabel[role] ?? role}</span>
-                      <span style={{ color: '#9a9a9a' }}>{Number(count)} ({pct}%)</span>
+              const roleTotal = Object.values(stats.usersByRole).reduce((a, b) => a + Number(b), 0) || 1;
+              return Object.entries(stats.usersByRole).map(([role, count]) => {
+                const pct = Math.round((Number(count) / roleTotal) * 100);
+                return (
+                    <div key={role} style={{ marginBottom: 14 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: 5 }}>
+                        <span style={{ fontWeight: 500 }}>{roleLabel[role] ?? role}</span>
+                        <span style={{ color: '#9a9a9a' }}>{Number(count)} ({pct}%)</span>
+                      </div>
+                      <div style={s.track}>
+                        <div style={{ ...s.fill, width: `${pct}%` }} />
+                      </div>
                     </div>
-                    <div style={s.track}>
-                      <div style={{ ...s.fill, width: `${pct}%` }} />
-                    </div>
-                  </div>
-              );
-            })}
+                );
+              });
+            })()}
           </div>
 
           <div style={s.card}>
-            <p style={s.cardTitle}>Реєстрації за 7 днів</p>
-            <MiniBarChart data={stats.registrationsByDay} />
-            {stats.registrationsByDay.length === 0 && (
-                <p style={s.emptyText}>Немає даних</p>
-            )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 0 }}>
+              <p style={s.cardTitle}>Реєстрації</p>
+              {stats.dateFrom && (
+                  <span style={{ fontSize: '0.65rem', color: '#b0b0b0', fontWeight: 400 }}>
+                  {new Date(stats.dateFrom).toLocaleDateString('uk-UA')} — {stats.dateTo ? new Date(stats.dateTo).toLocaleDateString('uk-UA') : 'сьогодні'}
+                </span>
+              )}
+            </div>
+            <MiniBarChart data={stats.registrationsByDay} granularity={stats.granularity} />
           </div>
         </div>
       </div>
@@ -544,21 +618,33 @@ function ReviewsTab() {
   );
 }
 
-function MiniBarChart({ data }: { data: { date: string; count: number }[] }) {
+function MiniBarChart({ data, granularity }: { data: { date: string; count: number }[]; granularity?: string }) {
   const max = Math.max(...data.map(d => d.count), 1);
+  const fmtDate = (d: string) => {
+    const date = new Date(d);
+    return granularity === 'month'
+        ? date.toLocaleDateString('uk-UA', { month: 'short', year: '2-digit' })
+        : date.toLocaleDateString('uk-UA', { day: 'numeric', month: 'numeric' });
+  };
+  if (data.length === 0) return <p style={{ color: '#9a9a9a', fontSize: '0.8rem', marginTop: 14 }}>Немає даних за цей період</p>;
+
+  const few = data.length <= 4;
+  const barStyle: React.CSSProperties = few
+      ? { flex: '0 0 auto', width: 48, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }
+      : { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 };
+
   return (
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 5, height: 80, marginTop: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 80, marginTop: 14,
+        justifyContent: few ? 'flex-start' : 'stretch' }}>
         {data.map((d, i) => (
-            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+            <div key={i} style={barStyle}>
               <span style={{ fontSize: '0.6rem', color: '#9a9a9a' }}>{d.count || ''}</span>
               <div style={{
                 width: '100%',
-                height: `${Math.max((d.count / max) * 56, d.count > 0 ? 3 : 0)}px`,
-                background: '#0a0a0a', borderRadius: '3px 3px 0 0', opacity: 0.8,
+                height: `${Math.max((d.count / max) * 56, d.count > 0 ? 4 : 0)}px`,
+                background: '#0a0a0a', borderRadius: '3px 3px 0 0', opacity: 0.85,
               }} />
-              <span style={{ fontSize: '0.55rem', color: '#9a9a9a' }}>
-            {new Date(d.date).toLocaleDateString('uk-UA', { day: 'numeric', month: 'numeric' })}
-          </span>
+              <span style={{ fontSize: '0.55rem', color: '#9a9a9a', whiteSpace: 'nowrap' }}>{fmtDate(d.date)}</span>
             </div>
         ))}
       </div>
@@ -690,4 +776,21 @@ const s: Record<string, React.CSSProperties> = {
   },
 
   emptyText: { textAlign: 'center' as const, padding: '28px', color: '#9a9a9a', fontSize: '0.875rem' },
+
+  periodBtn: {
+    padding: '5px 14px', borderRadius: 6,
+    border: '1.5px solid #ebebeb', background: 'transparent',
+    fontSize: '0.8rem', color: '#5a5a5a', cursor: 'pointer',
+    fontFamily: 'inherit',
+  },
+  periodBtnActive: {
+    background: '#0a0a0a', color: '#fafafa',
+    borderColor: '#0a0a0a', fontWeight: 500,
+  },
+  applyBtn: {
+    padding: '5px 14px', borderRadius: 6,
+    border: '1.5px solid #0a0a0a', background: '#0a0a0a',
+    color: '#fafafa', fontSize: '0.8rem', cursor: 'pointer',
+    fontFamily: 'inherit', fontWeight: 500,
+  },
 };

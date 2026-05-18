@@ -71,28 +71,85 @@ export class AdminService {
     await this.courseRepo.remove(c);
   }
 
-  async getPlatformStats() {
+  async getPlatformStats(from?: string, to?: string, period?: string) {
+    let dateFrom: Date | null = null;
+    let dateTo: Date | null = null;
+
+    if (period === 'year') {
+      dateFrom = new Date(); dateFrom.setFullYear(dateFrom.getFullYear() - 1); dateFrom.setHours(0,0,0,0);
+    } else if (period === 'month') {
+      dateFrom = new Date(); dateFrom.setMonth(dateFrom.getMonth() - 1); dateFrom.setHours(0,0,0,0);
+    } else if (period === 'week') {
+      dateFrom = new Date(); dateFrom.setDate(dateFrom.getDate() - 7); dateFrom.setHours(0,0,0,0);
+    } else if (from) {
+      dateFrom = new Date(from);
+    }
+    if (to) { dateTo = new Date(to); dateTo.setHours(23,59,59,999); }
+
+    const userQb   = this.userRepo.createQueryBuilder('u');
+    const courseQb = this.courseRepo.createQueryBuilder('c');
+    const enrollQb = this.enrollmentRepo.createQueryBuilder('e');
+    if (dateFrom) {
+      userQb.andWhere('u."createdAt" >= :df', { df: dateFrom });
+      courseQb.andWhere('c."createdAt" >= :df', { df: dateFrom });
+      enrollQb.andWhere('e."enrolledAt" >= :df', { df: dateFrom });
+    }
+    if (dateTo) {
+      userQb.andWhere('u."createdAt" <= :dt', { dt: dateTo });
+      courseQb.andWhere('c."createdAt" <= :dt', { dt: dateTo });
+      enrollQb.andWhere('e."enrolledAt" <= :dt', { dt: dateTo });
+    }
+
     const [totalUsers, totalCourses, totalEnrollments] = await Promise.all([
-      this.userRepo.count(), this.courseRepo.count(), this.enrollmentRepo.count(),
+      (dateFrom || dateTo) ? userQb.getCount()   : this.userRepo.count(),
+      (dateFrom || dateTo) ? courseQb.getCount() : this.courseRepo.count(),
+      (dateFrom || dateTo) ? enrollQb.getCount() : this.enrollmentRepo.count(),
     ]);
+
     const usersByRole = await this.userRepo.createQueryBuilder('u')
         .select('u.role','role').addSelect('COUNT(*)','count').groupBy('u.role').getRawMany();
-    const rev = await this.enrollmentRepo.createQueryBuilder('e')
-        .select('SUM(e.paidPrice)','total').getRawOne();
-    const newUsersThisMonth = await this.userRepo.createQueryBuilder('u')
-        .where("u.createdAt > DATE_TRUNC('month', NOW())").getCount();
-    const newCoursesThisMonth = await this.courseRepo.createQueryBuilder('c')
-        .where("c.createdAt > DATE_TRUNC('month', NOW())").getCount();
-    const registrationsByDay = await this.userRepo.createQueryBuilder('u')
-        .select("DATE_TRUNC('day', u.\"createdAt\")",'day').addSelect('COUNT(*)','count')
-        .where("u.\"createdAt\" > NOW() - INTERVAL '7 days'")
-        .groupBy("DATE_TRUNC('day', u.\"createdAt\")").orderBy('day','ASC').getRawMany();
+
+    const revQb = this.enrollmentRepo.createQueryBuilder('e').select('SUM(e.paidPrice)','total');
+    if (dateFrom) revQb.andWhere('e."enrolledAt" >= :df', { df: dateFrom });
+    if (dateTo)   revQb.andWhere('e."enrolledAt" <= :dt', { dt: dateTo });
+    const rev = await revQb.getRawOne();
+
+    const periodLabel = period === 'year'  ? 'за рік'
+        : period === 'month' ? 'за місяць'
+            : period === 'week'  ? 'за 7 днів'
+                : (from || to)       ? 'за період'
+                    : null;
+
+    const newUsersThisMonth = periodLabel ? null : await this.userRepo.createQueryBuilder('u')
+        .where("u.\"createdAt\" > DATE_TRUNC('month', NOW())").getCount();
+    const newCoursesThisMonth = periodLabel ? null : await this.courseRepo.createQueryBuilder('c')
+        .where("c.\"createdAt\" > DATE_TRUNC('month', NOW())").getCount();
+
+    const diffDays = dateFrom
+        ? Math.ceil(((dateTo ?? new Date()).getTime() - dateFrom.getTime()) / 86400000)
+        : 7;
+    const trunc = diffDays > 60 ? 'month' : 'day';
+
+    const regQb = this.userRepo.createQueryBuilder('u')
+        .select(`DATE_TRUNC('${trunc}', u."createdAt")`,'day')
+        .addSelect('COUNT(*)','count')
+        .groupBy(`DATE_TRUNC('${trunc}', u."createdAt")`)
+        .orderBy('day','ASC');
+    if (dateFrom) regQb.where('u."createdAt" >= :df', { df: dateFrom });
+    else          regQb.where("u.\"createdAt\" > NOW() - INTERVAL '7 days'");
+    if (dateTo)   regQb.andWhere('u."createdAt" <= :dt', { dt: dateTo });
+
+    const registrationsByDay = await regQb.getRawMany();
+
     return {
       totalUsers, totalCourses, totalEnrollments,
       totalRevenue: parseFloat(rev?.total) || 0,
-      newUsersThisMonth, newCoursesThisMonth,
+      newUsersThisMonth, newCoursesThisMonth, periodLabel,
       usersByRole: Object.fromEntries(usersByRole.map(r => [r.role, parseInt(r.count)])),
       registrationsByDay: registrationsByDay.map(r => ({ date: r.day, count: parseInt(r.count) })),
+      granularity: trunc,
+      dateFrom: dateFrom?.toISOString() ?? null,
+      dateTo: dateTo?.toISOString() ?? null,
     };
   }
 }

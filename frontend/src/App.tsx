@@ -1,4 +1,5 @@
 import React from 'react';
+import { ThemeProvider } from './context/ThemeContext';
 import './styles/global.css';
 import { Navbar } from './components/Navbar';
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
@@ -92,11 +93,13 @@ function AppRoutes() {
 export default function App() {
   return (
       <BrowserRouter>
-        <AuthProvider>
-          <ToastProvider>
-            <AppRoutes />
-          </ToastProvider>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <ToastProvider>
+              <AppRoutes />
+            </ToastProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </BrowserRouter>
   );
 }
