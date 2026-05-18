@@ -9,6 +9,7 @@ import {
   CreateCourseDto, UpdateCourseDto, CourseFilterDto,
   CreateModuleDto, CreateLessonDto, UpdateProgressDto,
 } from './course.dto';
+import { NotificationService } from '../notifications/notification.service';
 
 @Injectable()
 export class CourseService {
@@ -18,6 +19,7 @@ export class CourseService {
       @InjectRepository(Lesson)       private lessonRepo:     Repository<Lesson>,
       @InjectRepository(Enrollment)   private enrollmentRepo: Repository<Enrollment>,
       @InjectRepository(Progress)     private progressRepo:   Repository<Progress>,
+      private readonly notifSvc: NotificationService,
   ) {}
 
   async findAll(f: CourseFilterDto) {
@@ -51,7 +53,10 @@ export class CourseService {
   }
 
   async create(dto: CreateCourseDto, author: User) {
-    return this.courseRepo.save(this.courseRepo.create({ ...dto, authorId: author.id }));
+    const course = await this.courseRepo.save(this.courseRepo.create({ ...dto, authorId: author.id }));
+    // Повідомляємо адмінів що є новий курс на перевірку
+    this.notifSvc.notifyAdminsCourseNeedsReview(course.id, course.title, author.name).catch(() => {});
+    return course;
   }
 
   async update(id: string, dto: UpdateCourseDto, user: User) {
@@ -117,11 +122,18 @@ export class CourseService {
   }
 
   async enroll(courseId: string, user: User) {
-    const c = await this.courseRepo.findOne({ where: { id: courseId } });
+    const c = await this.courseRepo.findOne({ where: { id: courseId }, relations: ['author'] });
     if (!c) throw new NotFoundException();
     const exists = await this.enrollmentRepo.findOne({ where: { userId: user.id, courseId } });
     if (exists) throw new ConflictException('Вже записаний на цей курс');
-    return this.enrollmentRepo.save(this.enrollmentRepo.create({ userId: user.id, courseId, paidPrice: c.price }));
+    const enrollment = await this.enrollmentRepo.save(
+        this.enrollmentRepo.create({ userId: user.id, courseId, paidPrice: c.price }),
+    );
+    this.notifSvc.notifyStudentEnrolled(user.id, courseId, c.title).catch(() => {});
+    if (c.authorId) {
+      this.notifSvc.notifyTeacherNewEnrollment(c.authorId, user.name, courseId, c.title).catch(() => {});
+    }
+    return enrollment;
   }
 
   async updateProgress(dto: UpdateProgressDto, user: User) {
@@ -130,7 +142,7 @@ export class CourseService {
       relations: ['module'],
     });
     if (!lesson) throw new NotFoundException('Урок не знайдено');
-    if (!lesson.module) throw new NotFoundException('Модуль уроку не знайдено'); // Bug 2 guard
+    if (!lesson.module) throw new NotFoundException('Модуль уроку не знайдено');
 
     const enrolled = await this.enrollmentRepo.findOne({
       where: { userId: user.id, courseId: lesson.module.courseId },
@@ -140,10 +152,10 @@ export class CourseService {
     let p = await this.progressRepo.findOne({
       where: { userId: user.id, lessonId: dto.lessonId },
     });
-    if (!p) p = this.progressRepo.create({ userId: user.id, lessonId: dto.lessonId, watchedSec: 0 }); // Bug 1 fix
+    if (!p) p = this.progressRepo.create({ userId: user.id, lessonId: dto.lessonId, watchedSec: 0 });
 
     p.completed  = dto.completed;
-    p.watchedSec = Math.max(p.watchedSec ?? 0, dto.watchedSec ?? 0); // Bug 1 fix
+    p.watchedSec = Math.max(p.watchedSec ?? 0, dto.watchedSec ?? 0);
     return this.progressRepo.save(p);
   }
   async getCourseProgress(courseId: string, userId: string) {

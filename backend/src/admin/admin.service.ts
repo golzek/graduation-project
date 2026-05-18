@@ -5,6 +5,7 @@ import { IsEnum, IsOptional, IsBoolean } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { User, UserRole } from '../users/user.entity';
 import { Course, CourseStatus, Enrollment } from '../courses/course.entity';
+import { NotificationService } from '../notifications/notification.service';
 
 export class UpdateUserDto {
   @ApiPropertyOptional({ enum: UserRole })
@@ -25,6 +26,7 @@ export class AdminService {
       @InjectRepository(User)       private userRepo:       Repository<User>,
       @InjectRepository(Course)     private courseRepo:     Repository<Course>,
       @InjectRepository(Enrollment) private enrollmentRepo: Repository<Enrollment>,
+      private readonly notifSvc: NotificationService,
   ) {}
 
   getUsers(search?: string, role?: UserRole) {
