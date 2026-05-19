@@ -1,18 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { TeacherDashboardSkeleton } from '../components/Skeleton';
 import { Link } from 'react-router-dom';
 
-const API = process.env.REACT_APP_API_URL ?? 'http://localhost:3000';
+import { apiFetch } from '../context/AuthContext';
 
-async function apiFetch<T>(path: string): Promise<T> {
-  const token = localStorage.getItem('accessToken');
-  const res = await fetch(`${API}${path}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) throw new Error('Помилка');
-  return res.json();
+interface PromoCode {
+  id: string;
+  code: string;
+  discountPercent: number;
+  status: 'pending' | 'approved' | 'rejected';
+  usageLimit: number | null;
+  usedCount: number;
+  expiresAt: string | null;
+  adminComment: string | null;
+  createdAt: string;
 }
-
 interface TeacherStats {
   totalCourses: number;
   totalStudents: number;
@@ -177,6 +179,8 @@ export function TeacherDashboard() {
                           Детальна аналітика
                         </Link>
                       </div>
+
+                      <PromoCodesPanel courseId={selectedCourse.courseId} />
                     </div>
                 )}
               </div>
@@ -186,6 +190,166 @@ export function TeacherDashboard() {
   );
 }
 
+
+function PromoCodesPanel({ courseId }: { courseId: string }) {
+  const [promos, setPromos]         = useState<PromoCode[]>([]);
+  const [loading, setLoading]       = useState(true);
+  const [showForm, setShowForm]     = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [err, setErr]               = useState('');
+  const [success, setSuccess]       = useState('');
+
+  const [code,      setCode]      = useState('');
+  const [discount,  setDiscount]  = useState('');
+  const [limit,     setLimit]     = useState('');
+  const [expires,   setExpires]   = useState('');
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await apiFetch<PromoCode[]>(`/promo-codes/my?courseId=${courseId}`);
+      setPromos(data);
+    } catch {} finally { setLoading(false); }
+  }, [courseId]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleCreate = async () => {
+    if (!code.trim() || !discount) { setErr('Код та знижка обов\'язкові'); return; }
+    setSubmitting(true); setErr(''); setSuccess('');
+    try {
+      await apiFetch(`/promo-codes/course/${courseId}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          code: code.trim().toUpperCase(),
+          discountPercent: Number(discount),
+          usageLimit: limit ? Number(limit) : undefined,
+          expiresAt: expires || undefined,
+        }),
+      });
+      setSuccess('Промокод відправлено на схвалення адміну');
+      setCode(''); setDiscount(''); setLimit(''); setExpires('');
+      setShowForm(false);
+      load();
+    } catch (e: any) {
+      setErr(e.message || 'Помилка створення');
+    } finally { setSubmitting(false); }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Видалити промокод?')) return;
+    try { await apiFetch(`/promo-codes/${id}`, { method: 'DELETE' }); load(); }
+    catch {}
+  };
+
+  const statusLabel: Record<string, string> = { pending: 'Очікує', approved: 'Активний', rejected: 'Відхилений' };
+  const statusColor: Record<string, string> = { pending: '#d97706', approved: '#16a34a', rejected: '#dc2626' };
+  const statusBg:    Record<string, string> = { pending: '#fffbeb', approved: '#f0fdf4', rejected: '#fef2f2' };
+
+  return (
+      <div style={{ marginTop: 24, borderTop: '1px solid #f3f4f6', paddingTop: 20 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+          <p style={s.chartTitle}>🏷 Промокоди</p>
+          <button
+              onClick={() => { setShowForm(f => !f); setErr(''); setSuccess(''); }}
+              style={{ padding: '6px 14px', borderRadius: 7, border: '1.5px solid #ede9fe', background: showForm ? '#ede9fe' : '#fff', color: '#4f46e5', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+          >{showForm ? 'Скасувати' : '+ Новий промокод'}</button>
+        </div>
+
+        {success && <div style={{ padding: '8px 12px', background: '#f0fdf4', borderRadius: 8, border: '1px solid #bbf7d0', fontSize: 13, color: '#16a34a', marginBottom: 12 }}>✓ {success}</div>}
+
+        {showForm && (
+            <div style={{ background: '#f9fafb', borderRadius: 10, padding: 16, marginBottom: 16, border: '1.5px solid #ede9fe' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+                <div>
+                  <label style={{ fontSize: 12, color: '#6b7280', display: 'block', marginBottom: 4 }}>Код *</label>
+                  <input
+                      placeholder="SUMMER20"
+                      value={code}
+                      onChange={e => setCode(e.target.value.toUpperCase())}
+                      style={inp}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: 12, color: '#6b7280', display: 'block', marginBottom: 4 }}>Знижка (%) *</label>
+                  <input
+                      type="number" min="1" max="100" placeholder="20"
+                      value={discount}
+                      onChange={e => setDiscount(e.target.value)}
+                      style={inp}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: 12, color: '#6b7280', display: 'block', marginBottom: 4 }}>Ліміт використань</label>
+                  <input
+                      type="number" min="1" placeholder="Необмежено"
+                      value={limit}
+                      onChange={e => setLimit(e.target.value)}
+                      style={inp}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: 12, color: '#6b7280', display: 'block', marginBottom: 4 }}>Дійсний до</label>
+                  <input
+                      type="date"
+                      value={expires}
+                      onChange={e => setExpires(e.target.value)}
+                      style={inp}
+                  />
+                </div>
+              </div>
+              {err && <p style={{ fontSize: 12, color: '#dc2626', marginBottom: 8 }}>{err}</p>}
+              <p style={{ fontSize: 11, color: '#9ca3af', marginBottom: 10 }}>
+                Промокод буде активований після схвалення адміністратором.
+              </p>
+              <button
+                  onClick={handleCreate}
+                  disabled={submitting}
+                  style={{ padding: '8px 20px', background: submitting ? '#9ca3af' : '#4f46e5', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: submitting ? 'default' : 'pointer', fontFamily: 'inherit' }}
+              >{submitting ? 'Відправка...' : 'Відправити на схвалення'}</button>
+            </div>
+        )}
+
+        {loading ? (
+            <p style={{ fontSize: 13, color: '#9ca3af' }}>Завантаження...</p>
+        ) : promos.length === 0 ? (
+            <p style={{ fontSize: 13, color: '#9ca3af' }}>Промокодів ще немає</p>
+        ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {promos.map(p => (
+                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: '#fff', borderRadius: 10, border: '1.5px solid #f3f4f6' }}>
+                    <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 14, letterSpacing: '0.05em', flex: '0 0 auto' }}>{p.code}</span>
+                    <span style={{ fontWeight: 600, color: '#4f46e5', fontSize: 13 }}>−{p.discountPercent}%</span>
+                    <span style={{ fontSize: 12, color: '#6b7280', flex: 1 }}>
+                {p.usedCount}/{p.usageLimit ?? '∞'} використань
+                      {p.expiresAt ? ` · до ${new Date(p.expiresAt).toLocaleDateString('uk-UA')}` : ''}
+              </span>
+                    <span style={{ padding: '3px 10px', borderRadius: 99, fontSize: 11, fontWeight: 600, background: statusBg[p.status], color: statusColor[p.status] }}>
+                {statusLabel[p.status]}
+              </span>
+                    {p.adminComment && p.status === 'rejected' && (
+                        <span style={{ fontSize: 11, color: '#9ca3af', maxWidth: 120 }} title={p.adminComment}>💬 {p.adminComment.slice(0, 30)}{p.adminComment.length > 30 ? '...' : ''}</span>
+                    )}
+                    {p.status !== 'approved' && (
+                        <button
+                            onClick={() => handleDelete(p.id)}
+                            style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: 0, opacity: 0.6 }}
+                            title="Видалити"
+                        >×</button>
+                    )}
+                  </div>
+              ))}
+            </div>
+        )}
+      </div>
+  );
+}
+
+const inp: React.CSSProperties = {
+  width: '100%', boxSizing: 'border-box', padding: '8px 10px',
+  border: '1.5px solid #e5e7eb', borderRadius: 7,
+  fontSize: 13, fontFamily: 'inherit', outline: 'none', background: '#fff',
+};
 
 function MetricCard({ icon, label, value, color }: { icon: string; label: string; value: any; color: string }) {
   return (

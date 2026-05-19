@@ -153,12 +153,42 @@ export class AdminService {
 
     const registrationsByDay = await regQb.getRawMany();
 
+    const revChartQb = this.enrollmentRepo.createQueryBuilder('e')
+        .select(`DATE_TRUNC('${trunc}', e."enrolledAt")`,'day')
+        .addSelect('SUM(e."paidPrice")','revenue')
+        .groupBy(`DATE_TRUNC('${trunc}', e."enrolledAt")`)
+        .orderBy('day','ASC');
+    if (dateFrom) revChartQb.where('e."enrolledAt" >= :df', { df: dateFrom });
+    else          revChartQb.where("e.\"enrolledAt\" > NOW() - INTERVAL '7 days'");
+    if (dateTo)   revChartQb.andWhere('e."enrolledAt" <= :dt', { dt: dateTo });
+    const revenueByDay = await revChartQb.getRawMany();
+
+    const topCoursesRaw = await this.enrollmentRepo.createQueryBuilder('e')
+        .leftJoin('e.course', 'c')
+        .select('c.id', 'courseId')
+        .addSelect('c.title', 'title')
+        .addSelect('COUNT(e.id)', 'enrollments')
+        .addSelect('SUM(e."paidPrice")', 'revenue')
+        .where('c.id IS NOT NULL')
+        .groupBy('c.id')
+        .addGroupBy('c.title')
+        .orderBy('"enrollments"', 'DESC')
+        .limit(5)
+        .getRawMany();
+
     return {
       totalUsers, totalCourses, totalEnrollments,
       totalRevenue: parseFloat(rev?.total) || 0,
       newUsersThisMonth, newCoursesThisMonth, periodLabel,
       usersByRole: Object.fromEntries(usersByRole.map(r => [r.role, parseInt(r.count)])),
       registrationsByDay: registrationsByDay.map(r => ({ date: r.day, count: parseInt(r.count) })),
+      revenueByDay: revenueByDay.map(r => ({ date: r.day, revenue: parseFloat(r.revenue) || 0 })),
+      topCourses: topCoursesRaw.map(r => ({
+        courseId: r.courseId,
+        title: r.title,
+        enrollments: parseInt(r.enrollments),
+        revenue: parseFloat(r.revenue) || 0,
+      })),
       granularity: trunc,
       dateFrom: dateFrom?.toISOString() ?? null,
       dateTo: dateTo?.toISOString() ?? null,

@@ -5,20 +5,27 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { IsOptional, IsString } from 'class-validator';
 import { v4 as uuidv4 } from 'uuid';
 import { Request } from 'express';
 
 import { LiqPayService } from './liqpay.service';
 import { Course, Enrollment } from '../courses/course.entity';
 import { JwtAuthGuard, CurrentUser } from '../auth/auth.guards';
+import { PromoCodeService } from '../promo-codes/promo-code.service';
+
+class CreatePaymentDto {
+  @IsOptional() @IsString() promoCode?: string;
+}
 
 @ApiTags('payments')
 @Controller('payments')
 export class PaymentController {
   constructor(
-    private readonly liqpay: LiqPayService,
-    @InjectRepository(Course)     private courseRepo:     Repository<Course>,
-    @InjectRepository(Enrollment) private enrollmentRepo: Repository<Enrollment>,
+      private readonly liqpay: LiqPayService,
+      @InjectRepository(Course)     private courseRepo:     Repository<Course>,
+      @InjectRepository(Enrollment) private enrollmentRepo: Repository<Enrollment>,
+      private readonly promoSvc: PromoCodeService,
   ) {}
 
   @Post('create/:courseId')
@@ -26,12 +33,12 @@ export class PaymentController {
   @ApiBearerAuth('JWT')
   @ApiOperation({ summary: 'Отримати дані для форми оплати LiqPay' })
   async createPayment(
-    @Param('courseId') courseId: string,
-    @CurrentUser() user: any,
+      @Param('courseId') courseId: string,
+      @CurrentUser() user: any,
+      @Body() dto: CreatePaymentDto = {},
   ) {
     const course = await this.courseRepo.findOne({ where: { id: courseId } });
     if (!course) return { error: 'Курс не знайдено' };
-
 
     if (Number(course.price) === 0) {
       const exists = await this.enrollmentRepo.findOne({
@@ -39,30 +46,41 @@ export class PaymentController {
       });
       if (!exists) {
         await this.enrollmentRepo.save(
-          this.enrollmentRepo.create({ userId: user.id, courseId, paidPrice: 0 }),
+            this.enrollmentRepo.create({ userId: user.id, courseId, paidPrice: 0 }),
         );
       }
       return { free: true, message: 'Записаний безкоштовно' };
     }
 
+    let finalPrice = Number(course.price);
+    let discountPercent: number | null = null;
+    if (dto.promoCode) {
+      const result = await this.promoSvc.validate(dto.promoCode, courseId);
+      if (result.valid && result.finalPrice !== undefined) {
+        finalPrice      = result.finalPrice;
+        discountPercent = result.discountPercent ?? null;
+      }
+    }
 
     const orderId = `order_${courseId}_${user.id}_${uuidv4().slice(0, 8)}`;
     const form = this.liqpay.createPaymentForm({
       orderId,
-      amount:      Number(course.price),
-      description: `Курс: ${course.title}`,
+      amount:      finalPrice,
+      description: `Курс: ${course.title}${discountPercent ? ` (знижка ${discountPercent}%)` : ''}`,
       courseId,
       userId: user.id,
+      promoCode: dto.promoCode,
     });
 
     return {
       free: false,
       orderId,
-      price: course.price,
-      ...form, // data, signature, action
+      price:          course.price,
+      finalPrice,
+      discountPercent,
+      ...form,
     };
   }
-
 
   @Post('callback')
   @HttpCode(200)
@@ -75,41 +93,39 @@ export class PaymentController {
         return { ok: false, status: result.status };
       }
 
-      const { courseId, userId } = result;
+      const { courseId, userId, promoCode } = result;
       if (!courseId || !userId) return { ok: false, error: 'Missing info' };
-
 
       const exists = await this.enrollmentRepo.findOne({
         where: { userId, courseId },
       });
 
       if (!exists) {
-        const course = await this.courseRepo.findOne({ where: { id: courseId } });
+        let paidPrice = result.amount;
+        if (promoCode) {
+          const discounted = await this.promoSvc.applyCode(promoCode, courseId);
+          if (discounted !== null) paidPrice = discounted;
+        }
+
         await this.enrollmentRepo.save(
-          this.enrollmentRepo.create({
-            userId,
-            courseId,
-            paidPrice: result.amount,
-          }),
+            this.enrollmentRepo.create({ userId, courseId, paidPrice }),
         );
       }
 
       return { ok: true };
     } catch (err) {
-
       console.error('LiqPay callback error:', err.message);
       return { ok: false, error: err.message };
     }
   }
-
 
   @Get('status/:courseId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT')
   @ApiOperation({ summary: 'Перевірити чи записаний на курс' })
   async checkEnrollment(
-    @Param('courseId') courseId: string,
-    @CurrentUser() user: any,
+      @Param('courseId') courseId: string,
+      @CurrentUser() user: any,
   ) {
     const enrollment = await this.enrollmentRepo.findOne({
       where: { userId: user.id, courseId },

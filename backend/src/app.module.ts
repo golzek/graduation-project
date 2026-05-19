@@ -18,6 +18,8 @@ import { AdminModule }       from './admin/admin.module';
 import { StorageModule }     from './storage/storage.module';
 import { PaymentModule }     from './payments/payment.module';
 import { NotificationModule } from './notifications/notification.module';
+import { PromoCode } from './promo-codes/promo-code.entity';
+import { PromoCodeModule } from './promo-codes/promo-code.module';
 import { Notification }        from './notifications/notification.entity';
 
 @Module({
@@ -34,7 +36,7 @@ import { Notification }        from './notifications/notification.entity';
         username: cfg.get('DB_USERNAME', 'postgres'),
         password: cfg.get('DB_PASSWORD', 'postgres'),
         database: cfg.get('DB_NAME',     'elearning'),
-        entities: [User, Course, CourseModule, Lesson, Enrollment, Progress, Certificate, Review, Notification],
+        entities: [User, Course, CourseModule, Lesson, Enrollment, Progress, Certificate, Review, Notification, PromoCode],
         synchronize: false,
         logging: cfg.get('NODE_ENV') === 'development',
         migrations: cfg.get('NODE_ENV') === 'production'
@@ -55,6 +57,7 @@ import { Notification }        from './notifications/notification.entity';
     AdminModule,
     PaymentModule,
     NotificationModule,
+    PromoCodeModule,
   ],
 })
 export class AppModule {}

@@ -4,7 +4,14 @@ import { apiFetch } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 import { Skeleton } from '../components/Skeleton';
 
-type Tab = 'stats' | 'users' | 'courses' | 'reviews';
+type Tab = 'stats' | 'users' | 'courses' | 'reviews' | 'promos';
+
+interface TopCourse {
+  courseId: string;
+  title: string;
+  enrollments: number;
+  revenue: number;
+}
 
 interface PlatformStats {
   totalUsers: number;
@@ -16,6 +23,8 @@ interface PlatformStats {
   periodLabel: string | null;
   usersByRole: Record<string, number>;
   registrationsByDay: { date: string; count: number }[];
+  revenueByDay: { date: string; revenue: number }[];
+  topCourses: TopCourse[];
   granularity?: 'day' | 'month';
   dateFrom?: string | null;
   dateTo?: string | null;
@@ -58,6 +67,7 @@ export function AdminPanel() {
     { key: 'users',   label: 'Користувачі' },
     { key: 'courses', label: 'Курси' },
     { key: 'reviews', label: 'Відгуки' },
+    { key: 'promos',  label: 'Промокоди' },
   ];
 
   return (
@@ -88,6 +98,7 @@ export function AdminPanel() {
           {tab === 'users'   && <UsersTab />}
           {tab === 'courses' && <CoursesTab />}
           {tab === 'reviews' && <ReviewsTab />}
+          {tab === 'promos'  && <PromosTab />}
         </div>
       </div>
   );
@@ -222,15 +233,23 @@ function StatsTab() {
 
           <div style={s.card}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 0 }}>
-              <p style={s.cardTitle}>Реєстрації</p>
+              <p style={s.cardTitle}>Реєстрації та дохід</p>
               {stats.dateFrom && (
                   <span style={{ fontSize: '0.65rem', color: '#b0b0b0', fontWeight: 400 }}>
                   {new Date(stats.dateFrom).toLocaleDateString('uk-UA')} — {stats.dateTo ? new Date(stats.dateTo).toLocaleDateString('uk-UA') : 'сьогодні'}
                 </span>
               )}
             </div>
-            <MiniBarChart data={stats.registrationsByDay} granularity={stats.granularity} />
+            <DualBarChart
+                registrations={stats.registrationsByDay}
+                revenue={stats.revenueByDay}
+                granularity={stats.granularity}
+            />
           </div>
+        </div>
+
+        <div style={{ marginTop: 16 }}>
+          <TopCoursesTable courses={stats.topCourses} />
         </div>
       </div>
   );
@@ -617,39 +636,277 @@ function ReviewsTab() {
       </div>
   );
 }
+interface AdminPromo {
+  id: string;
+  code: string;
+  discountPercent: number;
+  status: 'pending' | 'approved' | 'rejected';
+  usageLimit: number | null;
+  usedCount: number;
+  expiresAt: string | null;
+  adminComment: string | null;
+  createdAt: string;
+  course: { id: string; title: string };
+  teacher: { id: string; name: string; email: string };
+}
 
-function MiniBarChart({ data, granularity }: { data: { date: string; count: number }[]; granularity?: string }) {
-  const max = Math.max(...data.map(d => d.count), 1);
+function PromosTab() {
+  const toast = useToast();
+  const [promos, setPromos]         = useState<AdminPromo[]>([]);
+  const [statusFilter, setStatus]   = useState<'pending' | 'approved' | 'rejected' | ''>('pending');
+  const [loading, setLoading]       = useState(true);
+  const [comment, setComment]       = useState<Record<string, string>>({});
+
+  const load = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const url = statusFilter ? `/promo-codes/admin/all?status=${statusFilter}` : '/promo-codes/admin/all';
+      const data = await apiFetch<AdminPromo[]>(url);
+      setPromos(data);
+    } catch { toast.error('Не вдалось завантажити промокоди'); }
+    finally { setLoading(false); }
+  }, [statusFilter]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const review = async (id: string, status: 'approved' | 'rejected') => {
+    try {
+      await apiFetch(`/promo-codes/admin/${id}/review`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status, adminComment: comment[id] || undefined }),
+      });
+      toast.success(status === 'approved' ? 'Промокод схвалено' : 'Промокод відхилено');
+      load();
+    } catch { toast.error('Помилка'); }
+  };
+
+  const statusLabel: Record<string, string> = { pending: 'Очікує', approved: 'Активний', rejected: 'Відхилений' };
+  const statusBadge: Record<string, React.CSSProperties> = {
+    pending:  { ...s.badge, background: '#fffbeb', color: '#d97706' },
+    approved: { ...s.badge, ...s.badgeGreen },
+    rejected: { ...s.badge, ...s.badgeRed },
+  };
+
+  return (
+      <div>
+        <p style={s.pageTitle}>Промокоди {!loading && `(${promos.length})`}</p>
+
+        <div style={{ display: 'flex', gap: 4, marginBottom: 16 }}>
+          {(['pending','approved','rejected',''] as const).map(st => (
+              <button
+                  key={st || 'all'}
+                  style={{ ...s.periodBtn, ...(statusFilter === st ? s.periodBtnActive : {}) }}
+                  onClick={() => setStatus(st)}
+              >
+                {st === '' ? 'Всі' : statusLabel[st]}
+              </button>
+          ))}
+        </div>
+
+        <div style={s.tableWrap}>
+          <table style={s.table}>
+            <thead>
+            <tr>
+              {['Код / Курс', 'Викладач', 'Знижка', 'Використання', 'Статус', 'Дії'].map(h => (
+                  <th key={h} style={s.th}>{h}</th>
+              ))}
+            </tr>
+            </thead>
+            <tbody>
+            {loading ? (
+                [0,1,2,3].map(i => (
+                    <tr key={i}>{[200,140,60,100,80,160].map((w,j) => <td key={j} style={s.td}><Skeleton width={w} height={13} /></td>)}</tr>
+                ))
+            ) : promos.map(p => (
+                <tr key={p.id}>
+                  <td style={s.td}>
+                    <p style={{ fontWeight: 600, fontFamily: 'monospace', letterSpacing: '0.04em', fontSize: '0.9rem', marginBottom: 2 }}>{p.code}</p>
+                    <p style={{ fontSize: '0.75rem', color: '#9a9a9a' }}>{p.course.title}</p>
+                  </td>
+                  <td style={s.td}>
+                    <p style={{ fontSize: '0.83rem', marginBottom: 1 }}>{p.teacher.name}</p>
+                    <p style={{ fontSize: '0.72rem', color: '#9a9a9a' }}>{p.teacher.email}</p>
+                  </td>
+                  <td style={s.td}>
+                    <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0a0a0a' }}>−{p.discountPercent}%</span>
+                  </td>
+                  <td style={s.td}>
+                    <p style={{ fontSize: '0.8rem' }}>{p.usedCount} / {p.usageLimit ?? '∞'}</p>
+                    {p.expiresAt && (
+                        <p style={{ fontSize: '0.7rem', color: '#9a9a9a' }}>
+                          до {new Date(p.expiresAt).toLocaleDateString('uk-UA')}
+                        </p>
+                    )}
+                  </td>
+                  <td style={s.td}>
+                    <span style={statusBadge[p.status]}>{statusLabel[p.status]}</span>
+                    {p.adminComment && (
+                        <p style={{ fontSize: '0.68rem', color: '#9a9a9a', marginTop: 4, maxWidth: 140 }}>{p.adminComment}</p>
+                    )}
+                  </td>
+                  <td style={s.td}>
+                    {p.status === 'pending' ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          <input
+                              placeholder="Коментар (необов.)"
+                              value={comment[p.id] || ''}
+                              onChange={e => setComment(prev => ({ ...prev, [p.id]: e.target.value }))}
+                              style={{ ...s.inlineSelect, width: '100%', boxSizing: 'border-box' as const }}
+                          />
+                          <div style={{ display: 'flex', gap: 4 }}>
+                            <button style={s.btnApprove} onClick={() => review(p.id, 'approved')}>Схвалити</button>
+                            <button style={s.btnReject}  onClick={() => review(p.id, 'rejected')}>Відхилити</button>
+                          </div>
+                        </div>
+                    ) : (
+                        <span style={{ fontSize: '0.75rem', color: '#9a9a9a' }}>
+                      {new Date(p.createdAt).toLocaleDateString('uk-UA')}
+                    </span>
+                    )}
+                  </td>
+                </tr>
+            ))}
+            </tbody>
+          </table>
+          {!loading && promos.length === 0 && <p style={s.emptyText}>Нічого не знайдено</p>}
+        </div>
+      </div>
+  );
+}
+
+
+registrations,
+    revenue,
+    granularity,
+}: {
+  registrations: { date: string; count: number }[];
+  revenue: { date: string; revenue: number }[];
+  granularity?: string;
+}) {
+  const dateSet = Array.from(new Set([...registrations.map(d => d.date), ...revenue.map(d => d.date)])).sort();
+  const regMap = Object.fromEntries(registrations.map(d => [d.date, d.count]));
+  const revMap = Object.fromEntries(revenue.map(d => [d.date, d.revenue]));
+  const data = dateSet.map(date => ({
+    date,
+    count: regMap[date] ?? 0,
+    revenue: revMap[date] ?? 0,
+  }));
+
+  const maxCount   = Math.max(...data.map(d => d.count),   1);
+  const maxRevenue = Math.max(...data.map(d => d.revenue), 1);
+
   const fmtDate = (d: string) => {
     const date = new Date(d);
     return granularity === 'month'
         ? date.toLocaleDateString('uk-UA', { month: 'short', year: '2-digit' })
         : date.toLocaleDateString('uk-UA', { day: 'numeric', month: 'numeric' });
   };
+
   if (data.length === 0) return <p style={{ color: '#9a9a9a', fontSize: '0.8rem', marginTop: 14 }}>Немає даних за цей період</p>;
 
   const few = data.length <= 4;
-  const barStyle: React.CSSProperties = few
-      ? { flex: '0 0 auto', width: 48, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }
-      : { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 };
 
   return (
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 80, marginTop: 14,
-        justifyContent: few ? 'flex-start' : 'stretch' }}>
-        {data.map((d, i) => (
-            <div key={i} style={barStyle}>
-              <span style={{ fontSize: '0.6rem', color: '#9a9a9a' }}>{d.count || ''}</span>
-              <div style={{
-                width: '100%',
-                height: `${Math.max((d.count / max) * 56, d.count > 0 ? 4 : 0)}px`,
-                background: '#0a0a0a', borderRadius: '3px 3px 0 0', opacity: 0.85,
-              }} />
-              <span style={{ fontSize: '0.55rem', color: '#9a9a9a', whiteSpace: 'nowrap' }}>{fmtDate(d.date)}</span>
-            </div>
-        ))}
+      <div>
+        <div style={{ display: 'flex', gap: 12, marginTop: 10, marginBottom: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <div style={{ width: 10, height: 10, borderRadius: 2, background: '#0a0a0a' }} />
+            <span style={{ fontSize: '0.65rem', color: '#9a9a9a' }}>Реєстрації</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <div style={{ width: 10, height: 10, borderRadius: 2, background: '#d1d5db' }} />
+            <span style={{ fontSize: '0.65rem', color: '#9a9a9a' }}>Дохід (₴)</span>
+          </div>
+        </div>
+        <div style={{
+          display: 'flex', alignItems: 'flex-end', gap: 6, height: 80,
+          justifyContent: few ? 'flex-start' : 'stretch',
+        }}>
+          {data.map((d, i) => {
+            const countH  = Math.max((d.count   / maxCount)   * 60, d.count   > 0 ? 4 : 0);
+            const revH    = Math.max((d.revenue / maxRevenue) * 60, d.revenue > 0 ? 4 : 0);
+            const colStyle: React.CSSProperties = few
+                ? { flex: '0 0 auto', width: 48, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }
+                : { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 };
+            return (
+                <div key={i} style={colStyle}>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, width: '100%', justifyContent: 'center' }}>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                      {d.count > 0 && <span style={{ fontSize: '0.55rem', color: '#9a9a9a' }}>{d.count}</span>}
+                      <div style={{ width: '100%', height: `${countH}px`, background: '#0a0a0a', borderRadius: '2px 2px 0 0', opacity: 0.9 }} />
+                    </div>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                      {d.revenue > 0 && <span style={{ fontSize: '0.55rem', color: '#9a9a9a' }}>{d.revenue >= 1000 ? `${(d.revenue/1000).toFixed(1)}k` : d.revenue}</span>}
+                      <div style={{ width: '100%', height: `${revH}px`, background: '#d1d5db', borderRadius: '2px 2px 0 0' }} />
+                    </div>
+                  </div>
+                  <span style={{ fontSize: '0.52rem', color: '#b0b0b0', whiteSpace: 'nowrap' }}>{fmtDate(d.date)}</span>
+                </div>
+            );
+          })}
+        </div>
       </div>
   );
 }
+
+function TopCoursesTable({ courses }: { courses: { courseId: string; title: string; enrollments: number; revenue: number }[] }) {
+  const [sortBy, setSortBy] = React.useState<'enrollments' | 'revenue'>('enrollments');
+
+  const sorted = [...courses].sort((a, b) => b[sortBy] - a[sortBy]);
+  const maxVal = Math.max(...sorted.map(c => c[sortBy]), 1);
+
+  return (
+      <div style={s.card}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <p style={s.cardTitle}>Топ курсів</p>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button
+                style={{ ...s.periodBtn, ...(sortBy === 'enrollments' ? s.periodBtnActive : {}), fontSize: '0.72rem', padding: '3px 10px' }}
+                onClick={() => setSortBy('enrollments')}
+            >За записами</button>
+            <button
+                style={{ ...s.periodBtn, ...(sortBy === 'revenue' ? s.periodBtnActive : {}), fontSize: '0.72rem', padding: '3px 10px' }}
+                onClick={() => setSortBy('revenue')}
+            >За доходом</button>
+          </div>
+        </div>
+
+        {sorted.length === 0 ? (
+            <p style={{ color: '#9a9a9a', fontSize: '0.85rem', textAlign: 'center', padding: '20px 0' }}>Немає даних</p>
+        ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {sorted.map((c, i) => {
+                const val    = c[sortBy];
+                const pct    = Math.round((val / maxVal) * 100);
+                const isRev  = sortBy === 'revenue';
+                return (
+                    <div key={c.courseId}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 5 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                          <span style={{ fontSize: '0.65rem', fontWeight: 600, color: '#b0b0b0', width: 16, flexShrink: 0 }}>#{i + 1}</span>
+                          <span style={{ fontSize: '0.82rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: 12, flexShrink: 0, marginLeft: 12 }}>
+                          <span style={{ fontSize: '0.75rem', color: isRev ? '#0a0a0a' : '#9a9a9a', fontWeight: isRev ? 600 : 400 }}>
+                            {c.revenue.toLocaleString('uk-UA')} ₴
+                          </span>
+                          <span style={{ fontSize: '0.75rem', color: !isRev ? '#0a0a0a' : '#9a9a9a', fontWeight: !isRev ? 600 : 400 }}>
+                            {c.enrollments} зап.
+                          </span>
+                        </div>
+                      </div>
+                      <div style={{ ...s.track, height: 4 }}>
+                        <div style={{ ...s.fill, width: `${pct}%`, transition: 'width 0.5s ease' }} />
+                      </div>
+                    </div>
+                );
+              })}
+            </div>
+        )}
+      </div>
+  );
+}
+
 
 const s: Record<string, React.CSSProperties> = {
   page:   { minHeight: '100vh', background: '#fafafa' },

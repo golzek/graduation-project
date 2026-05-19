@@ -13,6 +13,9 @@ export enum NotificationType {
     NEW_COURSE_AVAILABLE   = 'new_course_available',
     COURSE_STATUS_CHANGED  = 'course_status_changed',
     NEW_ENROLLMENT         = 'new_enrollment',
+    PROMO_CODE_PENDING     = 'promo_code_pending',
+    PROMO_CODE_APPROVED    = 'promo_code_approved',
+    PROMO_CODE_REJECTED    = 'promo_code_rejected',
 }
 
 @Entity('notifications')

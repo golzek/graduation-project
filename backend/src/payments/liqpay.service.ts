@@ -34,6 +34,7 @@ export class LiqPayService {
     description: string;
     courseId:    string;
     userId:      string;
+    promoCode?:  string;
   }): { data: string; signature: string; action: string } {
     const payload: LiqPayParams = {
       version:     3,
@@ -45,7 +46,7 @@ export class LiqPayService {
       order_id:    params.orderId,
       result_url:  this.resultUrl,
       server_url:  this.serverUrl,
-      info: JSON.stringify({ courseId: params.courseId, userId: params.userId }),
+      info: JSON.stringify({ courseId: params.courseId, userId: params.userId, promoCode: params.promoCode }),
     };
 
     const data      = Buffer.from(JSON.stringify(payload)).toString('base64');
@@ -89,8 +90,8 @@ export class LiqPayService {
 
   private sign(data: string): string {
     return crypto
-      .createHash('sha1')
-      .update(this.privateKey + data + this.privateKey)
-      .digest('base64');
+        .createHash('sha1')
+        .update(this.privateKey + data + this.privateKey)
+        .digest('base64');
   }
 }
