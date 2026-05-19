@@ -19,6 +19,7 @@ export class Course {
   @Column({ type: 'enum', enum: CourseStatus, default: CourseStatus.DRAFT }) status: CourseStatus;
   @Column({ type: 'enum', enum: CourseLevel,  default: CourseLevel.BEGINNER  }) level: CourseLevel;
   @Column({ nullable: true }) category: string;
+  @Column({ type: 'decimal', precision: 3, scale: 2, default: 0, nullable: true }) rating: number;
   @ManyToOne(() => User, { eager: true }) @JoinColumn({ name: 'author_id' }) author: User;
   @Column({ name: 'author_id' }) authorId: string;
   @OneToMany(() => CourseModule, (m) => m.course, { cascade: true }) modules: CourseModule[];

@@ -23,13 +23,16 @@ export class CourseService {
   ) {}
 
   async findAll(f: CourseFilterDto) {
-    const { search, category, level, page = 1, limit = 12 } = f;
+    const { search, category, level, page = 1, limit = 12, minPrice, maxPrice, minRating } = f;
     const qb = this.courseRepo.createQueryBuilder('c')
         .leftJoinAndSelect('c.author', 'author')
         .where('c.status = :s', { s: CourseStatus.PUBLISHED });
     if (search)    qb.andWhere('(c.title ILIKE :q OR c.description ILIKE :q)', { q: `%${search}%` });
     if (category)  qb.andWhere('c.category = :category', { category });
     if (level)     qb.andWhere('c.level = :level', { level });
+    if (minPrice !== undefined) qb.andWhere('c.price >= :minPrice', { minPrice });
+    if (maxPrice !== undefined) qb.andWhere('c.price <= :maxPrice', { maxPrice });
+    if (minRating !== undefined && Number(minRating) > 0) qb.andWhere('c.rating >= :minRating', { minRating });
     const [data, total] = await qb.skip((page - 1) * limit).take(limit)
         .orderBy('c.createdAt', 'DESC').getManyAndCount();
     return { data: data.map(this.safeAuthor), total, page, totalPages: Math.ceil(total / limit) };

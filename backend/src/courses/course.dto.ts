@@ -1,6 +1,7 @@
 import { IsString, IsNumber, IsOptional, IsEnum, IsBoolean, IsUUID, Min, Max } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { CourseLevel, CourseStatus, LessonType } from './course.entity';
+import { Type } from 'class-transformer';
 
 export class CreateCourseDto {
   @ApiProperty() @IsString() title: string;
@@ -25,8 +26,13 @@ export class CourseFilterDto {
   @IsOptional() search?:   string;
   @IsOptional() category?: string;
   @IsOptional() level?:    CourseLevel;
-  @IsOptional() page?:     number;
-  @IsOptional() limit?:    number;
+
+  @IsOptional() @Type(() => Number) page?:  number;
+  @IsOptional() @Type(() => Number) limit?: number;
+
+  @IsOptional() @Type(() => Number) @IsNumber() @Min(0) minPrice?: number;
+  @IsOptional() @Type(() => Number) @IsNumber() @Min(0) maxPrice?: number;
+  @IsOptional() @Type(() => Number) @IsNumber() @Min(0) @Max(5) minRating?: number;
 }
 
 export class CreateModuleDto {

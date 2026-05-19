@@ -5,6 +5,7 @@ export interface Course {
   id: string; title: string; description: string; price: number;
   thumbnailUrl: string | null; status: string;
   level: 'beginner' | 'intermediate' | 'advanced'; category: string;
+  rating: number | null;
   author: { id: string; name: string; avatarUrl: string | null };
   modules: CourseModule[]; isEnrolled?: boolean; createdAt: string;
 }
