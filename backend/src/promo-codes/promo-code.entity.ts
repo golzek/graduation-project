@@ -18,7 +18,7 @@ export class PromoCode {
 
     @Column({ unique: true }) code: string;
 
-    @Column({ type: 'int' }) discountPercent: number;
+    @Column({ name: 'discount_percent', type: 'int' }) discountPercent: number;
 
     @ManyToOne(() => Course, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'course_id' })
@@ -33,14 +33,14 @@ export class PromoCode {
     @Column({ type: 'enum', enum: PromoCodeStatus, default: PromoCodeStatus.PENDING })
     status: PromoCodeStatus;
 
-    @Column({ type: 'timestamp', nullable: true }) expiresAt: Date | null;
+    @Column({ name: 'expires_at', type: 'timestamp', nullable: true }) expiresAt: Date | null;
 
-    @Column({ type: 'int', nullable: true }) usageLimit: number | null;
+    @Column({ name: 'usage_limit', type: 'int', nullable: true }) usageLimit: number | null;
 
-    @Column({ type: 'int', default: 0 }) usedCount: number;
+    @Column({ name: 'used_count', type: 'int', default: 0 }) usedCount: number;
 
-    @Column({ type: 'text', nullable: true }) adminComment: string | null;
+    @Column({ name: 'admin_comment', type: 'text', nullable: true }) adminComment: string | null;
 
-    @CreateDateColumn() createdAt: Date;
-    @UpdateDateColumn() updatedAt: Date;
+    @CreateDateColumn({ name: 'created_at' }) createdAt: Date;
+    @UpdateDateColumn({ name: 'updated_at' }) updatedAt: Date;
 }

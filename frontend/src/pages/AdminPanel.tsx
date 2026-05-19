@@ -775,10 +775,11 @@ function PromosTab() {
 }
 
 
-registrations,
-    revenue,
-    granularity,
-}: {
+function DualBarChart({
+                        registrations,
+                        revenue,
+                        granularity,
+                      }: {
   registrations: { date: string; count: number }[];
   revenue: { date: string; revenue: number }[];
   granularity?: string;

@@ -8,7 +8,6 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 import { PromoCode, PromoCodeStatus } from './promo-code.entity';
 import { Course } from '../courses/course.entity';
-import { UserRole } from '../users/user.entity';
 import { NotificationService } from '../notifications/notification.service';
 
 export class CreatePromoCodeDto {
@@ -74,22 +73,14 @@ export class PromoCodeService {
 
         const saved = await this.promoRepo.save(promo);
 
-        const admins = await this.dataSource.query<{ id: string }[]>(
-            `SELECT id FROM users WHERE role = $1 AND is_active = true`, [UserRole.ADMIN],
-        );
         const teacherRow = await this.dataSource.query<{ name: string }[]>(
             `SELECT name FROM users WHERE id = $1`, [teacherId],
         );
         const teacherName = teacherRow[0]?.name ?? 'Викладач';
 
-        await Promise.all(admins.map(a =>
-            this.notifSvc['save'](
-                a.id, 'promo_code_pending' as any,
-                '🏷️ Новий промокод потребує схвалення',
-                `${teacherName} створив промокод «${code}» (−${dto.discountPercent}%) для курсу «${course.title}».`,
-                { promoCodeId: saved.id, courseId, courseTitle: course.title, teacherName },
-            ),
-        ));
+        await this.notifSvc.notifyAdminsPromoCodePending(
+            teacherName, code, dto.discountPercent, course.title, saved.id, courseId,
+        );
 
         return saved;
     }
@@ -125,14 +116,9 @@ export class PromoCodeService {
         await this.promoRepo.save(promo);
 
         const approved = dto.status === 'approved';
-        await this.notifSvc['save'](
-            promo.teacherId,
-            (approved ? 'promo_code_approved' : 'promo_code_rejected') as any,
-            approved ? '✅ Промокод схвалено' : '❌ Промокод відхилено',
-            approved
-                ? `Ваш промокод «${promo.code}» для курсу «${promo.course.title}» схвалено адміном.`
-                : `Ваш промокод «${promo.code}» для курсу «${promo.course.title}» відхилено. ${dto.adminComment ?? ''}`.trim(),
-            { promoCodeId: id, courseId: promo.courseId },
+        await this.notifSvc.notifyTeacherPromoCodeReviewed(
+            promo.teacherId, promo.code, promo.course.title,
+            approved, dto.adminComment ?? null, id, promo.courseId,
         );
 
         return promo;

@@ -1,14 +1,12 @@
 import {
   Controller, Post, Get, Body, Param,
-  UseGuards, RawBodyRequest, Req, HttpCode,
+  UseGuards, HttpCode,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
 import { v4 as uuidv4 } from 'uuid';
-import { Request } from 'express';
-
 import { LiqPayService } from './liqpay.service';
 import { Course, Enrollment } from '../courses/course.entity';
 import { JwtAuthGuard, CurrentUser } from '../auth/auth.guards';

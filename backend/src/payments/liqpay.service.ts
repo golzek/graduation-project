@@ -67,6 +67,7 @@ export class LiqPayService {
     amount: number;
     courseId: string;
     userId: string;
+    promoCode?: string;
   } {
     const expectedSig = this.sign(data);
 
@@ -85,6 +86,7 @@ export class LiqPayService {
       amount:   payload.amount,
       courseId: info.courseId,
       userId:   info.userId,
+      promoCode: info.promoCode,
     };
   }
 
