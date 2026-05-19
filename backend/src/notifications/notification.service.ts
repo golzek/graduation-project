@@ -37,13 +37,13 @@ export class NotificationService {
         return { ok: true };
     }
 
-    protected save(userId: string, type: NotificationType, title: string, message: string, meta?: Record<string, any>) {
+    private save(userId: string, type: NotificationType, title: string, message: string, meta?: Record<string, any>) {
         return this.notifRepo.save(this.notifRepo.create({ userId, type, title, message, meta: meta ?? null }));
     }
 
     async notifyAdminsCourseNeedsReview(courseId: string, courseTitle: string, authorName: string) {
         const admins = await this.dataSource.query<{ id: string }[]>(
-            `SELECT id FROM users WHERE role = $1 AND is_active = true`, [UserRole.ADMIN],
+            `SELECT id FROM users WHERE role = $1 AND "isActive" = true`, [UserRole.ADMIN],
         );
         await Promise.all(admins.map(a =>
             this.save(a.id, NotificationType.COURSE_PENDING_REVIEW,
@@ -68,7 +68,7 @@ export class NotificationService {
 
     async notifyStudentsNewCourse(courseId: string, courseTitle: string) {
         const students = await this.dataSource.query<{ id: string }[]>(
-            `SELECT id FROM users WHERE role = $1 AND is_active = true`, [UserRole.STUDENT],
+            `SELECT id FROM users WHERE role = $1 AND "isActive" = true`, [UserRole.STUDENT],
         );
         const chunk = 50;
         for (let i = 0; i < students.length; i += chunk) {
@@ -99,7 +99,7 @@ export class NotificationService {
 
     async notifyAdminsNewUser(userName: string, userEmail: string, userId: string) {
         const admins = await this.dataSource.query<{ id: string }[]>(
-            `SELECT id FROM users WHERE role = $1 AND is_active = true`, [UserRole.ADMIN],
+            `SELECT id FROM users WHERE role = $1 AND "isActive" = true`, [UserRole.ADMIN],
         );
         await Promise.all(admins.map(a =>
             this.save(a.id, NotificationType.NEW_USER_REGISTERED,
@@ -109,27 +109,27 @@ export class NotificationService {
         ));
     }
 
-    async notifyAdminsPromoCodePending(teacherName: string, code: string, discountPercent: number, courseTitle: string, promoCodeId: string, courseId: string) {
+    async notifyAdminsPromoCodePending(teacherName: string, courseTitle: string, promoCode: string, promoCodeId: string) {
         const admins = await this.dataSource.query<{ id: string }[]>(
-            `SELECT id FROM users WHERE role = $1 AND is_active = true`, [UserRole.ADMIN],
+            `SELECT id FROM users WHERE role = $1 AND "isActive" = true`, [UserRole.ADMIN],
         );
         await Promise.all(admins.map(a =>
             this.save(a.id, NotificationType.PROMO_CODE_PENDING,
-                '🏷️ Новий промокод потребує схвалення',
-                `${teacherName} створив промокод «${code}» (−${discountPercent}%) для курсу «${courseTitle}».`,
-                { promoCodeId, courseId, courseTitle, teacherName }),
+                '🏷️ Новий промокод на перевірку',
+                `Викладач ${teacherName} створив промокод «${promoCode}» для курсу «${courseTitle}».`,
+                { promoCodeId, promoCode, courseTitle, teacherName }),
         ));
     }
 
-    async notifyTeacherPromoCodeReviewed(teacherId: string, code: string, courseTitle: string, approved: boolean, adminComment: string | null, promoCodeId: string, courseId: string) {
+    async notifyTeacherPromoCodeReviewed(teacherId: string, promoCode: string, approved: boolean, adminComment?: string) {
         await this.save(
             teacherId,
             approved ? NotificationType.PROMO_CODE_APPROVED : NotificationType.PROMO_CODE_REJECTED,
             approved ? '✅ Промокод схвалено' : '❌ Промокод відхилено',
             approved
-                ? `Ваш промокод «${code}» для курсу «${courseTitle}» схвалено адміном.`
-                : `Ваш промокод «${code}» для курсу «${courseTitle}» відхилено. ${adminComment ?? ''}`.trimEnd(),
-            { promoCodeId, courseId },
+                ? `Ваш промокод «${promoCode}» схвалено і тепер активний.`
+                : `Ваш промокод «${promoCode}» відхилено.${adminComment ? ` Причина: ${adminComment}` : ''}`,
+            { promoCode, adminComment },
         );
     }
 }
