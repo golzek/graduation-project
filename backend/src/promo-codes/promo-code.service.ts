@@ -79,7 +79,7 @@ export class PromoCodeService {
         const teacherName = teacherRow[0]?.name ?? 'Викладач';
 
         await this.notifSvc.notifyAdminsPromoCodePending(
-            teacherName, code, dto.discountPercent, course.title, saved.id, courseId,
+            teacherName, course.title, code, saved.id,
         );
 
         return saved;
@@ -117,8 +117,7 @@ export class PromoCodeService {
 
         const approved = dto.status === 'approved';
         await this.notifSvc.notifyTeacherPromoCodeReviewed(
-            promo.teacherId, promo.code, promo.course.title,
-            approved, dto.adminComment ?? null, id, promo.courseId,
+            promo.teacherId, promo.code, approved, dto.adminComment ?? null,
         );
 
         return promo;
