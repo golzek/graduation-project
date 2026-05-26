@@ -179,6 +179,11 @@ export function Navbar() {
                           Мої сертифікати
                         </Link>
 
+                        <Link to="/wishlist" style={s.dropItem} onClick={() => setOpen(false)}>
+                          <span style={s.dropIcon}>♡</span>
+                          Список бажань
+                        </Link>
+
                         {user?.role === 'admin' && (
                             <Link to="/admin" style={s.dropItem} onClick={() => setOpen(false)}>
                               <span style={s.dropIcon}>🛡️</span>

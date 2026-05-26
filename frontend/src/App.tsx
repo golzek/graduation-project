@@ -18,6 +18,7 @@ import { CourseCreatePage } from './pages/CourseCreatePage';
 import { CourseEditPage } from './pages/CourseEditPage';
 import { StudentDashboard } from './pages/StudentDashboard';
 import { ProfilePage } from './pages/ProfilePage';
+import { WishlistPage } from './pages/WishlistPage';
 
 function AppRoutes() {
   return (
@@ -70,6 +71,12 @@ function AppRoutes() {
               <Route path="/profile" element={
                 <ProtectedRoute>
                   <ProfilePage />
+                </ProtectedRoute>
+              }/>
+
+              <Route path="/wishlist" element={
+                <ProtectedRoute>
+                  <WishlistPage />
                 </ProtectedRoute>
               }/>
 
