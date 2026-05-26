@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
-import { IsEnum, IsOptional, IsBoolean } from 'class-validator';
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEnum, IsOptional, IsBoolean, IsString, MaxLength, IsNotEmpty } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { User, UserRole } from '../users/user.entity';
 import { Course, CourseStatus, Enrollment } from '../courses/course.entity';
 import { NotificationService } from '../notifications/notification.service';
@@ -13,6 +13,12 @@ export class UpdateUserDto {
 
   @ApiPropertyOptional()
   @IsOptional() @IsBoolean() isActive?: boolean;
+}
+
+export class BanUserDto {
+  @ApiProperty({ description: 'Причина блокування', example: 'Порушення правил платформи' })
+  @IsString() @IsNotEmpty() @MaxLength(500)
+  reason: string;
 }
 
 export class UpdateCourseStatusDto {
@@ -43,6 +49,42 @@ export class AdminService {
     const u = await this.userRepo.findOne({ where: { id } });
     if (!u) throw new NotFoundException('Користувача не знайдено');
     return this.userRepo.save(Object.assign(u, dto));
+  }
+
+  async banUser(id: string, dto: BanUserDto, adminId: string) {
+    const u = await this.userRepo.findOne({ where: { id } });
+    if (!u) throw new NotFoundException('Користувача не знайдено');
+    if (!u.isActive) throw new BadRequestException('Користувач вже заблокований');
+    if (u.role === UserRole.ADMIN) throw new BadRequestException('Не можна заблокувати адміна');
+
+    u.isActive  = false;
+    u.banReason = dto.reason;
+    u.bannedAt  = new Date();
+    u.bannedBy  = adminId;
+    await this.userRepo.save(u);
+
+    this.notifSvc.notifyUserBanned(u.id, dto.reason).catch(() => {});
+
+    return {
+      id: u.id, name: u.name, email: u.email,
+      isActive: false, banReason: u.banReason, bannedAt: u.bannedAt,
+    };
+  }
+
+  async unbanUser(id: string) {
+    const u = await this.userRepo.findOne({ where: { id } });
+    if (!u) throw new NotFoundException('Користувача не знайдено');
+    if (u.isActive) throw new BadRequestException('Користувач не заблокований');
+
+    u.isActive  = true;
+    u.banReason = null;
+    u.bannedAt  = null;
+    u.bannedBy  = null;
+    await this.userRepo.save(u);
+
+    this.notifSvc.notifyUserUnbanned(u.id).catch(() => {});
+
+    return { id: u.id, name: u.name, email: u.email, isActive: true };
   }
 
   async deleteUser(id: string) {

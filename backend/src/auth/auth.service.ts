@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
@@ -29,7 +29,10 @@ export class AuthService {
 
   async login(dto: LoginDto) {
     const user = await this.userRepo.findOne({ where: { email: dto.email } });
-    if (!user || !user.isActive) throw new UnauthorizedException('Невірний email або пароль');
+    if (!user) throw new UnauthorizedException('Невірний email або пароль');
+
+    this.assertNotBanned(user);
+
     const ok = await bcrypt.compare(dto.password, user.password);
     if (!ok) throw new UnauthorizedException('Невірний email або пароль');
     return this.buildResponse(user);
@@ -42,8 +45,12 @@ export class AuthService {
       });
       const user = await this.userRepo.findOne({ where: { id: payload.sub } });
       if (!user) throw new UnauthorizedException();
+
+      this.assertNotBanned(user);
+
       return { accessToken: this.accessToken(user) };
-    } catch {
+    } catch (err) {
+      if (err instanceof ForbiddenException) throw err;
       throw new UnauthorizedException('Refresh token недійсний');
     }
   }
@@ -52,11 +59,21 @@ export class AuthService {
     return this.userRepo.findOne({ where: { id } });
   }
 
+  assertNotBanned(user: User): void {
+    if (!user.isActive) {
+      const reason = user.banReason ?? 'Ваш акаунт заблоковано';
+      throw new ForbiddenException(`Акаунт заблоковано: ${reason}`);
+    }
+  }
+
   private buildResponse(user: User) {
     return {
       accessToken: this.accessToken(user),
       refreshToken: this.refreshToken(user),
-      user: { id: user.id, name: user.name, email: user.email, role: user.role, avatarUrl: user.avatarUrl ?? null },
+      user: {
+        id: user.id, name: user.name, email: user.email,
+        role: user.role, avatarUrl: user.avatarUrl ?? null,
+      },
     };
   }
 

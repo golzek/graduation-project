@@ -132,4 +132,23 @@ export class NotificationService {
             { promoCode, adminComment },
         );
     }
+
+    async notifyUserBanned(userId: string, reason: string) {
+        await this.save(
+            userId,
+            NotificationType.ACCOUNT_BANNED,
+            '🚫 Ваш акаунт заблоковано',
+            `Причина: ${reason}`,
+            { reason },
+        );
+    }
+
+    async notifyUserUnbanned(userId: string) {
+        await this.save(
+            userId,
+            NotificationType.ACCOUNT_UNBANNED,
+            '✅ Ваш акаунт розблоковано',
+            'Ваш акаунт було розблоковано. Ви знову можете користуватись платформою.',
+        );
+    }
 }

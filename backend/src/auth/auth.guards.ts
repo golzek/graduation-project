@@ -21,7 +21,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: { sub: string; email: string; role: string }) {
     const user = await this.authService.findById(payload.sub);
-    if (!user || !user.isActive) throw new UnauthorizedException('Токен недійсний');
+    if (!user) throw new UnauthorizedException('Токен недійсний');
+    this.authService.assertNotBanned(user);
     return user;
   }
 }
@@ -30,11 +31,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {}
 
-// Use this on routes that work for both guests and logged-in users
 @Injectable()
 export class OptionalJwtAuthGuard extends AuthGuard('jwt') {
   handleRequest(err: any, user: any) {
-    // Never throw — just return null if not authenticated
     return user || null;
   }
 }

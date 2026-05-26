@@ -1,8 +1,8 @@
-import { Controller, Get, Patch, Delete, Param, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Patch, Post, Delete, Param, Body, Query, UseGuards } from '@nestjs/common';
 
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { AdminService, UpdateUserDto, UpdateCourseStatusDto } from './admin.service';
-import { JwtAuthGuard, RolesGuard, Roles } from '../auth/auth.guards';
+import { AdminService, UpdateUserDto, UpdateCourseStatusDto, BanUserDto } from './admin.service';
+import { JwtAuthGuard, RolesGuard, Roles, CurrentUser } from '../auth/auth.guards';
 import { UserRole } from '../users/user.entity';
 import { CourseStatus } from '../courses/course.entity';
 
@@ -32,8 +32,20 @@ export class AdminController {
   users(@Query('search') s?: string, @Query('role') r?: UserRole) { return this.svc.getUsers(s, r); }
 
   @Patch('users/:id')
-  @ApiOperation({ summary: 'Змінити роль / заблокувати юзера' })
+  @ApiOperation({ summary: 'Змінити роль юзера' })
   updateUser(@Param('id') id: string, @Body() dto: UpdateUserDto) { return this.svc.updateUser(id, dto); }
+
+  @Post('users/:id/ban')
+  @ApiOperation({ summary: 'Заблокувати користувача з причиною' })
+  banUser(
+      @Param('id') id: string,
+      @Body() dto: BanUserDto,
+      @CurrentUser() admin: any,
+  ) { return this.svc.banUser(id, dto, admin.id); }
+
+  @Post('users/:id/unban')
+  @ApiOperation({ summary: 'Розблокувати користувача' })
+  unbanUser(@Param('id') id: string) { return this.svc.unbanUser(id); }
 
   @Delete('users/:id')
   @ApiOperation({ summary: 'Видалити юзера' })

@@ -46,48 +46,79 @@ export class LiqPayService {
       order_id:    params.orderId,
       result_url:  this.resultUrl,
       server_url:  this.serverUrl,
-      info: JSON.stringify({ courseId: params.courseId, userId: params.userId, promoCode: params.promoCode }),
+      info: JSON.stringify({
+        type:      'course',
+        courseId:  params.courseId,
+        userId:    params.userId,
+        promoCode: params.promoCode,
+      }),
     };
+    return this.buildForm(payload);
+  }
 
-    const data      = Buffer.from(JSON.stringify(payload)).toString('base64');
-    const signature = this.sign(data);
-
-    return {
-      data,
-      signature,
-      action: 'https://www.liqpay.ua/api/3/checkout',
+  createSubscriptionForm(params: {
+    orderId:     string;
+    amount:      number;
+    description: string;
+    userId:      string;
+    plan:        string;
+  }): { data: string; signature: string; action: string } {
+    const payload: LiqPayParams = {
+      version:     3,
+      public_key:  this.publicKey,
+      action:      'pay',
+      amount:      params.amount,
+      currency:    'UAH',
+      description: params.description,
+      order_id:    params.orderId,
+      result_url:  `${this.resultUrl}?type=subscription`,
+      server_url:  this.serverUrl,
+      info: JSON.stringify({
+        type:   'subscription',
+        userId: params.userId,
+        plan:   params.plan,
+      }),
     };
+    return this.buildForm(payload);
   }
 
   verifyCallback(data: string, signature: string): {
-    valid: boolean;
-    payload: any;
-    orderId: string;
-    status: string;
-    amount: number;
-    courseId: string;
-    userId: string;
+    valid:      boolean;
+    payload:    any;
+    orderId:    string;
+    status:     string;
+    amount:     number;
+    type:       'course' | 'subscription';
+    courseId?:  string;
+    userId:     string;
     promoCode?: string;
+    plan?:      string;
   } {
-    const expectedSig = this.sign(data);
-
-    if (expectedSig !== signature) {
+    if (this.sign(data) !== signature) {
       throw new BadRequestException('Невірний підпис LiqPay');
     }
 
-    const payload  = JSON.parse(Buffer.from(data, 'base64').toString('utf8'));
-    const info     = payload.info ? JSON.parse(payload.info) : {};
+    const payload = JSON.parse(Buffer.from(data, 'base64').toString('utf8'));
+    const info    = payload.info ? JSON.parse(payload.info) : {};
 
     return {
-      valid:    true,
+      valid:     true,
       payload,
-      orderId:  payload.order_id,
-      status:   payload.status,   // 'success' | 'failure' | 'sandbox'
-      amount:   payload.amount,
-      courseId: info.courseId,
-      userId:   info.userId,
+      orderId:   payload.order_id,
+      status:    payload.status,
+      amount:    payload.amount,
+      type:      info.type ?? 'course',
+      courseId:  info.courseId,
+      userId:    info.userId,
       promoCode: info.promoCode,
+      plan:      info.plan,
     };
+  }
+
+  private buildForm(payload: LiqPayParams): { data: string; signature: string; action: string } {
+    const data      = Buffer.from(JSON.stringify(payload)).toString('base64');
+    const signature = this.sign(data);
+    return { data, signature, action: 'https://www.liqpay.ua/api/3/checkout' };
   }
 
   private sign(data: string): string {

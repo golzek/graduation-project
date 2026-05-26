@@ -19,6 +19,7 @@ import { CourseEditPage } from './pages/CourseEditPage';
 import { StudentDashboard } from './pages/StudentDashboard';
 import { ProfilePage } from './pages/ProfilePage';
 import { WishlistPage } from './pages/WishlistPage';
+import { WishlistProvider } from './context/WishlistContext';
 
 function AppRoutes() {
   return (
@@ -104,9 +105,11 @@ export default function App() {
         <ThemeProvider>
           <AuthProvider>
             <ToastProvider>
-              <NotificationProvider>
-                <AppRoutes />
-              </NotificationProvider>
+              <WishlistProvider>
+                <NotificationProvider>
+                  <AppRoutes />
+                </NotificationProvider>
+              </WishlistProvider>
             </ToastProvider>
           </AuthProvider>
         </ThemeProvider>
