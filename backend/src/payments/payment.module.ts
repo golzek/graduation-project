@@ -4,9 +4,13 @@ import { Course, Enrollment } from '../courses/course.entity';
 import { PaymentController } from './payment.controller';
 import { LiqPayService } from './liqpay.service';
 import { PromoCodeModule } from '../promo-codes/promo-code.module';
+import { SubscriptionModule } from '../subscription/subscription.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Course, Enrollment]), PromoCodeModule],
+  imports: [TypeOrmModule.forFeature([Course, Enrollment]),
+    PromoCodeModule,
+  SubscriptionModule,
+      ],
   controllers: [PaymentController],
   providers: [LiqPayService],
   exports: [LiqPayService],
