@@ -184,6 +184,11 @@ export function Navbar() {
                           Список бажань
                         </Link>
 
+                        <Link to="/subscription" style={s.dropItem} onClick={() => setOpen(false)}>
+                          <span style={s.dropIcon}>⭐</span>
+                          Підписка
+                        </Link>
+
                         {user?.role === 'admin' && (
                             <Link to="/admin" style={s.dropItem} onClick={() => setOpen(false)}>
                               <span style={s.dropIcon}>🛡️</span>

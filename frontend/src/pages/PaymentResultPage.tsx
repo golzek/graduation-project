@@ -6,9 +6,8 @@ export function PaymentResultPage() {
   const [params] = useSearchParams();
   const status  = params.get('status');
   const orderId = params.get('order_id') ?? '';
-
-  const parts    = orderId.split('_');
-  const courseId = parts.length >= 4 ? parts[1] : (parts[1] ?? '');
+  const isSubscription = orderId.startsWith('sub_');
+  const courseId       = !isSubscription ? (orderId.split('_')[1] ?? '') : '';
 
   type State = 'checking' | 'success' | 'failure';
   const [state, setState]       = useState<State>('checking');
@@ -21,6 +20,14 @@ export function PaymentResultPage() {
   useEffect(() => {
     if (status === 'failure' || status === 'error') {
       setState('failure');
+      return;
+    }
+    if (isSubscription) {
+      if (status === 'success' || status === 'sandbox') {
+        setState('success');
+      } else {
+        setState('failure');
+      }
       return;
     }
 
@@ -59,7 +66,7 @@ export function PaymentResultPage() {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [courseId, status]);
+  }, [courseId, status, isSubscription]);
 
   return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9fafb' }}>
@@ -72,13 +79,15 @@ export function PaymentResultPage() {
                   Оплата успішна!
                 </h2>
                 <p style={{ color: '#6b7280', marginBottom: 28 }}>
-                  Ти записаний на курс. Можеш одразу починати навчання.
+                  {isSubscription
+                      ? 'Підписка активована! Тепер у тебе є доступ до всіх курсів.'
+                      : 'Ти записаний на курс. Можеш одразу починати навчання.'}
                 </p>
                 <Link
-                    to={courseId ? `/courses/${courseId}` : '/courses'}
+                    to={isSubscription ? '/subscription' : (courseId ? `/courses/${courseId}` : '/courses')}
                     style={{ display: 'block', padding: '14px', background: '#4f46e5', color: '#fff', borderRadius: 10, textDecoration: 'none', fontWeight: 600, fontSize: 15 }}
                 >
-                  Перейти до курсу →
+                  {isSubscription ? 'Моя підписка →' : 'Перейти до курсу →'}
                 </Link>
               </>
           )}

@@ -4,7 +4,7 @@ import { apiFetch } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 import { Skeleton } from '../components/Skeleton';
 
-type Tab = 'stats' | 'users' | 'courses' | 'reviews' | 'promos';
+type Tab = 'stats' | 'users' | 'courses' | 'reviews' | 'promos' | 'audit';
 
 interface TopCourse {
   courseId: string;
@@ -68,6 +68,7 @@ export function AdminPanel() {
     { key: 'courses', label: 'Курси' },
     { key: 'reviews', label: 'Відгуки' },
     { key: 'promos',  label: 'Промокоди' },
+    { key: 'audit',   label: '🔍 Аудит' },
   ];
 
   return (
@@ -99,6 +100,7 @@ export function AdminPanel() {
           {tab === 'courses' && <CoursesTab />}
           {tab === 'reviews' && <ReviewsTab />}
           {tab === 'promos'  && <PromosTab />}
+          {tab === 'audit'   && <AuditTab />}
         </div>
       </div>
   );
@@ -846,6 +848,170 @@ function DualBarChart({
             );
           })}
         </div>
+      </div>
+  );
+}
+
+interface AuditLog {
+  id: string;
+  actorEmail: string | null;
+  action: string;
+  entity: string;
+  entityId: string | null;
+  path: string;
+  method: string;
+  statusCode: number;
+  isError: boolean;
+  createdAt: string;
+  meta: any;
+}
+
+function AuditTab() {
+  const [items, setItems]       = useState<AuditLog[]>([]);
+  const [total, setTotal]       = useState(0);
+  const [page, setPage]         = useState(1);
+  const [pages, setPages]       = useState(1);
+  const [loading, setLoading]   = useState(true);
+  const [search, setSearch]     = useState('');
+  const [actionF, setActionF]   = useState('');
+  const [errorOnly, setErrorOnly] = useState(false);
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  const load = useCallback((p = 1) => {
+    setLoading(true);
+    const params = new URLSearchParams({ page: String(p), limit: '50' });
+    if (search)    params.set('search', search);
+    if (actionF)   params.set('action', actionF);
+    if (errorOnly) params.set('isError', 'true');
+    apiFetch<{ items: AuditLog[]; total: number; pages: number }>(`/admin/audit?${params}`)
+        .then(d => { setItems(d.items); setTotal(d.total); setPages(d.pages); setPage(p); })
+        .catch(console.error)
+        .finally(() => setLoading(false));
+  }, [search, actionF, errorOnly]);
+
+  useEffect(() => { load(1); }, [load]);
+
+  const actionColors: Record<string, string> = {
+    CREATE: '#16a34a', UPDATE: '#2563eb', DELETE: '#dc2626',
+    LOGIN: '#7c3aed', LOGOUT: '#6b7280', VIEW: '#9ca3af',
+  };
+
+  return (
+      <div style={{ padding: '0 0 32px' }}>
+        <div style={{ display: 'flex', gap: 10, marginBottom: 18, flexWrap: 'wrap' as const, alignItems: 'center' }}>
+          <input
+              placeholder="Пошук по email або шляху..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && load(1)}
+              style={{ padding: '7px 12px', border: '1.5px solid #ebebeb', borderRadius: 8, fontSize: '0.85rem', fontFamily: 'inherit', minWidth: 240 }}
+          />
+          <select
+              value={actionF}
+              onChange={e => setActionF(e.target.value)}
+              style={{ padding: '7px 10px', border: '1.5px solid #ebebeb', borderRadius: 8, fontSize: '0.85rem', fontFamily: 'inherit' }}
+          >
+            <option value="">Всі дії</option>
+            {['CREATE','UPDATE','DELETE','LOGIN','LOGOUT','VIEW'].map(a => (
+                <option key={a} value={a}>{a}</option>
+            ))}
+          </select>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', cursor: 'pointer' }}>
+            <input type="checkbox" checked={errorOnly} onChange={e => setErrorOnly(e.target.checked)} />
+            Тільки помилки
+          </label>
+          <button
+              onClick={() => load(1)}
+              style={{ padding: '7px 18px', background: '#0a0a0a', color: '#fff', border: 'none', borderRadius: 8, fontSize: '0.85rem', cursor: 'pointer', fontFamily: 'inherit' }}
+          >Фільтрувати</button>
+          <span style={{ fontSize: '0.8rem', color: '#9a9a9a', marginLeft: 'auto' }}>
+          Всього: {total} записів
+        </span>
+        </div>
+
+        {loading ? (
+            <p style={{ color: '#9a9a9a', fontSize: '0.875rem' }}>Завантаження...</p>
+        ) : items.length === 0 ? (
+            <p style={{ color: '#9a9a9a', fontSize: '0.875rem' }}>Записів не знайдено</p>
+        ) : (
+            <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 4 }}>
+              {items.map(log => (
+                  <div
+                      key={log.id}
+                      style={{
+                        background: log.isError ? '#fff5f5' : '#fff',
+                        border: `1.5px solid ${log.isError ? '#fecaca' : '#ebebeb'}`,
+                        borderRadius: 10, overflow: 'hidden',
+                      }}
+                  >
+                    <div
+                        onClick={() => setExpanded(expanded === log.id ? null : log.id)}
+                        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', cursor: 'pointer' }}
+                    >
+                <span style={{
+                  padding: '2px 8px', borderRadius: 99, fontSize: '0.7rem', fontWeight: 700,
+                  background: (actionColors[log.action] ?? '#6b7280') + '18',
+                  color: actionColors[log.action] ?? '#6b7280',
+                  flexShrink: 0,
+                }}>{log.action}</span>
+
+                      <span style={{ fontSize: '0.8rem', color: '#6b7280', flexShrink: 0, minWidth: 80 }}>
+                  {log.method} <span style={{ color: log.isError ? '#dc2626' : log.statusCode < 300 ? '#16a34a' : '#d97706', fontWeight: 600 }}>{log.statusCode}</span>
+                </span>
+
+                      <span style={{ fontSize: '0.82rem', fontFamily: 'monospace', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
+                  {log.path}
+                </span>
+
+                      <span style={{ fontSize: '0.8rem', color: '#5a5a5a', flexShrink: 0 }}>
+                  {log.actorEmail ?? '—'}
+                </span>
+
+                      <span style={{ fontSize: '0.75rem', color: '#9a9a9a', flexShrink: 0, minWidth: 130, textAlign: 'right' as const }}>
+                  {new Date(log.createdAt).toLocaleString('uk-UA')}
+                </span>
+
+                      <span style={{ fontSize: '0.75rem', color: '#9a9a9a' }}>{expanded === log.id ? '▲' : '▼'}</span>
+                    </div>
+
+                    {expanded === log.id && (
+                        <div style={{ padding: '0 14px 12px', borderTop: '1px solid #f3f4f6' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '4px 16px', fontSize: '0.8rem', marginTop: 8 }}>
+                            <span style={{ color: '#9a9a9a' }}>Entity</span>
+                            <span>{log.entity}{log.entityId ? ` / ${log.entityId}` : ''}</span>
+                            {log.meta && (
+                                <>
+                                  <span style={{ color: '#9a9a9a' }}>Meta</span>
+                                  <pre style={{ margin: 0, fontSize: '0.75rem', color: '#374151', whiteSpace: 'pre-wrap' as const }}>
+                          {JSON.stringify(log.meta, null, 2)}
+                        </pre>
+                                </>
+                            )}
+                          </div>
+                        </div>
+                    )}
+                  </div>
+              ))}
+            </div>
+        )}
+
+        {pages > 1 && (
+            <div style={{ display: 'flex', gap: 6, marginTop: 20, justifyContent: 'center', flexWrap: 'wrap' as const }}>
+              {Array.from({ length: pages }, (_, i) => i + 1).map(p => (
+                  <button
+                      key={p}
+                      onClick={() => load(p)}
+                      style={{
+                        width: 34, height: 34, borderRadius: 8,
+                        border: `1.5px solid ${p === page ? '#0a0a0a' : '#ebebeb'}`,
+                        background: p === page ? '#0a0a0a' : '#fff',
+                        color: p === page ? '#fff' : '#0a0a0a',
+                        fontSize: '0.82rem', cursor: 'pointer', fontFamily: 'inherit',
+                      }}
+                  >{p}</button>
+              ))}
+            </div>
+        )}
       </div>
   );
 }

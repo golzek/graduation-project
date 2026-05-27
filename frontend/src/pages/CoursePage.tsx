@@ -3,6 +3,7 @@ import { useToast } from '../components/Toast';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCourse, useCourseProgress, useCourseActions, Lesson, CourseModule } from '../hooks/useCourses';
 import { useAuth, apiFetch } from '../context/AuthContext';
+import { WishlistButton } from '../components/WishlistButton';
 
 export function CoursePage() {
   const { id } = useParams<{ id: string }>();
@@ -101,6 +102,12 @@ export function CoursePage() {
                     {enrolling ? 'Записуємось...' : Number(course.price) === 0 ? 'Записатись' : 'Придбати'}
                   </button>
               )}
+
+              {!course.isEnrolled && (
+                  <div style={{ marginTop: 10 }}>
+                    <WishlistButton courseId={course.id} variant="full" />
+                  </div>
+              )}
             </div>
           </div>
         </div>
@@ -196,6 +203,119 @@ const ms: Record<string, React.CSSProperties> = {
   dur:         { fontSize: '0.7rem', color: '#9a9a9a', flexShrink: 0 },
 };
 
+interface QuizQuestion { question: string; options: string[]; correctIndex: number; }
+
+function QuizPlayer({ lesson, isEnrolled, onDone, completed }: {
+  lesson: Lesson; isEnrolled: boolean; onDone: () => void; completed: boolean;
+}) {
+  let questions: QuizQuestion[] = [];
+  try { questions = JSON.parse(lesson.textContent ?? '[]'); } catch {}
+
+  const [answers, setAnswers]   = useState<Record<number, number>>({});
+  const [submitted, setSubmitted] = useState(false);
+  const [score, setScore]       = useState(0);
+
+  useEffect(() => { setAnswers({}); setSubmitted(false); setScore(0); }, [lesson.id]);
+
+  if (!questions.length) {
+    return (
+        <div style={ps.box}>
+          <h2 style={ps.title}>{lesson.title}</h2>
+          <p style={{ color: '#9a9a9a', fontSize: '0.9rem' }}>Квіз не має питань.</p>
+          {isEnrolled && !completed && (
+              <button style={ps.btnMark} onClick={onDone}>Позначити як завершений</button>
+          )}
+          {completed && <button style={ps.btnDone} disabled>✓ Завершено</button>}
+        </div>
+    );
+  }
+
+  const handleSubmit = () => {
+    const correct = questions.filter((q, i) => answers[i] === q.correctIndex).length;
+    setScore(correct);
+    setSubmitted(true);
+    if (isEnrolled && !completed) onDone();
+  };
+
+  const allAnswered = questions.every((_, i) => answers[i] !== undefined);
+
+  return (
+      <div style={ps.box}>
+        <h2 style={ps.title}>{lesson.title}</h2>
+        {!isEnrolled && (
+            <div style={{ padding: '12px 16px', background: '#fafafa', border: '1px solid #ebebeb', borderRadius: 8, color: '#9a9a9a', fontSize: '0.85rem', marginBottom: 20 }}>
+              Запишіться на курс щоб пройти квіз
+            </div>
+        )}
+        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 20 }}>
+          {questions.map((q, qi) => (
+              <div key={qi} style={{ background: '#fafafa', border: '1.5px solid #ebebeb', borderRadius: 10, padding: '16px 18px' }}>
+                <p style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 12, color: '#0a0a0a' }}>
+                  {qi + 1}. {q.question}
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 8 }}>
+                  {q.options.map((opt, oi) => {
+                    const selected  = answers[qi] === oi;
+                    const isCorrect = submitted && oi === q.correctIndex;
+                    const isWrong   = submitted && selected && oi !== q.correctIndex;
+                    return (
+                        <button
+                            key={oi}
+                            disabled={submitted || !isEnrolled}
+                            onClick={() => setAnswers(a => ({ ...a, [qi]: oi }))}
+                            style={{
+                              textAlign: 'left' as const, padding: '10px 14px',
+                              borderRadius: 8, cursor: submitted || !isEnrolled ? 'default' : 'pointer',
+                              border: `1.5px solid ${isCorrect ? '#86efac' : isWrong ? '#fca5a5' : selected ? '#0a0a0a' : '#ebebeb'}`,
+                              background: isCorrect ? '#f0fdf4' : isWrong ? '#fff5f5' : selected ? '#f5f5f5' : '#fff',
+                              fontSize: '0.875rem', color: '#0a0a0a',
+                              fontFamily: 'inherit',
+                            }}
+                        >
+                          {isCorrect && '✓ '}{isWrong && '✗ '}{opt}
+                        </button>
+                    );
+                  })}
+                </div>
+              </div>
+          ))}
+        </div>
+
+        {submitted ? (
+            <div style={{ marginTop: 20, padding: '14px 18px', borderRadius: 10, textAlign: 'center' as const,
+              background: score === questions.length ? '#f0fdf4' : score >= questions.length / 2 ? '#fffbeb' : '#fff5f5',
+              border: `1.5px solid ${score === questions.length ? '#86efac' : score >= questions.length / 2 ? '#fde68a' : '#fca5a5'}`,
+            }}>
+              <p style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: 4 }}>
+                {score === questions.length ? '🎉 Відмінно!' : score >= questions.length / 2 ? '👍 Непогано!' : '😔 Спробуй ще'}
+              </p>
+              <p style={{ color: '#5a5a5a', fontSize: '0.875rem' }}>
+                {score} / {questions.length} правильних відповідей
+              </p>
+              {completed && <p style={{ marginTop: 8, fontSize: '0.8rem', color: '#16a34a' }}>✓ Урок завершено</p>}
+            </div>
+        ) : (
+            isEnrolled && (
+                <button
+                    onClick={handleSubmit}
+                    disabled={!allAnswered}
+                    style={{
+                      marginTop: 20, width: '100%', padding: '11px',
+                      background: allAnswered ? '#0a0a0a' : '#e5e7eb',
+                      color: allAnswered ? '#fafafa' : '#9a9a9a',
+                      border: 'none', borderRadius: 8, fontSize: '0.9rem',
+                      fontWeight: 600, cursor: allAnswered ? 'pointer' : 'default',
+                      fontFamily: 'inherit',
+                    }}
+                >
+                  Перевірити відповіді
+                </button>
+            )
+        )}
+      </div>
+  );
+}
+
 function LessonPlayer({ lesson, isEnrolled, onProgressSaved }: {
   lesson: Lesson; isEnrolled: boolean; onProgressSaved: () => void;
 }) {
@@ -222,6 +342,10 @@ function LessonPlayer({ lesson, isEnrolled, onProgressSaved }: {
       markDone(Math.round(v.currentTime));
     }
   };
+
+  if (lesson.type === 'quiz') {
+    return <QuizPlayer lesson={lesson} isEnrolled={isEnrolled} onDone={() => markDone(0)} completed={completed} />;
+  }
 
   return (
       <div style={ps.box}>

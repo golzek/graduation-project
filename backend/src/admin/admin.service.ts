@@ -179,19 +179,22 @@ export class AdminService {
     const newCoursesThisMonth = periodLabel ? null : await this.courseRepo.createQueryBuilder('c')
         .where("c.\"createdAt\" > DATE_TRUNC('month', NOW())").getCount();
 
-    const diffDays = dateFrom
-        ? Math.ceil(((dateTo ?? new Date()).getTime() - dateFrom.getTime()) / 86400000)
-        : 7;
+    const effectiveDateFrom = dateFrom ?? (() => {
+      const d = new Date(); d.setDate(d.getDate() - 7); d.setHours(0,0,0,0); return d;
+    })();
+
+    const diffDays = Math.ceil(
+        ((dateTo ?? new Date()).getTime() - effectiveDateFrom.getTime()) / 86400000
+    );
     const trunc = diffDays > 60 ? 'month' : 'day';
 
     const regQb = this.userRepo.createQueryBuilder('u')
         .select(`DATE_TRUNC('${trunc}', u."createdAt")`,'day')
         .addSelect('COUNT(*)','count')
         .groupBy(`DATE_TRUNC('${trunc}', u."createdAt")`)
-        .orderBy('day','ASC');
-    if (dateFrom) regQb.where('u."createdAt" >= :df', { df: dateFrom });
-    else          regQb.where("u.\"createdAt\" > NOW() - INTERVAL '7 days'");
-    if (dateTo)   regQb.andWhere('u."createdAt" <= :dt', { dt: dateTo });
+        .orderBy('day','ASC')
+        .where('u."createdAt" >= :df', { df: effectiveDateFrom });
+    if (dateTo) regQb.andWhere('u."createdAt" <= :dt', { dt: dateTo });
 
     const registrationsByDay = await regQb.getRawMany();
 
@@ -199,24 +202,25 @@ export class AdminService {
         .select(`DATE_TRUNC('${trunc}', e."enrolledAt")`,'day')
         .addSelect('SUM(e."paidPrice")','revenue')
         .groupBy(`DATE_TRUNC('${trunc}', e."enrolledAt")`)
-        .orderBy('day','ASC');
-    if (dateFrom) revChartQb.where('e."enrolledAt" >= :df', { df: dateFrom });
-    else          revChartQb.where("e.\"enrolledAt\" > NOW() - INTERVAL '7 days'");
-    if (dateTo)   revChartQb.andWhere('e."enrolledAt" <= :dt', { dt: dateTo });
+        .orderBy('day','ASC')
+        .where('e."enrolledAt" >= :df', { df: effectiveDateFrom });
+    if (dateTo) revChartQb.andWhere('e."enrolledAt" <= :dt', { dt: dateTo });
     const revenueByDay = await revChartQb.getRawMany();
 
-    const topCoursesRaw = await this.enrollmentRepo.createQueryBuilder('e')
+    const topCoursesQb = this.enrollmentRepo.createQueryBuilder('e')
         .leftJoin('e.course', 'c')
         .select('c.id', 'courseId')
         .addSelect('c.title', 'title')
         .addSelect('COUNT(e.id)', 'enrollments')
         .addSelect('SUM(e."paidPrice")', 'revenue')
         .where('c.id IS NOT NULL')
+        .andWhere('e."enrolledAt" >= :df', { df: effectiveDateFrom })
         .groupBy('c.id')
         .addGroupBy('c.title')
         .orderBy('"enrollments"', 'DESC')
-        .limit(5)
-        .getRawMany();
+        .limit(5);
+    if (dateTo) topCoursesQb.andWhere('e."enrolledAt" <= :dt', { dt: dateTo });
+    const topCoursesRaw = await topCoursesQb.getRawMany();
 
     return {
       totalUsers, totalCourses, totalEnrollments,

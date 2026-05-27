@@ -6,7 +6,9 @@ interface LessonData { id: string; title: string; type: string; contentUrl: stri
 interface ModuleData  { id: string; title: string; orderIndex: number; lessons: LessonData[]; }
 interface CourseData  { id: string; title: string; description: string; category: string; level: string; price: number; status: string; modules: ModuleData[]; }
 
+interface QuizQuestion { question: string; options: string[]; correctIndex: number; }
 const EMPTY_LESSON = { title: '', type: 'video', contentUrl: '', textContent: '', durationSec: 0, isFree: false };
+const EMPTY_QUESTION: QuizQuestion = { question: '', options: ['', '', '', ''], correctIndex: 0 };
 
 export function CourseEditPage() {
     const { id } = useParams<{ id: string }>();
@@ -22,6 +24,7 @@ export function CourseEditPage() {
     const [expandedMod, setExpandedMod] = useState<string | null>(null);
     const [lessonForms, setLessonForms] = useState<Record<string, typeof EMPTY_LESSON>>({});
     const [addingLesson, setAddingLesson] = useState<Record<string, boolean>>({});
+    const [quizQuestions, setQuizQuestions] = useState<Record<string, QuizQuestion[]>>({});
 
     const load = async () => {
         if (!id) return;
@@ -82,18 +85,23 @@ export function CourseEditPage() {
         if (!form.title.trim()) return;
         setAddingLesson(l => ({ ...l, [moduleId]: true }));
         try {
+            const qs = quizQuestions[moduleId] ?? [];
+            const quizContent = form.type === 'quiz'
+                ? JSON.stringify(qs.filter(q => q.question.trim() && q.options.every(o => o.trim())))
+                : undefined;
             await apiFetch(`/courses/modules/${moduleId}/lessons`, {
                 method: 'POST',
                 body: JSON.stringify({
                     title: form.title,
                     type: form.type,
                     contentUrl:  form.contentUrl  || undefined,
-                    textContent: form.textContent || undefined,
+                    textContent: form.type === 'quiz' ? quizContent : (form.textContent || undefined),
                     durationSec: Number(form.durationSec) || 0,
                     isFree: form.isFree,
                 }),
             });
             setLessonForms(f => ({ ...f, [moduleId]: { ...EMPTY_LESSON } }));
+            setQuizQuestions(q => ({ ...q, [moduleId]: [] }));
             await load();
         } catch (e: any) { setError(e.message); }
         finally { setAddingLesson(l => ({ ...l, [moduleId]: false })); }
@@ -270,6 +278,77 @@ export function CourseEditPage() {
                                                         onChange={e => setLessonForms(f => ({ ...f, [mod.id]: { ...(f[mod.id] ?? { ...EMPTY_LESSON }), textContent: e.target.value } }))}
                                                         style={{ ...inp, height: 80, marginBottom: 8, resize: 'vertical' as const }}
                                                     />
+                                                )}
+                                                {(lessonForms[mod.id]?.type ?? 'video') === 'quiz' && (
+                                                    <div style={{ marginBottom: 8 }}>
+                                                        <p style={{ fontSize: '0.72rem', color: '#9a9a9a', marginBottom: 8 }}>
+                                                            Питання квізу ({(quizQuestions[mod.id] ?? []).length})
+                                                        </p>
+                                                        {(quizQuestions[mod.id] ?? []).map((q, qi) => (
+                                                            <div key={qi} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 10, marginBottom: 8 }}>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                                                                    <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#9a9a9a', flexShrink: 0 }}>Q{qi + 1}</span>
+                                                                    <input
+                                                                        placeholder="Текст питання"
+                                                                        value={q.question}
+                                                                        onChange={e => setQuizQuestions(prev => {
+                                                                            const arr = [...(prev[mod.id] ?? [])];
+                                                                            arr[qi] = { ...arr[qi], question: e.target.value };
+                                                                            return { ...prev, [mod.id]: arr };
+                                                                        })}
+                                                                        style={{ ...inp, marginBottom: 0, flex: 1 }}
+                                                                    />
+                                                                    <button
+                                                                        onClick={() => setQuizQuestions(prev => {
+                                                                            const arr = (prev[mod.id] ?? []).filter((_, i) => i !== qi);
+                                                                            return { ...prev, [mod.id]: arr };
+                                                                        })}
+                                                                        style={{ background: 'none', border: 'none', color: '#d6d6d6', cursor: 'pointer', fontSize: '0.9rem', flexShrink: 0 }}
+                                                                    >✕</button>
+                                                                </div>
+                                                                {q.options.map((opt, oi) => (
+                                                                    <div key={oi} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                                                                        <input
+                                                                            type="radio"
+                                                                            name={`correct-${mod.id}-${qi}`}
+                                                                            checked={q.correctIndex === oi}
+                                                                            onChange={() => setQuizQuestions(prev => {
+                                                                                const arr = [...(prev[mod.id] ?? [])];
+                                                                                arr[qi] = { ...arr[qi], correctIndex: oi };
+                                                                                return { ...prev, [mod.id]: arr };
+                                                                            })}
+                                                                            title="Правильна відповідь"
+                                                                        />
+                                                                        <input
+                                                                            placeholder={`Варіант ${oi + 1}`}
+                                                                            value={opt}
+                                                                            onChange={e => setQuizQuestions(prev => {
+                                                                                const arr = [...(prev[mod.id] ?? [])];
+                                                                                const opts = [...arr[qi].options];
+                                                                                opts[oi] = e.target.value;
+                                                                                arr[qi] = { ...arr[qi], options: opts };
+                                                                                return { ...prev, [mod.id]: arr };
+                                                                            })}
+                                                                            style={{
+                                                                                ...inp, marginBottom: 0, flex: 1,
+                                                                                borderColor: q.correctIndex === oi ? '#86efac' : '#ebebeb',
+                                                                                background: q.correctIndex === oi ? '#f0fdf4' : '#fff',
+                                                                            }}
+                                                                        />
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        ))}
+                                                        <button
+                                                            onClick={() => setQuizQuestions(prev => ({
+                                                                ...prev,
+                                                                [mod.id]: [...(prev[mod.id] ?? []), { ...EMPTY_QUESTION, options: ['', '', '', ''] }],
+                                                            }))}
+                                                            style={{ ...inp, textAlign: 'center', cursor: 'pointer', color: '#5a5a5a', borderStyle: 'dashed', marginBottom: 0 }}
+                                                        >
+                                                            + Додати питання
+                                                        </button>
+                                                    </div>
                                                 )}
                                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                                     <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', cursor: 'pointer' }}>

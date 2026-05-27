@@ -20,6 +20,7 @@ import { StudentDashboard } from './pages/StudentDashboard';
 import { ProfilePage } from './pages/ProfilePage';
 import { WishlistPage } from './pages/WishlistPage';
 import { WishlistProvider } from './context/WishlistContext';
+import { SubscriptionPage } from './pages/SubscriptionPage';
 
 function AppRoutes() {
   return (
@@ -78,6 +79,12 @@ function AppRoutes() {
               <Route path="/wishlist" element={
                 <ProtectedRoute>
                   <WishlistPage />
+                </ProtectedRoute>
+              }/>
+
+              <Route path="/subscription" element={
+                <ProtectedRoute>
+                  <SubscriptionPage />
                 </ProtectedRoute>
               }/>
 
