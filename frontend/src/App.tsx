@@ -21,6 +21,7 @@ import { ProfilePage } from './pages/ProfilePage';
 import { WishlistPage } from './pages/WishlistPage';
 import { WishlistProvider } from './context/WishlistContext';
 import { SubscriptionPage } from './pages/SubscriptionPage';
+import { InstructorPage } from './pages/InstructorPage';
 
 function AppRoutes() {
   return (
@@ -41,6 +42,7 @@ function AppRoutes() {
               <Route path="/"        element={<Navigate to="/courses" replace />} />
               <Route path="/courses" element={<CatalogPage />} />
               <Route path="/courses/:id" element={<CoursePage />} />
+              <Route path="/instructors/:id" element={<InstructorPage />} />
               <Route path="/courses/create" element={
                 <ProtectedRoute roles={['teacher', 'admin']}>
                   <CourseCreatePage />

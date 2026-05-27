@@ -20,7 +20,7 @@ export interface WishlistItem {
 export function useWishlistItems() {
     const [items, setItems]     = useState<WishlistItem[]>([]);
     const [loading, setLoading] = useState(true);
-    const { reload: reloadIds } = useWishlistContext();
+    const { reload: reloadIds, version } = useWishlistContext();
 
     const load = useCallback(() => {
         if (!localStorage.getItem('accessToken')) { setLoading(false); return; }
@@ -31,7 +31,7 @@ export function useWishlistItems() {
             .finally(() => setLoading(false));
     }, []);
 
-    useEffect(() => { load(); }, [load]);
+    useEffect(() => { load(); }, [load, version]);
 
     const remove = useCallback(async (courseId: string) => {
         await apiFetch(`/wishlist/${courseId}`, { method: 'DELETE' });

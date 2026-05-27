@@ -68,7 +68,7 @@ export function AdminPanel() {
     { key: 'courses', label: 'Курси' },
     { key: 'reviews', label: 'Відгуки' },
     { key: 'promos',  label: 'Промокоди' },
-    { key: 'audit',   label: '🔍 Аудит' },
+    { key: 'audit',   label: 'Аудит' },
   ];
 
   return (

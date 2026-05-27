@@ -23,6 +23,8 @@ import { NotificationModule } from './notifications/notification.module';
 import { PromoCode } from './promo-codes/promo-code.entity';
 import { PromoCodeModule } from './promo-codes/promo-code.module';
 import { Notification }        from './notifications/notification.entity';
+import { Wishlist } from './wishlist/wishlist.entity';
+import { InstructorModule } from './instructor/instructor.module';
 
 @Module({
   imports: [
@@ -46,7 +48,7 @@ import { Notification }        from './notifications/notification.entity';
         username: cfg.get('DB_USERNAME', 'postgres'),
         password: cfg.get('DB_PASSWORD', 'postgres'),
         database: cfg.get('DB_NAME',     'elearning'),
-        entities: [User, Course, CourseModule, Lesson, Enrollment, Progress, Certificate, Review, Notification, PromoCode],
+        entities: [User, Course, CourseModule, Lesson, Enrollment, Progress, Certificate, Review, Notification, PromoCode, Wishlist],
         synchronize: false,
         logging: cfg.get('NODE_ENV') === 'development',
         migrations: cfg.get('NODE_ENV') === 'production'
@@ -68,6 +70,7 @@ import { Notification }        from './notifications/notification.entity';
     PaymentModule,
     NotificationModule,
     PromoCodeModule,
+    InstructorModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

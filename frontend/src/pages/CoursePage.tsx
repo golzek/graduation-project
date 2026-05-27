@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useToast } from '../components/Toast';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useCourse, useCourseProgress, useCourseActions, Lesson, CourseModule } from '../hooks/useCourses';
 import { useAuth, apiFetch } from '../context/AuthContext';
 import { WishlistButton } from '../components/WishlistButton';
@@ -66,7 +66,11 @@ export function CoursePage() {
               <h1 style={s.title}>{course.title}</h1>
               <p style={s.desc}>{course.description}</p>
               <div style={s.meta}>
-                <span>{course.author?.name}</span>
+                <span>
+                    <Link to={`/instructors/${course.author?.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                      {course.author?.name}
+                    </Link>
+                  </span>
                 <span style={s.dot}>·</span>
                 <span>{totalLessons} уроків</span>
                 <span style={s.dot}>·</span>

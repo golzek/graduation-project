@@ -7,6 +7,7 @@ import { apiFetch } from './AuthContext';
 interface WishlistCtx {
     wishlistIds: Set<string>;
     loading: boolean;
+    version: number;
     isInWishlist: (courseId: string) => boolean;
     toggle: (courseId: string) => Promise<void>;
     reload: () => void;
@@ -17,6 +18,7 @@ const WishlistContext = createContext<WishlistCtx | null>(null);
 export function WishlistProvider({ children }: { children: ReactNode }) {
     const [wishlistIds, setWishlistIds] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(false);
+    const [version, setVersion] = useState(0);
 
     const load = useCallback(() => {
         if (!localStorage.getItem('accessToken')) return;
@@ -48,8 +50,8 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
             } else {
                 await apiFetch(`/wishlist/${courseId}`, { method: 'POST' });
             }
+            setVersion(v => v + 1);
         } catch {
-
             setWishlistIds(prev => {
                 const next = new Set(prev);
                 inList ? next.add(courseId) : next.delete(courseId);
@@ -59,7 +61,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     }, [wishlistIds]);
 
     return (
-        <WishlistContext.Provider value={{ wishlistIds, loading, isInWishlist, toggle, reload: load }}>
+        <WishlistContext.Provider value={{ wishlistIds, loading, version, isInWishlist, toggle, reload: load }}>
             {children}
         </WishlistContext.Provider>
     );
