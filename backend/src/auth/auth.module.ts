@@ -7,6 +7,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy, GoogleOAuthStrategy } from './auth.guards';
 import { NotificationModule } from '../notifications/notification.module';
+import { ReferralModule } from '../referral/referral.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { NotificationModule } from '../notifications/notification.module';
     PassportModule,
     JwtModule.register({}),
     NotificationModule,
+    ReferralModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, GoogleOAuthStrategy],

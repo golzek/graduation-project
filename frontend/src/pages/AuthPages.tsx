@@ -190,17 +190,20 @@ export function LoginPage() {
 export function RegisterPage() {
   const { register, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const referralToken = new URLSearchParams(location.search).get('ref') ?? undefined;
+
   const submit = async (e: FormEvent) => {
     e.preventDefault(); setError('');
     if (password.length < 6) { setError('Пароль мінімум 6 символів'); return; }
     setLoading(true);
-    try { await register(name, email, password); navigate('/courses', { replace: true }); }
+    try { await register(name, email, password, referralToken); navigate('/courses', { replace: true }); }
     catch (err: any) { setError(err.message); }
     finally { setLoading(false); }
   };
@@ -216,6 +219,11 @@ export function RegisterPage() {
           <div style={s.formBox}>
             <h1 style={s.title}>Реєстрація</h1>
             <p style={s.hint}>Створи акаунт за хвилину</p>
+            {referralToken && (
+                <div style={{ background: '#f0fdf4', border: '1.5px solid #bbf7d0', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: '0.85rem', color: '#166534' }}>
+                  🎉 Тебе запросили на платформу! Реєструйся і починай навчання.
+                </div>
+            )}
             {error && <div style={s.error}>{error}</div>}
 
             <GoogleButton onClick={loginWithGoogle} loading={loading} />

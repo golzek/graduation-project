@@ -7,6 +7,7 @@ import * as bcrypt from 'bcryptjs';
 import { User } from '../users/user.entity';
 import { RegisterDto, LoginDto } from './auth.dto';
 import { NotificationService } from '../notifications/notification.service';
+import { ReferralService } from '../referral/referral.service';
 
 @Injectable()
 export class AuthService {
@@ -15,6 +16,7 @@ export class AuthService {
       private readonly jwtService: JwtService,
       private readonly config: ConfigService,
       private readonly notifSvc: NotificationService,
+      private readonly referralSvc: ReferralService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -23,6 +25,14 @@ export class AuthService {
     const password = await bcrypt.hash(dto.password, 10);
     const user = this.userRepo.create({ ...dto, password });
     await this.userRepo.save(user);
+
+    if (dto.referralToken) {
+      const referrerId = this.referralSvc.decodeToken(dto.referralToken);
+      if (referrerId && referrerId !== user.id) {
+        this.referralSvc.track(referrerId, user.id).catch(() => {});
+      }
+    }
+
     this.notifSvc.notifyAdminsNewUser(user.name, user.email, user.id).catch(() => {});
     return this.buildResponse(user);
   }

@@ -14,6 +14,9 @@ export class RegisterDto {
 
   @ApiPropertyOptional({ enum: UserRole })
   @IsEnum(UserRole) @IsOptional() role?: UserRole;
+
+  @ApiPropertyOptional({ description: 'Реферальний токен запрошувача' })
+  @IsString() @IsOptional() referralToken?: string;
 }
 
 export class LoginDto {

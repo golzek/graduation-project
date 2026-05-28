@@ -9,7 +9,6 @@ export class AddGoogleOAuth1700000000020 implements MigrationInterface {
         ALTER COLUMN "password" DROP NOT NULL
     `);
 
-        // Add googleId column
         await queryRunner.query(`
       ALTER TABLE "users"
         ADD COLUMN IF NOT EXISTS "googleId" character varying UNIQUE

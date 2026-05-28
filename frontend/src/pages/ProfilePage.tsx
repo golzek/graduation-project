@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth, apiFetch } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
+import { ReferralPanel } from '../components/ReferralPanel';
 
 export function ProfilePage() {
     const { user } = useAuth();
@@ -149,6 +150,7 @@ export function ProfilePage() {
                     </section>
 
                 </div>
+                <ReferralPanel />
             </div>
         </div>
     );

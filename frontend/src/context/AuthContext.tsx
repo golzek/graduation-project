@@ -11,7 +11,7 @@ interface AuthCtx {
   user: AuthUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string, referralToken?: string) => Promise<void>;
   login:    (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => void;
   handleGoogleCallback: (params: URLSearchParams) => void;
@@ -61,8 +61,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })();
   }, []);
 
-  const register = useCallback(async (name: string, email: string, password: string) => {
-    const d = await apiFetch<any>('/auth/register', { method: 'POST', body: JSON.stringify({ name, email, password }) });
+  const register = useCallback(async (name: string, email: string, password: string, referralToken?: string) => {
+    const d = await apiFetch<any>('/auth/register', { method: 'POST', body: JSON.stringify({ name, email, password, ...(referralToken ? { referralToken } : {}) }) });
     Tokens.set(d.accessToken, d.refreshToken); setUser(d.user);
   }, []);
 

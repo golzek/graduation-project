@@ -25,6 +25,8 @@ import { PromoCodeModule } from './promo-codes/promo-code.module';
 import { Notification }        from './notifications/notification.entity';
 import { Wishlist } from './wishlist/wishlist.entity';
 import { InstructorModule } from './instructor/instructor.module';
+import { Referral } from './referral/referral.entity';
+import { ReferralModule } from './referral/referral.module';
 
 @Module({
   imports: [
@@ -48,7 +50,7 @@ import { InstructorModule } from './instructor/instructor.module';
         username: cfg.get('DB_USERNAME', 'postgres'),
         password: cfg.get('DB_PASSWORD', 'postgres'),
         database: cfg.get('DB_NAME',     'elearning'),
-        entities: [User, Course, CourseModule, Lesson, Enrollment, Progress, Certificate, Review, Notification, PromoCode, Wishlist],
+        entities: [User, Course, CourseModule, Lesson, Enrollment, Progress, Certificate, Review, Notification, PromoCode, Wishlist, Referral],
         synchronize: false,
         logging: cfg.get('NODE_ENV') === 'development',
         migrations: cfg.get('NODE_ENV') === 'production'
@@ -71,6 +73,7 @@ import { InstructorModule } from './instructor/instructor.module';
     NotificationModule,
     PromoCodeModule,
     InstructorModule,
+    ReferralModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
