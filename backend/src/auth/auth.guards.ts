@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
@@ -29,7 +30,37 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
 
 @Injectable()
+export class GoogleOAuthStrategy extends PassportStrategy(GoogleStrategy, 'google') {
+  constructor(config: ConfigService) {
+    super({
+      clientID:     config.get<string>('GOOGLE_CLIENT_ID'),
+      clientSecret: config.get<string>('GOOGLE_CLIENT_SECRET'),
+      callbackURL:  config.get<string>('GOOGLE_CALLBACK_URL'),
+      scope: ['email', 'profile'],
+    });
+  }
+
+  async validate(
+      _accessToken: string,
+      _refreshToken: string,
+      profile: any,
+  ) {
+    const { id, displayName, emails, photos } = profile;
+    return {
+      googleId:  id,
+      name:      displayName,
+      email:     emails[0].value,
+      avatarUrl: photos?.[0]?.value ?? null,
+    };
+  }
+}
+
+
+@Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {}
+
+@Injectable()
+export class GoogleAuthGuard extends AuthGuard('google') {}
 
 @Injectable()
 export class OptionalJwtAuthGuard extends AuthGuard('jwt') {

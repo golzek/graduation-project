@@ -1,17 +1,20 @@
-import { Controller, Post, Get, Body, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards, HttpCode, HttpStatus, Req, Res } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Throttle, SkipThrottle } from '@nestjs/throttler';
+import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto } from './auth.dto';
-import { JwtAuthGuard, CurrentUser } from './auth.guards';
+import { JwtAuthGuard, CurrentUser, GoogleAuthGuard } from './auth.guards';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+      private readonly authService: AuthService,
+      private readonly config: ConfigService,
+  ) {}
 
   @Post('register')
-  // 5 реєстрацій з однієї IP за 15 хвилин
   @Throttle({ default: { ttl: 900_000, limit: 5 } })
   @ApiOperation({ summary: 'Реєстрація нового користувача' })
   @ApiResponse({ status: 201, description: 'Повертає токени і дані юзера' })
@@ -49,5 +52,27 @@ export class AuthController {
   getMe(@CurrentUser() user: any) {
     const { password, ...safe } = user;
     return safe;
+  }
+
+  @Get('google')
+  @UseGuards(GoogleAuthGuard)
+  @SkipThrottle()
+  @ApiOperation({ summary: 'Перенаправлення на Google для авторизації' })
+  googleAuth() {
+  }
+
+  @Get('google/callback')
+  @UseGuards(GoogleAuthGuard)
+  @SkipThrottle()
+  @ApiOperation({ summary: 'Callback після Google авторизації' })
+  async googleCallback(@Req() req: any, @Res() res: any) {
+    const result = await this.authService.googleLogin(req.user);
+    const frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'http://localhost:3001';
+    const params = new URLSearchParams({
+      accessToken:  result.accessToken,
+      refreshToken: result.refreshToken,
+      user:         JSON.stringify(result.user),
+    });
+    res.redirect(`${frontendUrl}/auth/google/callback?${params}`);
   }
 }

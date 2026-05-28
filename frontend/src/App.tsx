@@ -7,7 +7,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './components/Toast';
 import { NotificationProvider } from './context/NotificationContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { LoginPage, RegisterPage } from './pages/AuthPages';
+import { LoginPage, RegisterPage, GoogleCallbackPage } from './pages/AuthPages';
 import { CatalogPage } from './pages/CatalogPage';
 import { CoursePage } from './pages/CoursePage';
 import { MyCertificatesPage, VerifyCertPage } from './pages/CertificatesPage';
@@ -26,8 +26,9 @@ import { InstructorPage } from './pages/InstructorPage';
 function AppRoutes() {
   return (
       <Routes>
-        <Route path="/login"    element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/login"                element={<LoginPage />} />
+        <Route path="/register"             element={<RegisterPage />} />
+        <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
 
         <Route path="/admin/*" element={
           <ProtectedRoute roles={['admin']}>

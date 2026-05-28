@@ -55,6 +55,32 @@ export class AuthService {
     }
   }
 
+  async googleLogin(profile: { googleId: string; name: string; email: string; avatarUrl: string | null }) {
+    let user = await this.userRepo.findOne({ where: { googleId: profile.googleId } });
+
+    if (!user) {
+      user = await this.userRepo.findOne({ where: { email: profile.email } });
+      if (user) {
+        user.googleId = profile.googleId;
+        if (!user.avatarUrl && profile.avatarUrl) user.avatarUrl = profile.avatarUrl;
+        await this.userRepo.save(user);
+      } else {
+        user = this.userRepo.create({
+          googleId:  profile.googleId,
+          email:     profile.email,
+          name:      profile.name,
+          avatarUrl: profile.avatarUrl,
+          password:  null as any,
+        });
+        await this.userRepo.save(user);
+        this.notifSvc.notifyAdminsNewUser(user.name, user.email, user.id).catch(() => {});
+      }
+    }
+
+    this.assertNotBanned(user);
+    return this.buildResponse(user);
+  }
+
   async findById(id: string) {
     return this.userRepo.findOne({ where: { id } });
   }

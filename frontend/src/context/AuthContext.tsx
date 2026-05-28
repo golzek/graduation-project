@@ -13,6 +13,8 @@ interface AuthCtx {
   isAuthenticated: boolean;
   register: (name: string, email: string, password: string) => Promise<void>;
   login:    (email: string, password: string) => Promise<void>;
+  loginWithGoogle: () => void;
+  handleGoogleCallback: (params: URLSearchParams) => void;
   logout:   () => void;
   hasRole:  (...roles: UserRole[]) => boolean;
 }
@@ -69,13 +71,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     Tokens.set(d.accessToken, d.refreshToken); setUser(d.user);
   }, []);
 
+  const loginWithGoogle = useCallback(() => {
+    window.location.href = `${API}/auth/google`;
+  }, []);
+
+  const handleGoogleCallback = useCallback((params: URLSearchParams) => {
+    const accessToken  = params.get('accessToken');
+    const refreshToken = params.get('refreshToken');
+    const userStr      = params.get('user');
+    if (!accessToken || !refreshToken || !userStr) return;
+    Tokens.set(accessToken, refreshToken);
+    setUser(JSON.parse(userStr));
+  }, []);
+
   const logout  = useCallback(() => { Tokens.clear(); setUser(null); }, []);
   const hasRole = useCallback((...roles: UserRole[]) => !!user && roles.includes(user.role), [user]);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, register, login, logout, hasRole }}>
-      {children}
-    </AuthContext.Provider>
+      <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, register, login, loginWithGoogle, handleGoogleCallback, logout, hasRole }}>
+        {children}
+      </AuthContext.Provider>
   );
 }
 
