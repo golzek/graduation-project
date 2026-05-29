@@ -51,10 +51,45 @@ interface AdminCourse {
   author: { name: string; email: string };
 }
 
+interface CourseLesson {
+  id: string;
+  title: string;
+  type: string;
+  durationSec: number;
+  orderIndex: number;
+  isFree: boolean;
+  contentUrl?: string | null;
+  textContent?: string | null;
+}
+
+interface CourseModuleDetail {
+  id: string;
+  title: string;
+  orderIndex: number;
+  lessons: CourseLesson[];
+}
+
+interface CourseDetail {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  price: number;
+  level: string;
+  category: string | null;
+  thumbnailUrl: string | null;
+  rating: number | null;
+  createdAt: string;
+  updatedAt: string;
+  author: { id: string; name: string; email: string };
+  modules: CourseModuleDetail[];
+}
+
 interface PendingReview {
   id: string;
   rating: number;
   body: string;
+  isApproved: boolean;
   createdAt: string;
   user: { name: string; email: string };
   course: { title: string };
@@ -64,13 +99,14 @@ export function AdminPanel() {
   const [tab, setTab] = useState<Tab>('stats');
 
   const tabs: { key: Tab; label: string }[] = [
-    { key: 'stats',   label: 'Статистика' },
-    { key: 'users',   label: 'Користувачі' },
-    { key: 'courses', label: 'Курси' },
-    { key: 'reviews', label: 'Відгуки' },
-    { key: 'promos',  label: 'Промокоди' },
-    { key: 'payouts', label: 'Виплати' },
-    { key: 'audit',   label: 'Аудит' },
+    { key: 'stats',    label: 'Статистика' },
+    { key: 'users',    label: 'Користувачі' },
+    { key: 'courses',  label: 'Курси' },
+    { key: 'teachers', label: 'Викладачі' },
+    { key: 'reviews',  label: 'Відгуки' },
+    { key: 'promos',   label: 'Промокоди' },
+    { key: 'payouts',  label: 'Виплати' },
+    { key: 'audit',    label: 'Аудит' },
   ];
 
   return (
@@ -434,12 +470,283 @@ function UsersTab() {
   );
 }
 
+function CourseDetailModal({ courseId, onClose }: { courseId: string; onClose: () => void }) {
+  const [course, setCourse] = React.useState<CourseDetail | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState('');
+
+  React.useEffect(() => {
+    apiFetch<CourseDetail>(`/courses/${courseId}`)
+        .then(setCourse)
+        .catch(() => setError('Не вдалось завантажити курс'))
+        .finally(() => setLoading(false));
+  }, [courseId]);
+
+  React.useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [onClose]);
+
+  const levelLabel: Record<string, string> = { beginner: 'Початковий', intermediate: 'Середній', advanced: 'Просунутий' };
+  const statusLabel: Record<string, string> = { draft: 'Чернетка', published: 'Опублікований', archived: 'Архів', pending: 'На перевірці' };
+  const statusBadgeStyle: Record<string, React.CSSProperties> = {
+    draft:     { background: '#f5f5f5', color: '#5a5a5a' },
+    published: { background: '#f0fdf4', color: '#16a34a' },
+    archived:  { background: '#fef2f2', color: '#dc2626' },
+    pending:   { background: '#fffbeb', color: '#d97706' },
+  };
+  const lessonTypeLabel: Record<string, string> = { video: '▶ Відео', text: '📝 Текст', quiz: '❓ Тест' };
+
+  const totalLessons = course?.modules?.reduce((sum, m) => sum + (m.lessons?.length ?? 0), 0) ?? 0;
+  const totalDuration = course?.modules?.reduce((sum, m) =>
+      sum + (m.lessons?.reduce((s, l) => s + (l.durationSec ?? 0), 0) ?? 0), 0) ?? 0;
+  const formatDuration = (sec: number) => {
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    if (h > 0) return `${h} год ${m} хв`;
+    if (m > 0) return `${m} хв`;
+    return `${sec} сек`;
+  };
+
+  return (
+      <div
+          onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1000,
+            background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '24px',
+          }}
+      >
+        <div style={{
+          background: '#fff', borderRadius: 16, width: '100%', maxWidth: 780,
+          maxHeight: '88vh', display: 'flex', flexDirection: 'column',
+          boxShadow: '0 24px 60px rgba(0,0,0,0.18)',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '18px 24px', borderBottom: '1px solid #ebebeb', flexShrink: 0,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.07em', color: '#9a9a9a', textTransform: 'uppercase' }}>
+                Перегляд курсу
+              </span>
+              {course && (
+                  <span style={{ ...s.badge, ...(statusBadgeStyle[course.status] ?? {}) }}>
+                    {statusLabel[course.status] ?? course.status}
+                  </span>
+              )}
+            </div>
+            <button
+                onClick={onClose}
+                style={{
+                  width: 32, height: 32, borderRadius: '50%',
+                  border: '1.5px solid #ebebeb', background: 'transparent',
+                  cursor: 'pointer', fontSize: '1rem', color: '#5a5a5a',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontFamily: 'inherit',
+                }}
+            >✕</button>
+          </div>
+
+          <div style={{ overflowY: 'auto', flex: 1, padding: '24px' }}>
+            {loading ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <Skeleton width={320} height={24} style={{ marginBottom: 8 }} />
+                  <Skeleton width={200} height={14} />
+                  <Skeleton height={80} borderRadius={10} style={{ marginTop: 8 }} />
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginTop: 8 }}>
+                    {[0,1,2].map(i => <Skeleton key={i} height={60} borderRadius={10} />)}
+                  </div>
+                </div>
+            ) : error ? (
+                <p style={{ color: '#dc2626', textAlign: 'center', padding: '40px 0' }}>{error}</p>
+            ) : course ? (
+                <div>
+                  <div style={{ display: 'flex', gap: 20, marginBottom: 20, alignItems: 'flex-start' }}>
+                    {course.thumbnailUrl ? (
+                        <img
+                            src={course.thumbnailUrl} alt={course.title}
+                            style={{ width: 120, height: 80, objectFit: 'cover', borderRadius: 10, flexShrink: 0, border: '1px solid #ebebeb' }}
+                        />
+                    ) : (
+                        <div style={{
+                          width: 120, height: 80, borderRadius: 10, flexShrink: 0,
+                          background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '2rem', color: '#c0c0c0', border: '1px solid #ebebeb',
+                        }}>
+                          📚
+                        </div>
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <h2 style={{ fontSize: '1.15rem', fontWeight: 700, margin: '0 0 6px', letterSpacing: '-0.02em', color: '#0a0a0a' }}>
+                        {course.title}
+                      </h2>
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const, alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={s.miniAvatar}>{course.author?.name?.[0]?.toUpperCase()}</div>
+                          <div>
+                            <p style={{ fontSize: '0.8rem', fontWeight: 500, margin: 0, color: '#0a0a0a' }}>{course.author?.name}</p>
+                            <p style={{ fontSize: '0.72rem', color: '#9a9a9a', margin: 0 }}>{course.author?.email}</p>
+                          </div>
+                        </div>
+                        {course.rating != null && (
+                            <span style={{ fontSize: '0.8rem', color: '#5a5a5a', marginLeft: 8 }}>⭐ {Number(course.rating).toFixed(1)}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 20 }}>
+                    {[
+                      { label: 'Ціна', value: course.price === 0 ? 'Безкоштовно' : `${course.price} ₴` },
+                      { label: 'Рівень', value: levelLabel[course.level] ?? course.level },
+                      { label: 'Уроків', value: String(totalLessons) },
+                      { label: 'Тривалість', value: totalDuration > 0 ? formatDuration(totalDuration) : '—' },
+                    ].map(m => (
+                        <div key={m.label} style={{ background: '#fafafa', border: '1px solid #ebebeb', borderRadius: 10, padding: '12px 14px' }}>
+                          <p style={{ fontSize: '0.65rem', color: '#9a9a9a', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 4px' }}>{m.label}</p>
+                          <p style={{ fontSize: '0.9rem', fontWeight: 600, margin: 0, color: '#0a0a0a' }}>{m.value}</p>
+                        </div>
+                    ))}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 16, marginBottom: 18, flexWrap: 'wrap' as const }}>
+                    {course.category && (
+                        <span style={{ fontSize: '0.78rem', background: '#f0f0f0', borderRadius: 6, padding: '3px 10px', color: '#5a5a5a' }}>
+                          🏷 {course.category}
+                        </span>
+                    )}
+                    <span style={{ fontSize: '0.78rem', background: '#f0f0f0', borderRadius: 6, padding: '3px 10px', color: '#5a5a5a' }}>
+                      📅 Створено {new Date(course.createdAt).toLocaleDateString('uk-UA')}
+                    </span>
+                    <span style={{ fontSize: '0.78rem', background: '#f0f0f0', borderRadius: 6, padding: '3px 10px', color: '#5a5a5a' }}>
+                      🔄 Оновлено {new Date(course.updatedAt).toLocaleDateString('uk-UA')}
+                    </span>
+                  </div>
+
+                  <div style={{ marginBottom: 24 }}>
+                    <p style={{ fontSize: '0.65rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#9a9a9a', marginBottom: 8 }}>Опис</p>
+                    <p style={{
+                      fontSize: '0.875rem', color: '#2a2a2a', lineHeight: 1.7,
+                      background: '#fafafa', border: '1px solid #ebebeb',
+                      borderRadius: 10, padding: '14px 16px', margin: 0,
+                      whiteSpace: 'pre-wrap' as const,
+                    }}>
+                      {course.description || <span style={{ color: '#9a9a9a', fontStyle: 'italic' }}>Опис відсутній</span>}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p style={{ fontSize: '0.65rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#9a9a9a', marginBottom: 12 }}>
+                      Програма курсу ({course.modules?.length ?? 0} {(course.modules?.length ?? 0) === 1 ? 'модуль' : 'модулі(ів)'})
+                    </p>
+                    {!course.modules?.length ? (
+                        <p style={{ color: '#9a9a9a', fontSize: '0.875rem', fontStyle: 'italic' }}>Модулі ще не додані</p>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {course.modules.map((mod, mi) => (
+                              <ModuleAccordion key={mod.id} mod={mod} index={mi} lessonTypeLabel={lessonTypeLabel} formatDuration={formatDuration} />
+                          ))}
+                        </div>
+                    )}
+                  </div>
+                </div>
+            ) : null}
+          </div>
+        </div>
+      </div>
+  );
+}
+
+function ModuleAccordion({
+                           mod, index, lessonTypeLabel, formatDuration,
+                         }: {
+  mod: CourseModuleDetail;
+  index: number;
+  lessonTypeLabel: Record<string, string>;
+  formatDuration: (s: number) => string;
+}) {
+  const [open, setOpen] = React.useState(index === 0);
+  const totalSec = mod.lessons?.reduce((s, l) => s + (l.durationSec ?? 0), 0) ?? 0;
+
+  return (
+      <div style={{ border: '1.5px solid #ebebeb', borderRadius: 10, overflow: 'hidden' }}>
+        <button
+            onClick={() => setOpen(o => !o)}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '12px 16px', background: '#fafafa', border: 'none', cursor: 'pointer',
+              fontFamily: 'inherit', textAlign: 'left' as const,
+            }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{
+              width: 22, height: 22, borderRadius: '50%',
+              background: '#0a0a0a', color: '#fff',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '0.65rem', fontWeight: 700, flexShrink: 0,
+            }}>{index + 1}</span>
+            <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#0a0a0a' }}>{mod.title}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+            <span style={{ fontSize: '0.75rem', color: '#9a9a9a' }}>
+              {mod.lessons?.length ?? 0} уроків{totalSec > 0 ? ` · ${formatDuration(totalSec)}` : ''}
+            </span>
+            <span style={{ fontSize: '0.75rem', color: '#9a9a9a' }}>{open ? '▲' : '▼'}</span>
+          </div>
+        </button>
+        {open && (
+            <div style={{ borderTop: '1px solid #ebebeb' }}>
+              {!mod.lessons?.length ? (
+                  <p style={{ padding: '12px 16px', fontSize: '0.8rem', color: '#9a9a9a', fontStyle: 'italic' }}>Уроків немає</p>
+              ) : (
+                  mod.lessons.map((lesson, li) => (
+                      <div
+                          key={lesson.id}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 12,
+                            padding: '10px 16px',
+                            borderBottom: li < mod.lessons.length - 1 ? '1px solid #f5f5f5' : 'none',
+                            background: '#fff',
+                          }}
+                      >
+                        <span style={{ fontSize: '0.72rem', color: '#c0c0c0', width: 20, flexShrink: 0, textAlign: 'right' as const }}>
+                          {li + 1}
+                        </span>
+                        <span style={{
+                          fontSize: '0.7rem', padding: '2px 7px', borderRadius: 5,
+                          background: '#f0f0f0', color: '#5a5a5a', flexShrink: 0,
+                        }}>
+                          {lessonTypeLabel[lesson.type] ?? lesson.type}
+                        </span>
+                        <span style={{ fontSize: '0.85rem', color: '#0a0a0a', flex: 1 }}>{lesson.title}</span>
+                        {lesson.isFree && (
+                            <span style={{ fontSize: '0.68rem', background: '#f0fdf4', color: '#16a34a', padding: '2px 7px', borderRadius: 5, flexShrink: 0 }}>
+                              Безкоштовно
+                            </span>
+                        )}
+                        {lesson.durationSec > 0 && (
+                            <span style={{ fontSize: '0.75rem', color: '#9a9a9a', flexShrink: 0 }}>{formatDuration(lesson.durationSec)}</span>
+                        )}
+                      </div>
+                  ))
+              )}
+            </div>
+        )}
+      </div>
+  );
+}
+
 function CoursesTab() {
   const toast = useToast();
   const [courses, setCourses]         = useState<AdminCourse[]>([]);
   const [search, setSearch]           = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [loading, setLoading]         = useState(true);
+  const [viewCourseId, setViewCourseId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const params = new URLSearchParams();
@@ -480,6 +787,9 @@ function CoursesTab() {
 
   return (
       <div>
+        {viewCourseId && (
+            <CourseDetailModal courseId={viewCourseId} onClose={() => setViewCourseId(null)} />
+        )}
         <p style={s.pageTitle}>Курси {!loading && `(${courses.length})`}</p>
 
         <div style={s.filterRow}>
@@ -555,9 +865,17 @@ function CoursesTab() {
                   </span>
                   </td>
                   <td style={s.td}>
-                    <button style={{ ...s.actionBtn, ...s.actionBtnDanger }} onClick={() => handleDelete(c.id)}>
-                      Видалити
-                    </button>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button
+                          style={s.actionBtn}
+                          onClick={() => setViewCourseId(c.id)}
+                      >
+                        👁 Переглянути
+                      </button>
+                      <button style={{ ...s.actionBtn, ...s.actionBtnDanger }} onClick={() => handleDelete(c.id)}>
+                        Видалити
+                      </button>
+                    </div>
                   </td>
                 </tr>
             ))}
@@ -569,26 +887,30 @@ function CoursesTab() {
   );
 }
 
+
 function ReviewsTab() {
   const toast = useToast();
-  const [reviews, setReviews] = useState<PendingReview[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [reviews, setReviews]   = useState<PendingReview[]>([]);
+  const [loading, setLoading]   = useState(true);
+  const [filter, setFilter]     = useState<'pending' | 'all'>('pending');
 
-  const load = async () => {
+  const load = useCallback(async (f: 'pending' | 'all') => {
+    setLoading(true);
     try {
-      const data = await apiFetch<PendingReview[]>('/reviews/admin/pending');
+      const url = f === 'pending' ? '/reviews/admin/all?pending=true' : '/reviews/admin/all';
+      const data = await apiFetch<PendingReview[]>(url);
       setReviews(data);
     } catch { toast.error('Не вдалось завантажити відгуки'); }
     finally { setLoading(false); }
-  };
+  }, []);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(filter); }, [filter, load]);
 
   const approve = async (id: string) => {
     try {
       await apiFetch(`/reviews/admin/${id}/approve`, { method: 'PATCH' });
       toast.success('Відгук схвалено');
-      setReviews(prev => prev.filter(r => r.id !== id));
+      load(filter);
     } catch { toast.error('Помилка'); }
   };
 
@@ -596,57 +918,75 @@ function ReviewsTab() {
     try {
       await apiFetch(`/reviews/${id}`, { method: 'DELETE' });
       toast.info('Відгук відхилено');
-      setReviews(prev => prev.filter(r => r.id !== id));
+      load(filter);
     } catch { toast.error('Помилка'); }
   };
 
-  if (loading) return (
-      <div>
-        <p style={s.pageTitle}>Відгуки на модерацію</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {[0,1,2].map(i => (
-              <div key={i} style={s.card}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-                  <Skeleton width={160} height={14} />
-                  <Skeleton width={80} height={14} />
-                </div>
-                <Skeleton width={200} height={12} style={{ marginBottom: 10 }} />
-                <Skeleton height={40} borderRadius={8} style={{ marginBottom: 14 }} />
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <Skeleton width={90} height={32} borderRadius={8} />
-                  <Skeleton width={90} height={32} borderRadius={8} />
-                </div>
-              </div>
-          ))}
-        </div>
-      </div>
-  );
+  const pendingCount = reviews.filter(r => !r.isApproved).length;
 
   return (
       <div>
-        <p style={s.pageTitle}>Відгуки на модерацію ({reviews.length})</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
+          <p style={{ ...s.pageTitle, marginBottom: 0 }}>Відгуки {!loading && `(${reviews.length})`}</p>
+          <div style={{ display: 'flex', gap: 4, marginLeft: 'auto' }}>
+            {(['pending', 'all'] as const).map(f => (
+                <button
+                    key={f}
+                    style={{ ...s.periodBtn, ...(filter === f ? s.periodBtnActive : {}) }}
+                    onClick={() => setFilter(f)}
+                >
+                  {f === 'pending' ? `На модерацію${pendingCount > 0 && !loading ? ` (${pendingCount})` : ''}` : 'Всі'}
+                </button>
+            ))}
+          </div>
+        </div>
 
-        {reviews.length === 0 ? (
+        {loading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {[0,1,2].map(i => (
+                  <div key={i} style={s.card}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+                      <Skeleton width={160} height={14} />
+                      <Skeleton width={80} height={14} />
+                    </div>
+                    <Skeleton width={200} height={12} style={{ marginBottom: 10 }} />
+                    <Skeleton height={40} borderRadius={8} style={{ marginBottom: 14 }} />
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <Skeleton width={90} height={32} borderRadius={8} />
+                      <Skeleton width={90} height={32} borderRadius={8} />
+                    </div>
+                  </div>
+              ))}
+            </div>
+        ) : reviews.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '80px 0' }}>
-              <p style={{ fontSize: '2rem', marginBottom: 12 }}>✓</p>
-              <p style={{ color: '#9a9a9a', fontSize: '0.9rem' }}>Всі відгуки перевірено</p>
+              <p style={{ fontSize: '2rem', marginBottom: 12 }}>{filter === 'pending' ? '✓' : '💬'}</p>
+              <p style={{ color: '#9a9a9a', fontSize: '0.9rem' }}>
+                {filter === 'pending' ? 'Всі відгуки перевірено' : 'Відгуків ще немає'}
+              </p>
             </div>
         ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {reviews.map(r => (
-                  <div key={r.id} style={s.card}>
+                  <div key={r.id} style={{ ...s.card, opacity: r.isApproved ? 0.75 : 1 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                       <div>
                         <p style={{ fontSize: '0.875rem', fontWeight: 600 }}>{r.user.name}</p>
                         <p style={{ fontSize: '0.75rem', color: '#9a9a9a' }}>{r.user.email}</p>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ color: '#0a0a0a', letterSpacing: 1, fontSize: '0.9rem' }}>
-                    {'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}
-                  </span>
+                        <span style={{ color: '#f59e0b', letterSpacing: 1, fontSize: '0.9rem' }}>
+                          {'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}
+                        </span>
+                        <span style={{
+                          ...s.badge,
+                          ...(r.isApproved ? s.badgeGreen : { background: '#fffbeb', color: '#d97706' }),
+                        }}>
+                          {r.isApproved ? 'Схвалено' : 'Очікує'}
+                        </span>
                         <span style={{ fontSize: '0.75rem', color: '#9a9a9a' }}>
-                    {new Date(r.createdAt).toLocaleDateString('uk-UA')}
-                  </span>
+                          {new Date(r.createdAt).toLocaleDateString('uk-UA')}
+                        </span>
                       </div>
                     </div>
 
@@ -664,10 +1004,12 @@ function ReviewsTab() {
                         </p>
                     )}
 
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button style={s.btnApprove} onClick={() => approve(r.id)}>Схвалити</button>
-                      <button style={s.btnReject}  onClick={() => reject(r.id)}>Відхилити</button>
-                    </div>
+                    {!r.isApproved && (
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button style={s.btnApprove} onClick={() => approve(r.id)}>Схвалити</button>
+                          <button style={s.btnReject}  onClick={() => reject(r.id)}>Відхилити</button>
+                        </div>
+                    )}
                   </div>
               ))}
             </div>
@@ -675,6 +1017,7 @@ function ReviewsTab() {
       </div>
   );
 }
+
 interface AdminPromo {
   id: string;
   code: string;

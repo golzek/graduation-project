@@ -21,8 +21,8 @@ export class CreateReviewDto {
 @Injectable()
 export class ReviewService {
   constructor(
-    @InjectRepository(Review)     private reviewRepo:     Repository<Review>,
-    @InjectRepository(Enrollment) private enrollmentRepo: Repository<Enrollment>,
+      @InjectRepository(Review)     private reviewRepo:     Repository<Review>,
+      @InjectRepository(Enrollment) private enrollmentRepo: Repository<Enrollment>,
   ) {}
 
   async create(courseId: string, dto: CreateReviewDto, user: User) {
@@ -41,7 +41,7 @@ export class ReviewService {
       order: { createdAt: 'DESC' },
     });
     const avgRating = reviews.length
-      ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
+        ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
     return {
       reviews: reviews.map(r => ({ ...r, user: { id: r.user.id, name: r.user.name, avatarUrl: r.user.avatarUrl } })),
       avgRating: Math.round(avgRating * 10) / 10,
@@ -65,6 +65,11 @@ export class ReviewService {
 
   findPending() {
     return this.reviewRepo.find({ where: { isApproved: false }, relations: ['user', 'course'], order: { createdAt: 'ASC' } });
+  }
+
+  findAll(onlyPending?: boolean) {
+    const where = onlyPending ? { isApproved: false } : {};
+    return this.reviewRepo.find({ where, relations: ['user', 'course'], order: { createdAt: 'DESC' } });
   }
 
   async approve(id: string) {

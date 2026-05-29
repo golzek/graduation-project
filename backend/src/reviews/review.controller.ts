@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ReviewService, CreateReviewDto } from './review.service';
 import { JwtAuthGuard, RolesGuard, Roles, CurrentUser } from '../auth/auth.guards';
@@ -15,6 +15,15 @@ export class ReviewController {
   @ApiBearerAuth('JWT')
   @ApiOperation({ summary: 'Відгуки на модерацію' })
   pending() { return this.svc.findPending(); }
+
+  @Get('admin/all')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @ApiBearerAuth('JWT')
+  @ApiOperation({ summary: 'Всі відгуки (з фільтром pending)' })
+  allReviews(@Query('pending') pending?: string) {
+    return this.svc.findAll(pending === 'true');
+  }
 
   @Patch('admin/:id/approve')
   @UseGuards(JwtAuthGuard, RolesGuard)

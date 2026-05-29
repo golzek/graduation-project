@@ -18,6 +18,7 @@ export function CoursePage() {
   const [enrolling, setEnrolling] = useState(false);
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
   const [certModal, setCertModal] = useState<{ pdfUrl: string; verifyCode: string } | null>(null);
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
 
   useEffect(() => {
     if (course?.modules?.length) {
@@ -165,6 +166,13 @@ export function CoursePage() {
                 <a href="/certificates" style={modal.btnOutline}>Мої сертифікати</a>
                 {certModal.verifyCode && (
                     <p style={modal.code}>Код верифікації: <code>{certModal.verifyCode}</code></p>
+                )}
+                {!reviewSubmitted ? (
+                    <ReviewForm courseId={id!} onSubmitted={() => setReviewSubmitted(true)} />
+                ) : (
+                    <div style={{ marginTop: 16, padding: '10px 14px', background: '#f0fdf4', borderRadius: 8, fontSize: '0.82rem', color: '#16a34a' }}>
+                      ✓ Дякуємо за відгук! Він з'явиться після модерації.
+                    </div>
                 )}
                 <button style={modal.close} onClick={() => setCertModal(null)}>✕</button>
               </div>
@@ -400,6 +408,76 @@ const ps: Record<string, React.CSSProperties> = {
     background: '#0a0a0a', color: '#fafafa', fontSize: '0.85rem', cursor: 'default',
   },
 };
+
+function ReviewForm({ courseId, onSubmitted }: { courseId: string; onSubmitted: () => void }) {
+  const [rating, setRating]     = useState(0);
+  const [hovered, setHovered]   = useState(0);
+  const [body, setBody]         = useState('');
+  const [submitting, setSub]    = useState(false);
+  const [err, setErr]           = useState('');
+
+  const handleSubmit = async () => {
+    if (!rating) { setErr('Оберіть оцінку'); return; }
+    setSub(true); setErr('');
+    try {
+      await apiFetch(`/reviews/${courseId}`, {
+        method: 'POST',
+        body: JSON.stringify({ rating, body: body.trim() || undefined }),
+      });
+      onSubmitted();
+    } catch (e: any) {
+      setErr(e.message ?? 'Помилка відправки');
+    } finally { setSub(false); }
+  };
+
+  return (
+      <div style={{ marginTop: 20, borderTop: '1px solid #f0f0f0', paddingTop: 18, textAlign: 'left' }}>
+        <p style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0a0a0a', marginBottom: 10 }}>
+          Залишити відгук про курс
+        </p>
+        <div style={{ display: 'flex', gap: 6, marginBottom: 12, justifyContent: 'center' }}>
+          {[1,2,3,4,5].map(s => (
+              <button
+                  key={s}
+                  onMouseEnter={() => setHovered(s)}
+                  onMouseLeave={() => setHovered(0)}
+                  onClick={() => setRating(s)}
+                  style={{
+                    fontSize: '1.6rem', background: 'none', border: 'none',
+                    cursor: 'pointer', lineHeight: 1, padding: '2px 4px',
+                    color: s <= (hovered || rating) ? '#f59e0b' : '#d1d5db',
+                    transition: 'color 0.1s',
+                  }}
+              >★</button>
+          ))}
+        </div>
+        <textarea
+            placeholder="Напишіть свій відгук (необов'язково)..."
+            value={body}
+            onChange={e => setBody(e.target.value)}
+            rows={3}
+            style={{
+              width: '100%', boxSizing: 'border-box' as const,
+              padding: '9px 12px', border: '1.5px solid #ebebeb',
+              borderRadius: 8, fontSize: '0.82rem', fontFamily: 'inherit',
+              resize: 'vertical' as const, outline: 'none', marginBottom: 8,
+            }}
+        />
+        {err && <p style={{ fontSize: '0.75rem', color: '#dc2626', marginBottom: 6 }}>{err}</p>}
+        <button
+            onClick={handleSubmit}
+            disabled={submitting}
+            style={{
+              width: '100%', padding: '10px', borderRadius: 8,
+              background: submitting ? '#9a9a9a' : '#0a0a0a',
+              color: '#fff', border: 'none', fontSize: '0.85rem',
+              fontWeight: 500, cursor: submitting ? 'default' : 'pointer',
+              fontFamily: 'inherit',
+            }}
+        >{submitting ? 'Відправка...' : 'Надіслати відгук'}</button>
+      </div>
+  );
+}
 
 const s: Record<string, React.CSSProperties> = {
   page:    { minHeight: '100vh', background: '#fafafa' },

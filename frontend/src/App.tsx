@@ -23,6 +23,7 @@ import { WishlistPage } from './pages/WishlistPage';
 import { WishlistProvider } from './context/WishlistContext';
 import { SubscriptionPage } from './pages/SubscriptionPage';
 import { InstructorPage } from './pages/InstructorPage';
+import { CourseAnalyticsPage } from './pages/CourseAnalyticsPage';
 import { TermsPage } from './pages/TermsPage';
 import { PrivacyPage } from './pages/PrivacyPage';
 
@@ -67,6 +68,12 @@ function AppRoutes() {
               <Route path="/teacher" element={
                 <ProtectedRoute roles={['teacher', 'admin']}>
                   <TeacherDashboard />
+                </ProtectedRoute>
+              }/>
+
+              <Route path="/analytics/courses/:id" element={
+                <ProtectedRoute roles={['teacher', 'admin']}>
+                  <CourseAnalyticsPage />
                 </ProtectedRoute>
               }/>
 
