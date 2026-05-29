@@ -8,11 +8,11 @@ export function Footer() {
         <footer style={s.footer}>
             <div style={s.inner}>
                 <div style={s.brand}>
-                    <Link to="/courses" style={s.logo}>ELearn</Link>
+                    <Link to="/courses" style={s.logo}>LearnHub</Link>
                     <p style={s.tagline}>
                         Навчайся. Розвивайся. Досягай.
                     </p>
-                    <p style={s.copy}>© {year} ELearn. Всі права захищені.</p>
+                    <p style={s.copy}>© {year} LearnHub. Всі права захищені.</p>
                 </div>
 
                 <div style={s.col}>

@@ -24,6 +24,7 @@ import { PromoCode } from './promo-codes/promo-code.entity';
 import { PromoCodeModule } from './promo-codes/promo-code.module';
 import { Notification }        from './notifications/notification.entity';
 import { Wishlist } from './wishlist/wishlist.entity';
+import { WishlistModule } from './wishlist/wishlist.module';
 import { InstructorModule } from './instructor/instructor.module';
 import { Referral } from './referral/referral.entity';
 import { ReferralModule } from './referral/referral.module';
@@ -31,6 +32,8 @@ import { PayoutRequest } from './payouts/payout-request.entity';
 import { PayoutModule }  from './payouts/payout.module';
 import { QaQuestion, QaAnswer } from './qa/qa.entity';
 import { QaModule } from './qa/qa.module';
+import { Subscription } from './subscription/subscription.entity';
+import { SubscriptionModule } from './subscription/subscription.module';
 
 @Module({
   imports: [
@@ -57,7 +60,7 @@ import { QaModule } from './qa/qa.module';
         entities: [
           User, Course, CourseModule, Lesson, Enrollment, Progress,
           Certificate, Review, Notification, PromoCode, Wishlist,
-          Referral, PayoutRequest, QaQuestion, QaAnswer,
+          Referral, PayoutRequest, QaQuestion, QaAnswer, Subscription,
         ],
         synchronize: false,
         decimalNumbers: true,
@@ -85,6 +88,8 @@ import { QaModule } from './qa/qa.module';
     ReferralModule,
     PayoutModule,
     QaModule,
+    SubscriptionModule,
+    WishlistModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
