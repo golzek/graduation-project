@@ -14,7 +14,7 @@ export class WayForPayService {
         this.merchantAccount   = config.get('WFP_MERCHANT_ACCOUNT');
         this.merchantSecretKey = config.get('WFP_MERCHANT_SECRET_KEY');
         this.merchantDomain    = config.get('WFP_MERCHANT_DOMAIN', 'graduation-frontend.onrender.com');
-        this.resultUrl         = config.get('WFP_RESULT_URL', 'https://elearning-backend-hhfg.onrender.com/payments/return');
+        this.resultUrl         = config.get('WFP_RESULT_URL', 'https://graduation-frontend.onrender.com/payment/result');
         this.serverUrl         = config.get('WFP_SERVER_URL', 'https://elearning-backend-hhfg.onrender.com/payments/callback');
     }
 
@@ -51,16 +51,17 @@ export class WayForPayService {
 
         const formData: Record<string, string> = {
             merchantAccount:   this.merchantAccount,
-            merchantDomain:    this.merchantDomain,
+            merchantAuthType:  'SimpleSignature',
+            merchantDomainName: this.merchantDomain,
             merchantSignature,
             orderReference,
             orderDate:         String(orderDate),
-            amount:            productPrice,
+            amount:            String(amount),
             currency,
             orderTimeout:      '49000',
-            productName,
-            productCount,
-            productPrice,
+            'productName[]':   productName,
+            'productCount[]':  productCount,
+            'productPrice[]':  productPrice,
             returnUrl:         this.resultUrl,
             serviceUrl:        this.serverUrl,
         };
@@ -97,19 +98,20 @@ export class WayForPayService {
         const merchantSignature = this.sign(signatureString);
 
         const formData: Record<string, string> = {
-            merchantAccount:   this.merchantAccount,
-            merchantDomain:    this.merchantDomain,
+            merchantAccount:    this.merchantAccount,
+            merchantAuthType:   'SimpleSignature',
+            merchantDomainName: this.merchantDomain,
             merchantSignature,
-            orderReference:    params.orderId,
-            orderDate:         String(orderDate),
-            amount:            productPrice,
+            orderReference:     params.orderId,
+            orderDate:          String(orderDate),
+            amount:             String(amount),
             currency,
-            orderTimeout:      '49000',
-            productName,
-            productCount,
-            productPrice,
-            returnUrl:         `${this.resultUrl}?type=subscription`,
-            serviceUrl:        this.serverUrl,
+            orderTimeout:       '49000',
+            'productName[]':    productName,
+            'productCount[]':   productCount,
+            'productPrice[]':   productPrice,
+            returnUrl:          `${this.resultUrl}?type=subscription`,
+            serviceUrl:         this.serverUrl,
         };
 
         return { formData, action: 'https://secure.wayforpay.com/pay' };
