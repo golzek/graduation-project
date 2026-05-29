@@ -5,6 +5,7 @@ import { useCourse, useCourseProgress, useCourseActions, Lesson, CourseModule } 
 import { useAuth, apiFetch } from '../context/AuthContext';
 import { WishlistButton } from '../components/WishlistButton';
 import { LessonQA } from '../components/LessonQA';
+import { PaymentButton } from '../components/PaymentButton';
 
 export function CoursePage() {
   const { id } = useParams<{ id: string }>();
@@ -102,10 +103,17 @@ export function CoursePage() {
 
               {course.isEnrolled ? (
                   <button style={s.btnOutline}>Продовжити навчання</button>
-              ) : (
+              ) : Number(course.price) === 0 ? (
                   <button style={s.btnPrimary} onClick={handleEnroll} disabled={enrolling}>
-                    {enrolling ? 'Записуємось...' : Number(course.price) === 0 ? 'Записатись' : 'Придбати'}
+                    {enrolling ? 'Записуємось...' : 'Записатись'}
                   </button>
+              ) : (
+                  <PaymentButton
+                      courseId={course.id}
+                      price={Number(course.price)}
+                      title={course.title}
+                      onSuccess={() => window.location.reload()}
+                  />
               )}
 
               {!course.isEnrolled && (
