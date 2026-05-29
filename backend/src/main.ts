@@ -4,11 +4,13 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import * as express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  app.useBodyParser('urlencoded', { extended: true });
+  app.use(express.urlencoded({ extended: true }));
+  app.use(express.json());
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 

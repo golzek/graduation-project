@@ -1,6 +1,6 @@
 import {
   Controller, Post, Get, Body, Param,
-  UseGuards, HttpCode, Res,
+  UseGuards, HttpCode, Res, Query,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -178,12 +178,20 @@ export class PaymentController {
     }
   }
 
+  @Get('return')
+  @ApiOperation({ summary: 'WayForPay returnUrl GET redirect handler' })
+  async handleReturnGet(@Query() query: Record<string, any>, @Res() res: Response) {
+    console.log('[WFP return GET] query:', JSON.stringify(query));
+    const frontendUrl = process.env.FRONTEND_URL ?? 'https://graduation-frontend.onrender.com';
+    const orderRef = query.orderReference ?? query.order_id ?? '';
+    const status = (query.transactionStatus === 'Approved' || query.reasonCode === '1100') ? 'success' : 'failure';
+    return res.redirect(`${frontendUrl}/payment/result?status=${status}&order_id=${orderRef}`);
+  }
+
   @Post('return')
   @HttpCode(302)
   @ApiOperation({ summary: 'WayForPay returnUrl — приймає POST і редіректить на фронтенд' })
   async handleReturn(@Body() body: Record<string, any>, @Res() res: Response) {
-    console.log('[WFP return] headers:', JSON.stringify({}));
-    console.log('[WFP return] body:', JSON.stringify(body));
     const frontendUrl = process.env.FRONTEND_URL ?? 'https://graduation-frontend.onrender.com';
     const orderId     = body.orderReference ?? '';
     const reasonCode  = body.reasonCode;
