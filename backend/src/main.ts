@@ -8,6 +8,8 @@ import { join } from 'path';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  app.useBodyParser('urlencoded', { extended: true });
+
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   app.enableCors({
@@ -17,21 +19,21 @@ async function bootstrap() {
   app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' });
 
   const swagger = new DocumentBuilder()
-    .setTitle('E-Learning Platform API')
-    .setDescription('Вебплатформа для онлайн-навчання — дипломний проект')
-    .setVersion('1.0')
-    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'JWT')
-    .addTag('auth',         'Аутентифікація та профіль')
-    .addTag('courses',      'Курси, модулі, уроки')
-    .addTag('reviews',      'Відгуки та рейтинги')
-    .addTag('certificates', 'Сертифікати')
-    .addTag('analytics',    'Аналітика для викладачів')
-    .addTag('admin',        'Адміністрування платформи')
-    .build();
+      .setTitle('E-Learning Platform API')
+      .setDescription('Вебплатформа для онлайн-навчання — дипломний проект')
+      .setVersion('1.0')
+      .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'JWT')
+      .addTag('auth',         'Аутентифікація та профіль')
+      .addTag('courses',      'Курси, модулі, уроки')
+      .addTag('reviews',      'Відгуки та рейтинги')
+      .addTag('certificates', 'Сертифікати')
+      .addTag('analytics',    'Аналітика для викладачів')
+      .addTag('admin',        'Адміністрування платформи')
+      .build();
 
   SwaggerModule.setup('api/docs', app,
-    SwaggerModule.createDocument(app, swagger),
-    { swaggerOptions: { persistAuthorization: true } },
+      SwaggerModule.createDocument(app, swagger),
+      { swaggerOptions: { persistAuthorization: true } },
   );
 
   const port = process.env.PORT ?? 3000;
