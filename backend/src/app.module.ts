@@ -34,6 +34,8 @@ import { QaQuestion, QaAnswer } from './qa/qa.entity';
 import { QaModule } from './qa/qa.module';
 import { Subscription } from './subscription/subscription.entity';
 import { SubscriptionModule } from './subscription/subscription.module';
+import { AuditLog } from './audit/audit-log.entity';
+import { AuditModule } from './audit/audit.module';
 
 @Module({
   imports: [
@@ -60,7 +62,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
         entities: [
           User, Course, CourseModule, Lesson, Enrollment, Progress,
           Certificate, Review, Notification, PromoCode, Wishlist,
-          Referral, PayoutRequest, QaQuestion, QaAnswer, Subscription,
+          Referral, PayoutRequest, QaQuestion, QaAnswer, Subscription, AuditLog,
         ],
         synchronize: false,
         decimalNumbers: true,
@@ -90,6 +92,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
     QaModule,
     SubscriptionModule,
     WishlistModule,
+    AuditModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

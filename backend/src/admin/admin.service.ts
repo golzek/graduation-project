@@ -5,6 +5,7 @@ import { IsEnum, IsOptional, IsBoolean, IsString, MaxLength, IsNotEmpty } from '
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { User, UserRole } from '../users/user.entity';
 import { Course, CourseStatus, Enrollment, Lesson, Progress } from '../courses/course.entity';
+import { Certificate } from '../certificates/certificate.entity';
 import { NotificationService } from '../notifications/notification.service';
 
 export class UpdateUserDto {
@@ -34,6 +35,7 @@ export class AdminService {
       @InjectRepository(Enrollment) private enrollmentRepo: Repository<Enrollment>,
       @InjectRepository(Lesson)     private lessonRepo:     Repository<Lesson>,
       @InjectRepository(Progress)   private progressRepo:   Repository<Progress>,
+      @InjectRepository(Certificate) private certRepo:        Repository<Certificate>,
       private readonly notifSvc: NotificationService,
   ) {}
 
@@ -279,7 +281,78 @@ export class AdminService {
       })),
       granularity: trunc,
       dateFrom: dateFrom?.toISOString() ?? null,
-      dateTo: dateTo?.toISOString() ?? null,
+      dateTo: (dateTo ?? new Date()).toISOString(),
     };
+  }
+
+  async getTeachersStats() {
+    const teachers = await this.userRepo.find({
+      where: { role: UserRole.TEACHER, isActive: true },
+      select: ['id', 'name', 'email', 'createdAt'],
+      order: { createdAt: 'DESC' },
+    });
+
+    if (!teachers.length) return [];
+
+    const teacherIds = teachers.map(t => t.id);
+
+    const revenueRows = await this.enrollmentRepo
+        .createQueryBuilder('e')
+        .leftJoin('e.course', 'c')
+        .select('c."authorId"', 'teacherId')
+        .addSelect('SUM(e."paidPrice")', 'revenue')
+        .addSelect('COUNT(e.id)', 'enrollments')
+        .where('c."authorId" IN (:...ids)', { ids: teacherIds })
+        .groupBy('c."authorId"')
+        .getRawMany();
+
+    const courseRows = await this.courseRepo
+        .createQueryBuilder('c')
+        .select('c."authorId"', 'teacherId')
+        .addSelect('COUNT(c.id)', 'total')
+        .addSelect(`COUNT(CASE WHEN c.status = 'published' THEN 1 END)`, 'published')
+        .addSelect(`COUNT(CASE WHEN c.status = 'pending' THEN 1 END)`, 'pending')
+        .where('c."authorId" IN (:...ids)', { ids: teacherIds })
+        .groupBy('c."authorId"')
+        .getRawMany();
+
+    const certRows = await this.certRepo
+        .createQueryBuilder('cert')
+        .leftJoin('cert.course', 'c')
+        .select('c."authorId"', 'teacherId')
+        .addSelect('COUNT(cert.id)', 'certificates')
+        .where('c."authorId" IN (:...ids)', { ids: teacherIds })
+        .groupBy('c."authorId"')
+        .getRawMany();
+
+    const ratingRows = await this.courseRepo
+        .createQueryBuilder('c')
+        .leftJoin('reviews', 'r', 'r."courseId" = c.id')
+        .select('c."authorId"', 'teacherId')
+        .addSelect('AVG(r.rating)', 'avgRating')
+        .addSelect('COUNT(r.id)', 'reviewCount')
+        .where('c."authorId" IN (:...ids)', { ids: teacherIds })
+        .groupBy('c."authorId"')
+        .getRawMany();
+
+    const revenueMap    = Object.fromEntries(revenueRows.map(r => [r.teacherId, r]));
+    const courseMap     = Object.fromEntries(courseRows.map(r => [r.teacherId, r]));
+    const certMap       = Object.fromEntries(certRows.map(r => [r.teacherId, r]));
+    const ratingMap     = Object.fromEntries(ratingRows.map(r => [r.teacherId, r]));
+
+    return teachers.map(t => ({
+      id:           t.id,
+      name:         t.name,
+      email:        t.email,
+      joinedAt:     t.createdAt,
+      revenue:      parseFloat(revenueMap[t.id]?.revenue)     || 0,
+      enrollments:  parseInt(revenueMap[t.id]?.enrollments)   || 0,
+      totalCourses: parseInt(courseMap[t.id]?.total)          || 0,
+      published:    parseInt(courseMap[t.id]?.published)      || 0,
+      pending:      parseInt(courseMap[t.id]?.pending)        || 0,
+      certificates: parseInt(certMap[t.id]?.certificates)     || 0,
+      avgRating:    parseFloat(ratingMap[t.id]?.avgRating)    || 0,
+      reviewCount:  parseInt(ratingMap[t.id]?.reviewCount)    || 0,
+    })).sort((a, b) => b.revenue - a.revenue);
   }
 }

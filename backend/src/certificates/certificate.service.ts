@@ -7,6 +7,7 @@ import { Certificate } from './certificate.entity';
 import { Course, Enrollment, Progress } from '../courses/course.entity';
 import { User } from '../users/user.entity';
 import { StorageService } from '../storage/storage.service';
+import { NotificationService } from '../notifications/notification.service';
 
 @Injectable()
 export class CertificateService {
@@ -16,6 +17,7 @@ export class CertificateService {
       @InjectRepository(Enrollment)  private enrollmentRepo: Repository<Enrollment>,
       @InjectRepository(Progress)    private progressRepo:   Repository<Progress>,
       private readonly storage: StorageService,
+      private readonly notifSvc: NotificationService,
   ) {}
 
   async issue(courseId: string, user: User): Promise<Certificate> {
@@ -57,9 +59,13 @@ export class CertificateService {
         `${verifyCode}.pdf`,
     );
 
-    return this.certRepo.save(
+    const cert = await this.certRepo.save(
         this.certRepo.create({ userId: user.id, courseId, verifyCode, pdfUrl }),
     );
+
+    this.notifSvc.notifyCertificateIssued(user.id, courseId, course.title, verifyCode, pdfUrl).catch(() => {});
+
+    return cert;
   }
 
   async verify(code: string) {
@@ -96,7 +102,7 @@ export class CertificateService {
       const regular  = path.join(fontsDir, 'Roboto-Regular.ttf');
       const bold     = path.join(fontsDir, 'Roboto-Bold.ttf');
 
-      const doc = new PDFDocument({ size: 'A4', layout: 'landscape', margin: 60, autoFirstPage: true });
+      const doc = new PDFDocument({ size: 'A4', layout: 'landscape', margin: 0, autoFirstPage: true });
       const chunks: Buffer[] = [];
       doc.on('data', c => chunks.push(c));
       doc.on('end',  () => resolve(Buffer.concat(chunks)));
@@ -105,38 +111,44 @@ export class CertificateService {
       doc.registerFont('Regular', regular);
       doc.registerFont('Bold', bold);
 
-      const W = doc.page.width, H = doc.page.height;
+      const W = doc.page.width;
+      const H = doc.page.height;
 
       doc.rect(0, 0, W, H).fill('#fafaf8');
-      doc.rect(24, 24, W-48, H-48).lineWidth(2).stroke('#c9a84c');
-      doc.rect(30, 30, W-60, H-60).lineWidth(0.5).stroke('#c9a84c');
 
-      doc.fontSize(42).fillColor('#1e1b4b').font('Bold')
-          .text('СЕРТИФІКАТ', 0, 80, { align: 'center' });
+      doc.rect(20, 20, W - 40, H - 40).lineWidth(2).stroke('#c9a84c');
+      doc.rect(27, 27, W - 54, H - 54).lineWidth(0.5).stroke('#c9a84c');
 
-      doc.fontSize(14).fillColor('#6b7280').font('Regular')
-          .text('про успішне завершення курсу', 0, 135, { align: 'center' });
+      doc.fontSize(40).fillColor('#1e1b4b').font('Bold')
+          .text('СЕРТИФІКАТ', 0, 70, { align: 'center', width: W, lineBreak: false });
 
-      doc.moveTo(W * 0.2, 168).lineTo(W * 0.8, 168).lineWidth(1).stroke('#c9a84c');
+      doc.fontSize(13).fillColor('#6b7280').font('Regular')
+          .text('про успішне завершення курсу', 0, 122, { align: 'center', width: W, lineBreak: false });
 
-      doc.fontSize(30).fillColor('#111827').font('Bold')
-          .text(data.studentName, 60, 188, { align: 'center', width: W - 120 });
+      doc.moveTo(W * 0.2, 152).lineTo(W * 0.8, 152).lineWidth(1).stroke('#c9a84c');
 
-      doc.fontSize(14).fillColor('#6b7280').font('Regular')
-          .text('успішно завершив(-ла) курс', 0, 235, { align: 'center' });
+      doc.fontSize(28).fillColor('#111827').font('Bold')
+          .text(data.studentName, 60, 168, { align: 'center', width: W - 120, lineBreak: false });
 
-      doc.fontSize(20).fillColor('#4f46e5').font('Bold')
-          .text(`«${data.courseName}»`, 60, 262, { align: 'center', width: W - 120 });
+      doc.fontSize(13).fillColor('#6b7280').font('Regular')
+          .text('успішно завершив(-ла) курс', 0, 212, { align: 'center', width: W, lineBreak: false });
+
+      doc.fontSize(19).fillColor('#4f46e5').font('Bold')
+          .text(`«${data.courseName}»`, 80, 238, { align: 'center', width: W - 160, lineBreak: true, height: 60 });
+
+      doc.moveTo(W * 0.2, 330).lineTo(W * 0.8, 330).lineWidth(0.5).stroke('#e5e7eb');
 
       const d = data.issuedAt;
       const dateStr = `${d.getDate().toString().padStart(2,'0')}.${(d.getMonth()+1).toString().padStart(2,'0')}.${d.getFullYear()}`;
-      doc.fontSize(12).fillColor('#6b7280').font('Regular')
-          .text(`Дата видачі: ${dateStr}`, 80, H - 110);
-      doc.fontSize(12).fillColor('#6b7280').font('Regular')
-          .text(`Викладач: ${data.authorName}`, W / 2 + 20, H - 110);
 
-      doc.fontSize(10).fillColor('#9ca3af').font('Regular')
-          .text(`Код верифікації: ${data.verifyCode}`, 0, H - 60, { align: 'center' });
+      doc.fontSize(11).fillColor('#6b7280').font('Regular')
+          .text(`Дата видачі: ${dateStr}`, 60, 360, { lineBreak: false });
+
+      doc.fontSize(11).fillColor('#6b7280').font('Regular')
+          .text(`Викладач: ${data.authorName}`, W / 2, 360, { lineBreak: false });
+
+      doc.fontSize(9).fillColor('#9ca3af').font('Regular')
+          .text(`Код верифікації: ${data.verifyCode}`, 0, 400, { align: 'center', width: W, lineBreak: false });
 
       doc.end();
     });

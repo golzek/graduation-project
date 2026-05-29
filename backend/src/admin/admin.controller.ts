@@ -64,4 +64,9 @@ export class AdminController {
   @Delete('courses/:id')
   @ApiOperation({ summary: 'Видалити курс' })
   deleteCourse(@Param('id') id: string) { return this.svc.deleteCourse(id); }
+
+  @Get('teachers/stats')
+  @ApiOperation({ summary: 'Статистика по викладачах: дохід, курси, записи, рейтинг' })
+  teachersStats() { return this.svc.getTeachersStats(); }
+
 }

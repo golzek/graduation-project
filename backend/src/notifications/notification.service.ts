@@ -192,4 +192,13 @@ export class NotificationService {
             { amount, status },
         );
     }
+    async notifyCertificateIssued(userId: string, courseId: string, courseTitle: string, verifyCode: string, pdfUrl: string) {
+        await this.save(
+            userId,
+            NotificationType.CERTIFICATE_ISSUED,
+            '🏆 Сертифікат отримано',
+            `Вітаємо! Ви отримали сертифікат про завершення курсу «${courseTitle}». Перегляньте його у розділі «Мої сертифікати».`,
+            { courseId, courseTitle, verifyCode, pdfUrl },
+        );
+    }
 }

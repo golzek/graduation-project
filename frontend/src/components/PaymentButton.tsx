@@ -68,7 +68,6 @@ export function PaymentButton({ courseId, price, title, onSuccess }: PaymentButt
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = res.action;
-      form.target = '_blank';
 
       Object.entries(res.formData as Record<string, string>).forEach(([name, value]) => {
         const input = document.createElement('input');
@@ -82,7 +81,6 @@ export function PaymentButton({ courseId, price, title, onSuccess }: PaymentButt
       form.submit();
       document.body.removeChild(form);
       setLoading(false);
-      alert('Завершіть оплату у відкритому вікні. Після успішної оплати поверніться на цю сторінку.');
     } catch (err: any) { setError(err.message); setLoading(false); }
   };
 

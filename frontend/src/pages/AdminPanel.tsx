@@ -4,7 +4,7 @@ import { apiFetch } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 import { Skeleton } from '../components/Skeleton';
 
-type Tab = 'stats' | 'users' | 'courses' | 'reviews' | 'promos' | 'payouts' | 'audit';
+type Tab = 'stats' | 'users' | 'courses' | 'teachers' | 'reviews' | 'promos' | 'payouts' | 'audit';
 
 interface TopCourse {
   courseId: string;
@@ -100,6 +100,7 @@ export function AdminPanel() {
           {tab === 'stats'   && <StatsTab />}
           {tab === 'users'   && <UsersTab />}
           {tab === 'courses' && <CoursesTab />}
+          {tab === 'teachers' && <TeachersTab />}
           {tab === 'reviews' && <ReviewsTab />}
           {tab === 'promos'  && <PromosTab />}
           {tab === 'payouts' && <PayoutsTab />}
@@ -1435,3 +1436,127 @@ const s: Record<string, React.CSSProperties> = {
     fontFamily: 'inherit', fontWeight: 500,
   },
 };
+interface TeacherStat {
+  id: string; name: string; email: string; joinedAt: string;
+  revenue: number; enrollments: number;
+  totalCourses: number; published: number; pending: number;
+  certificates: number; avgRating: number; reviewCount: number;
+}
+
+function TeachersTab() {
+  const [teachers, setTeachers] = React.useState<TeacherStat[]>([]);
+  const [loading,  setLoading]  = React.useState(true);
+  const [sortBy,   setSortBy]   = React.useState<'revenue' | 'enrollments' | 'totalCourses' | 'certificates'>('revenue');
+  const [search,   setSearch]   = React.useState('');
+
+  React.useEffect(() => {
+    apiFetch<TeacherStat[]>('/admin/teachers/stats')
+        .then(d => setTeachers(d))
+        .catch(() => {})
+        .finally(() => setLoading(false));
+  }, []);
+
+  const sorted = [...teachers]
+      .filter(t => t.name.toLowerCase().includes(search.toLowerCase()) || t.email.toLowerCase().includes(search.toLowerCase()))
+      .sort((a, b) => b[sortBy] - a[sortBy]);
+
+  const totalRevenue = teachers.reduce((s, t) => s + t.revenue, 0);
+  const totalEnroll  = teachers.reduce((s, t) => s + t.enrollments, 0);
+
+  const sortButtons: { key: typeof sortBy; label: string }[] = [
+    { key: 'revenue',     label: 'За доходом' },
+    { key: 'enrollments', label: 'За записами' },
+    { key: 'totalCourses',label: 'За курсами' },
+    { key: 'certificates',label: 'За серт.' },
+  ];
+
+  return (
+      <div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
+          {[
+            { label: 'Всього викладачів', value: teachers.length },
+            { label: 'Загальний дохід',   value: `${totalRevenue.toLocaleString('uk-UA')} ₴` },
+            { label: 'Загальних записів', value: totalEnroll.toLocaleString('uk-UA') },
+          ].map(c => (
+              <div key={c.label} style={{ background: '#fff', borderRadius: 12, padding: '18px 20px', border: '1px solid #e8e8e8' }}>
+                <p style={{ fontSize: '1.6rem', fontWeight: 700, margin: 0 }}>{c.value}</p>
+                <p style={{ fontSize: '0.78rem', color: '#9a9a9a', margin: '4px 0 0' }}>{c.label}</p>
+              </div>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' as const, alignItems: 'center' }}>
+          <input
+              placeholder="Пошук за ім'ям або email..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={{ padding: '8px 12px', border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: '0.85rem', outline: 'none', width: 240 }}
+          />
+          <div style={{ display: 'flex', gap: 6 }}>
+            {sortButtons.map(b => (
+                <button key={b.key} onClick={() => setSortBy(b.key)}
+                        style={{ padding: '6px 12px', borderRadius: 8, border: '1.5px solid', fontSize: '0.78rem', cursor: 'pointer',
+                          borderColor: sortBy === b.key ? '#0a0a0a' : '#e5e7eb',
+                          background:  sortBy === b.key ? '#0a0a0a' : '#fff',
+                          color:       sortBy === b.key ? '#fff' : '#374151',
+                        }}>{b.label}</button>
+            ))}
+          </div>
+        </div>
+
+        {loading ? (
+            <p style={{ color: '#9a9a9a', padding: 24 }}>Завантаження...</p>
+        ) : sorted.length === 0 ? (
+            <p style={{ color: '#9a9a9a', padding: 24 }}>Викладачів не знайдено</p>
+        ) : (
+            <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e8e8e8', overflow: 'hidden' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' as const }}>
+                <thead>
+                <tr style={{ background: '#fafafa', borderBottom: '1px solid #e8e8e8' }}>
+                  {['#', 'Викладач', 'Дохід', 'Записів', 'Курси', 'Опубл.', 'Сертиф.', 'Рейтинг'].map(h => (
+                      <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: '0.75rem', color: '#9a9a9a', fontWeight: 600, whiteSpace: 'nowrap' as const }}>{h}</th>
+                  ))}
+                </tr>
+                </thead>
+                <tbody>
+                {sorted.map((t, i) => (
+                    <tr key={t.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                      <td style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#9a9a9a', width: 32 }}>#{i + 1}</td>
+                      <td style={{ padding: '12px 14px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: 700, flexShrink: 0 }}>
+                            {t.name?.[0]?.toUpperCase()}
+                          </div>
+                          <div>
+                            <p style={{ fontSize: '0.875rem', fontWeight: 500, margin: 0 }}>{t.name}</p>
+                            <p style={{ fontSize: '0.72rem', color: '#9a9a9a', margin: 0 }}>{t.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ padding: '12px 14px', fontWeight: 700, fontSize: '0.9rem', whiteSpace: 'nowrap' as const }}>
+                        {t.revenue > 0 ? `${t.revenue.toLocaleString('uk-UA')} ₴` : <span style={{ color: '#9a9a9a' }}>—</span>}
+                      </td>
+                      <td style={{ padding: '12px 14px', fontSize: '0.875rem' }}>{t.enrollments}</td>
+                      <td style={{ padding: '12px 14px', fontSize: '0.875rem' }}>{t.totalCourses}</td>
+                      <td style={{ padding: '12px 14px' }}>
+                        <span style={{ background: '#f0fdf4', color: '#16a34a', padding: '2px 8px', borderRadius: 6, fontSize: '0.78rem', fontWeight: 600 }}>{t.published}</span>
+                        {t.pending > 0 && <span style={{ background: '#fffbeb', color: '#d97706', padding: '2px 8px', borderRadius: 6, fontSize: '0.78rem', fontWeight: 600, marginLeft: 4 }}>{t.pending} очік.</span>}
+                      </td>
+                      <td style={{ padding: '12px 14px', fontSize: '0.875rem' }}>{t.certificates}</td>
+                      <td style={{ padding: '12px 14px' }}>
+                        {t.avgRating > 0 ? (
+                            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.875rem' }}>
+                        ⭐ {t.avgRating.toFixed(1)}
+                              <span style={{ color: '#9a9a9a', fontSize: '0.72rem' }}>({t.reviewCount})</span>
+                      </span>
+                        ) : <span style={{ color: '#9a9a9a' }}>—</span>}
+                      </td>
+                    </tr>
+                ))}
+                </tbody>
+              </table>
+            </div>
+        )}
+      </div>
+  );
+}
