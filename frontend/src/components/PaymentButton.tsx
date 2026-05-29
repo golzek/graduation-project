@@ -113,7 +113,7 @@ export function PaymentButton({ courseId, price, title, onSuccess }: PaymentButt
                     <button
                         onClick={checkPromo}
                         disabled={promoState==='checking' || !promoInput.trim()}
-                        style={{ padding:'9px 14px', borderRadius:8, border:'1.5px solid #e5e7eb', background:'#f9fafb', fontSize:13, cursor:'pointer', fontFamily:'inherit', color:'#374151', whiteSpace:'nowrap' }}
+                        style={{ padding:'9px 10px', borderRadius:8, border:'1.5px solid #e5e7eb', background:'#f9fafb', fontSize:12, cursor:'pointer', fontFamily:'inherit', color:'#374151', whiteSpace:'nowrap', flexShrink:0 }}
                     >{promoState==='checking' ? '...' : 'Застосувати'}</button>
                   </div>
               )}
@@ -138,7 +138,7 @@ export function PaymentButton({ courseId, price, title, onSuccess }: PaymentButt
 
         {price > 0 && (
             <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginTop:12 }}>
-              <img src="https://wayforpay.com/images/logo.svg" alt="WayForPay" style={{ height:20 }} />
+              <img src="https://cdn.wayforpay.com/icons/wfp-logo.png" alt="WayForPay" style={{ height:20 }} onError={e => (e.currentTarget.style.display='none')} />
               <span style={{ fontSize:11, color:'#9ca3af' }}>Безпечна оплата через WayForPay</span>
             </div>
         )}

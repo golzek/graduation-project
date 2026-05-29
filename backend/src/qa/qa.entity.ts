@@ -27,8 +27,8 @@ export class QaQuestion {
 
     @Column({ name: 'answer_count', default: 0 }) answerCount: number;
 
-    @CreateDateColumn() createdAt: Date;
-    @UpdateDateColumn() updatedAt: Date;
+    @CreateDateColumn({ name: 'created_at' }) createdAt: Date;
+    @UpdateDateColumn({ name: 'updated_at' }) updatedAt: Date;
 }
 
 @Entity('qa_answers')
@@ -49,5 +49,5 @@ export class QaAnswer {
 
     @Column({ name: 'is_instructor', default: false }) isInstructor: boolean;
 
-    @CreateDateColumn() createdAt: Date;
+    @CreateDateColumn({ name: 'created_at' }) createdAt: Date;
 }
