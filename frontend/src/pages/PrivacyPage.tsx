@@ -78,7 +78,7 @@ export function PrivacyPage() {
                 </div>
 
                 <div style={s.footer}>
-                    <Link to="/terms" style={s.footerLink}>Terms &amp; Conditions →</Link>
+                    <Link to="/terms" style={s.footerLink}>Умови користування →</Link>
                 </div>
             </div>
         </div>

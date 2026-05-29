@@ -20,13 +20,15 @@ function LevelBadge({ level }: { level: string }) {
     );
 }
 
-function StarRating({ rating }: { rating: number | null }) {
-    if (rating === null) return <span style={{ fontSize: '0.75rem', color: '#9a9a9a' }}>Без оцінок</span>;
+function StarRating({ rating }: { rating: number | string | null }) {
+    if (rating === null || rating === undefined) return <span style={{ fontSize: '0.75rem', color: '#9a9a9a' }}>Без оцінок</span>;
+    const numRating = Number(rating);
+    if (isNaN(numRating)) return <span style={{ fontSize: '0.75rem', color: '#9a9a9a' }}>Без оцінок</span>;
     return (
         <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <span style={{ color: '#f59e0b', fontSize: '0.8rem' }}>★</span>
             <span style={{ fontSize: '0.8rem', fontWeight: 500, color: '#0a0a0a' }}>
-                {rating.toFixed(1)}
+                {numRating.toFixed(1)}
             </span>
         </span>
     );

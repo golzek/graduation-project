@@ -75,7 +75,7 @@ export function TermsPage() {
                 </div>
 
                 <div style={s.footer}>
-                    <Link to="/privacy" style={s.footerLink}>Privacy Policy →</Link>
+                    <Link to="/privacy" style={s.footerLink}>Політика конфіденційності →</Link>
                 </div>
             </div>
         </div>

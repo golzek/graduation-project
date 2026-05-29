@@ -35,18 +35,18 @@ export class Subscription {
     @Column({ type: 'enum', enum: SubscriptionStatus, default: SubscriptionStatus.ACTIVE })
     status: SubscriptionStatus;
 
-    @Column({ type: 'decimal', precision: 8, scale: 2 })
+    @Column({ name: 'paid_price', type: 'decimal', precision: 8, scale: 2 })
     paidPrice: number;
 
-    @Column({ nullable: true })
+    @Column({ name: 'order_id', nullable: true })
     orderId: string | null;
 
-    @CreateDateColumn()
+    @CreateDateColumn({ name: 'started_at' })
     startedAt: Date;
 
-    @Column({ type: 'timestamptz' })
+    @Column({ name: 'expires_at', type: 'timestamptz' })
     expiresAt: Date;
 
-    @Column({ default: false })
+    @Column({ name: 'cancelled_at', default: false })
     cancelledAt: Date | null;
 }

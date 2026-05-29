@@ -31,8 +31,8 @@ export function Footer() {
 
                 <div style={s.col}>
                     <p style={s.colTitle}>Підтримка</p>
-                    <Link to="/terms"   style={s.link}>Terms &amp; Conditions</Link>
-                    <Link to="/privacy" style={s.link}>Privacy Policy</Link>
+                    <Link to="/terms"   style={s.link}>Умови користування</Link>
+                    <Link to="/privacy" style={s.link}>Політика конфіденційності</Link>
                     <a href="mailto:elearn@gmail.com" style={s.link}>elearn@gmail.com</a>
                 </div>
 
@@ -44,9 +44,9 @@ export function Footer() {
             Зроблено з ❤️ для освіти
           </span>
                     <div style={s.barLinks}>
-                        <Link to="/terms"   style={s.barLink}>Terms &amp; Conditions</Link>
+                        <Link to="/terms"   style={s.barLink}>Умови користування</Link>
                         <span style={s.dot}>·</span>
-                        <Link to="/privacy" style={s.barLink}>Privacy Policy</Link>
+                        <Link to="/privacy" style={s.barLink}>Політика конфіденційності</Link>
                     </div>
                 </div>
             </div>
