@@ -15,6 +15,26 @@ interface PromoCode {
   adminComment: string | null;
   createdAt: string;
 }
+
+interface PayoutRequest {
+  id: string;
+  amount: number;
+  paymentDetails: string;
+  status: 'pending' | 'approved' | 'rejected' | 'paid';
+  adminComment: string | null;
+  processedAt: string | null;
+  createdAt: string;
+}
+
+interface EarningsSummary {
+  gross: number;
+  netEarnings: number;
+  alreadyRequested: number;
+  available: number;
+  platformFeePercent: number;
+  byMonth: { month: string; net: number }[];
+  requests: PayoutRequest[];
+}
 interface TeacherStats {
   totalCourses: number;
   totalStudents: number;
@@ -185,11 +205,214 @@ export function TeacherDashboard() {
                 )}
               </div>
           )}
+
+          <PayoutsPanel />
         </div>
       </div>
   );
 }
 
+
+function PayoutsPanel() {
+  const [data, setData]           = useState<EarningsSummary | null>(null);
+  const [loading, setLoading]     = useState(true);
+  const [showForm, setShowForm]   = useState(false);
+  const [amount, setAmount]       = useState('');
+  const [details, setDetails]     = useState('');
+  const [submitting, setSub]      = useState(false);
+  const [err, setErr]             = useState('');
+  const [ok, setOk]               = useState('');
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const d = await apiFetch<EarningsSummary>('/payouts/my/earnings');
+      setData(d);
+    } catch {} finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleRequest = async () => {
+    setErr(''); setOk('');
+    if (!amount || Number(amount) <= 0) { setErr('Введіть суму виплати'); return; }
+    if (!details.trim()) { setErr('Введіть реквізити для виплати'); return; }
+    if (data && Number(amount) > data.available) {
+      setErr(`Максимум доступно: ${data.available.toLocaleString('uk-UA')} ₴`); return;
+    }
+    setSub(true);
+    try {
+      await apiFetch('/payouts/my/request', {
+        method: 'POST',
+        body: JSON.stringify({ amount: Number(amount), paymentDetails: details }),
+      });
+      setOk('Запит на виплату відправлено! Адміністратор розгляне його найближчим часом.');
+      setAmount(''); setDetails('');
+      setShowForm(false);
+      load();
+    } catch (e: any) {
+      setErr(e.message || 'Помилка відправки запиту');
+    } finally { setSub(false); }
+  };
+
+  const statusLabel: Record<string, string> = {
+    pending:  'Очікує',
+    approved: 'Схвалено',
+    rejected: 'Відхилено',
+    paid:     'Виплачено',
+  };
+  const statusColor: Record<string, string> = {
+    pending: '#d97706', approved: '#2563eb', rejected: '#dc2626', paid: '#16a34a',
+  };
+  const statusBg: Record<string, string> = {
+    pending: '#fffbeb', approved: '#eff6ff', rejected: '#fef2f2', paid: '#f0fdf4',
+  };
+
+  const maxBar = data ? Math.max(...data.byMonth.map(m => m.net), 1) : 1;
+
+  const fmtMonth = (m: string) => {
+    const [y, mo] = m.split('-');
+    const months = ['Січ','Лют','Бер','Кві','Тра','Чер','Лип','Сер','Вер','Жов','Лис','Гру'];
+    return `${months[parseInt(mo) - 1]} ${y.slice(2)}`;
+  };
+
+  return (
+      <div style={{ marginTop: 28, background: '#fff', borderRadius: 14, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <h3 style={{ ...s.sectionTitle, margin: 0 }}>💸 Виплати</h3>
+          {data && data.available > 0 && !showForm && (
+              <button
+                  onClick={() => { setShowForm(true); setErr(''); setOk(''); }}
+                  style={{ padding: '8px 18px', background: '#059669', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+              >Запит на виплату</button>
+          )}
+        </div>
+
+        {loading ? (
+            <p style={{ color: '#9ca3af', fontSize: 13 }}>Завантаження...</p>
+        ) : !data ? (
+            <p style={{ color: '#9ca3af', fontSize: 13 }}>Не вдалось завантажити дані</p>
+        ) : (
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 20 }}>
+                {[
+                  { label: 'Валовий дохід', value: `${data.gross.toLocaleString('uk-UA')} ₴`, sub: 'від продажів', color: '#6b7280' },
+                  { label: 'Комісія платформи', value: `${data.platformFeePercent}%`, sub: `−${(data.gross * data.platformFeePercent / 100).toLocaleString('uk-UA')} ₴`, color: '#d97706' },
+                  { label: 'Чистий заробіток', value: `${data.netEarnings.toLocaleString('uk-UA')} ₴`, sub: `виведено: ${data.alreadyRequested.toLocaleString('uk-UA')} ₴`, color: '#2563eb' },
+                  { label: 'Доступно до виводу', value: `${data.available.toLocaleString('uk-UA')} ₴`, sub: data.available > 0 ? 'можна вивести' : 'немає коштів', color: data.available > 0 ? '#059669' : '#9ca3af' },
+                ].map(c => (
+                    <div key={c.label} style={{ background: '#f9fafb', borderRadius: 10, padding: '14px 16px' }}>
+                      <p style={{ margin: 0, fontSize: 18, fontWeight: 700, color: c.color }}>{c.value}</p>
+                      <p style={{ margin: '3px 0 0', fontSize: 12, fontWeight: 600, color: '#374151' }}>{c.label}</p>
+                      <p style={{ margin: '2px 0 0', fontSize: 11, color: '#9ca3af' }}>{c.sub}</p>
+                    </div>
+                ))}
+              </div>
+
+              {data.byMonth.length > 0 && (
+                  <div style={{ marginBottom: 20 }}>
+                    <p style={{ ...s.chartTitle, marginBottom: 12 }}>Чистий заробіток по місяцях</p>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 80 }}>
+                      {data.byMonth.map((m, i) => {
+                        const h = Math.max((m.net / maxBar) * 60, m.net > 0 ? 4 : 0);
+                        return (
+                            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                              {m.net > 0 && <span style={{ fontSize: 9, color: '#9ca3af' }}>{m.net >= 1000 ? `${(m.net/1000).toFixed(1)}k` : m.net}</span>}
+                              <div title={`${fmtMonth(m.month)}: ${m.net.toLocaleString('uk-UA')} ₴`} style={{ width: '100%', height: `${h}px`, background: '#059669', borderRadius: '3px 3px 0 0', opacity: 0.8 }} />
+                              <span style={{ fontSize: 9, color: '#9ca3af', whiteSpace: 'nowrap' }}>{fmtMonth(m.month)}</span>
+                            </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+              )}
+
+              {ok && (
+                  <div style={{ padding: '10px 14px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, fontSize: 13, color: '#16a34a', marginBottom: 14 }}>
+                    ✓ {ok}
+                  </div>
+              )}
+
+              {showForm && (
+                  <div style={{ background: '#f0fdf4', border: '1.5px solid #bbf7d0', borderRadius: 10, padding: 18, marginBottom: 18 }}>
+                    <p style={{ margin: '0 0 14px', fontWeight: 600, fontSize: 14, color: '#065f46' }}>Новий запит на виплату</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 10, marginBottom: 12 }}>
+                      <div>
+                        <label style={{ fontSize: 12, color: '#6b7280', display: 'block', marginBottom: 4 }}>Сума (₴) *</label>
+                        <input
+                            type="number" min="1" max={data.available} step="0.01"
+                            placeholder={`макс. ${data.available}`}
+                            value={amount}
+                            onChange={e => setAmount(e.target.value)}
+                            style={inp}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 12, color: '#6b7280', display: 'block', marginBottom: 4 }}>Реквізити (IBAN / картка) *</label>
+                        <input
+                            placeholder="UA123456… або 4111 1111 1111 1111"
+                            value={details}
+                            onChange={e => setDetails(e.target.value)}
+                            style={inp}
+                        />
+                      </div>
+                    </div>
+                    {err && <p style={{ fontSize: 12, color: '#dc2626', marginBottom: 8 }}>{err}</p>}
+                    <p style={{ fontSize: 11, color: '#9ca3af', marginBottom: 10 }}>
+                      Запит буде розглянуто адміністратором. Після схвалення кошти буде переказано на вказані реквізити.
+                    </p>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button
+                          onClick={handleRequest} disabled={submitting}
+                          style={{ padding: '8px 20px', background: submitting ? '#9ca3af' : '#059669', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: submitting ? 'default' : 'pointer', fontFamily: 'inherit' }}
+                      >{submitting ? 'Відправка...' : 'Відправити'}</button>
+                      <button
+                          onClick={() => { setShowForm(false); setErr(''); }}
+                          style={{ padding: '8px 16px', background: 'transparent', color: '#6b7280', border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}
+                      >Скасувати</button>
+                    </div>
+                  </div>
+              )}
+
+              {data.requests.length > 0 && (
+                  <div>
+                    <p style={{ ...s.chartTitle, marginBottom: 10 }}>Історія запитів</p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {data.requests.map(r => (
+                          <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: '#f9fafb', borderRadius: 10, border: '1.5px solid #f3f4f6' }}>
+                            <span style={{ fontWeight: 700, fontSize: 15, color: '#111827', minWidth: 100 }}>
+                              {r.amount.toLocaleString('uk-UA')} ₴
+                            </span>
+                            <span style={{ padding: '3px 10px', borderRadius: 99, fontSize: 11, fontWeight: 600, background: statusBg[r.status], color: statusColor[r.status], flexShrink: 0 }}>
+                              {statusLabel[r.status]}
+                            </span>
+                            <span style={{ fontSize: 12, color: '#9ca3af', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {r.paymentDetails}
+                            </span>
+                            {r.adminComment && (
+                                <span style={{ fontSize: 11, color: '#9ca3af', maxWidth: 160 }} title={r.adminComment}>
+                                  💬 {r.adminComment.slice(0, 40)}{r.adminComment.length > 40 ? '…' : ''}
+                                </span>
+                            )}
+                            <span style={{ fontSize: 11, color: '#9ca3af', flexShrink: 0 }}>
+                              {new Date(r.createdAt).toLocaleDateString('uk-UA')}
+                            </span>
+                          </div>
+                      ))}
+                    </div>
+                  </div>
+              )}
+
+              {data.requests.length === 0 && data.available === 0 && (
+                  <p style={{ fontSize: 13, color: '#9ca3af', textAlign: 'center', padding: '20px 0' }}>
+                    Запитів на виплату ще не було
+                  </p>
+              )}
+            </>
+        )}
+      </div>
+  );
+}
 
 function PromoCodesPanel({ courseId }: { courseId: string }) {
   const [promos, setPromos]         = useState<PromoCode[]>([]);

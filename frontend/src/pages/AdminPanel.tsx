@@ -4,7 +4,7 @@ import { apiFetch } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 import { Skeleton } from '../components/Skeleton';
 
-type Tab = 'stats' | 'users' | 'courses' | 'reviews' | 'promos' | 'audit';
+type Tab = 'stats' | 'users' | 'courses' | 'reviews' | 'promos' | 'payouts' | 'audit';
 
 interface TopCourse {
   courseId: string;
@@ -18,6 +18,7 @@ interface PlatformStats {
   totalCourses: number;
   totalEnrollments: number;
   totalRevenue: number;
+  completionRate: number;
   newUsersThisMonth: number | null;
   newCoursesThisMonth: number | null;
   periodLabel: string | null;
@@ -68,6 +69,7 @@ export function AdminPanel() {
     { key: 'courses', label: 'Курси' },
     { key: 'reviews', label: 'Відгуки' },
     { key: 'promos',  label: 'Промокоди' },
+    { key: 'payouts', label: 'Виплати' },
     { key: 'audit',   label: 'Аудит' },
   ];
 
@@ -100,6 +102,7 @@ export function AdminPanel() {
           {tab === 'courses' && <CoursesTab />}
           {tab === 'reviews' && <ReviewsTab />}
           {tab === 'promos'  && <PromosTab />}
+          {tab === 'payouts' && <PayoutsTab />}
           {tab === 'audit'   && <AuditTab />}
         </div>
       </div>
@@ -166,8 +169,8 @@ function StatsTab() {
   if (loading || !stats) return (
       <div>
         {periodSelector}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 24 }}>
-          {[0,1,2,3].map(i => (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 12, marginBottom: 24 }}>
+          {[0,1,2,3,4].map(i => (
               <div key={i} style={s.card}>
                 <Skeleton width={50} height={28} style={{ marginBottom: 8 }} />
                 <Skeleton width={120} height={13} style={{ marginBottom: 4 }} />
@@ -192,6 +195,12 @@ function StatsTab() {
     },
     { label: 'Записів', value: stats.totalEnrollments, sub: pl || 'загалом' },
     { label: 'Дохід',   value: `${stats.totalRevenue.toLocaleString('uk-UA')} ₴`, sub: pl || 'загалом' },
+    {
+      label: 'Completion rate',
+      value: `${stats.completionRate}%`,
+      sub: 'завершили курс',
+      highlight: true,
+    },
   ];
 
   return (
@@ -200,10 +209,14 @@ function StatsTab() {
 
         {periodSelector}
 
-        <div style={s.metricsRow}>
+        <div style={{ ...s.metricsRow, gridTemplateColumns: 'repeat(5,1fr)' }}>
           {metrics.map(m => (
               <div key={m.label} style={s.card}>
-                <p style={s.metricValue}>{m.value}</p>
+                {'highlight' in m && m.highlight ? (
+                    <CompletionRing pct={stats.completionRate} />
+                ) : (
+                    <p style={s.metricValue}>{m.value}</p>
+                )}
                 <p style={s.metricLabel}>{m.label}</p>
                 <p style={s.metricSub}>{m.sub}</p>
               </div>
@@ -253,6 +266,29 @@ function StatsTab() {
         <div style={{ marginTop: 16 }}>
           <TopCoursesTable courses={stats.topCourses} />
         </div>
+      </div>
+  );
+}
+
+function CompletionRing({ pct }: { pct: number }) {
+  const r = 22;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (pct / 100) * circ;
+  return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 2 }}>
+        <svg width={54} height={54} style={{ flexShrink: 0 }}>
+          <circle cx={27} cy={27} r={r} fill="none" stroke="#f0f0f0" strokeWidth={4} />
+          <circle
+              cx={27} cy={27} r={r} fill="none"
+              stroke="#0a0a0a" strokeWidth={4}
+              strokeDasharray={circ}
+              strokeDashoffset={offset}
+              strokeLinecap="round"
+              transform="rotate(-90 27 27)"
+              style={{ transition: 'stroke-dashoffset 0.6s ease' }}
+          />
+          <text x={27} y={32} textAnchor="middle" fontSize={11} fontWeight={700} fill="#0a0a0a">{pct}%</text>
+        </svg>
       </div>
   );
 }
@@ -776,6 +812,175 @@ function PromosTab() {
   );
 }
 
+
+interface AdminPayoutRequest {
+  id: string;
+  amount: number;
+  paymentDetails: string;
+  status: 'pending' | 'approved' | 'rejected' | 'paid';
+  adminComment: string | null;
+  processedAt: string | null;
+  createdAt: string;
+  teacher: { id: string; name: string; email: string } | null;
+}
+
+function PayoutsTab() {
+  const toast = useToast();
+  const [payouts, setPayouts]     = useState<AdminPayoutRequest[]>([]);
+  const [statusF, setStatusF]     = useState<'pending'|'approved'|'rejected'|'paid'|''>('pending');
+  const [loading, setLoading]     = useState(true);
+  const [comment, setComment]     = useState<Record<string, string>>({});
+
+  const load = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const url = statusF ? `/payouts/admin/all?status=${statusF}` : '/payouts/admin/all';
+      const data = await apiFetch<AdminPayoutRequest[]>(url);
+      setPayouts(data);
+    } catch { toast.error('Не вдалось завантажити виплати'); }
+    finally { setLoading(false); }
+  }, [statusF]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const review = async (id: string, status: 'approved' | 'rejected' | 'paid') => {
+    try {
+      await apiFetch(`/payouts/admin/${id}/review`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status, adminComment: comment[id] || undefined }),
+      });
+      const labels: Record<string, string> = { approved: 'Схвалено', rejected: 'Відхилено', paid: 'Виплачено' };
+      toast.success(labels[status]);
+      load();
+    } catch { toast.error('Помилка'); }
+  };
+
+  const statusLabel: Record<string, string> = { pending: 'Очікує', approved: 'Схвалено', rejected: 'Відхилено', paid: 'Виплачено' };
+  const statusBadge: Record<string, React.CSSProperties> = {
+    pending:  { ...s.badge, background: '#fffbeb', color: '#d97706' },
+    approved: { ...s.badge, background: '#eff6ff', color: '#2563eb' },
+    rejected: { ...s.badge, ...s.badgeRed },
+    paid:     { ...s.badge, ...s.badgeGreen },
+  };
+
+  const totalPending  = payouts.filter(p => p.status === 'pending').reduce((a, p) => a + p.amount, 0);
+  const totalApproved = payouts.filter(p => p.status === 'approved').reduce((a, p) => a + p.amount, 0);
+  const totalPaid     = payouts.filter(p => p.status === 'paid').reduce((a, p) => a + p.amount, 0);
+
+  return (
+      <div>
+        <p style={s.pageTitle}>Виплати викладачам {!loading && `(${payouts.length})`}</p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 20 }}>
+          {[
+            { label: 'Очікують обробки', value: `${totalPending.toLocaleString('uk-UA')} ₴`, color: '#d97706', bg: '#fffbeb' },
+            { label: 'Схвалено (не виплачено)', value: `${totalApproved.toLocaleString('uk-UA')} ₴`, color: '#2563eb', bg: '#eff6ff' },
+            { label: 'Виплачено', value: `${totalPaid.toLocaleString('uk-UA')} ₴`, color: '#16a34a', bg: '#f0fdf4' },
+          ].map(c => (
+              <div key={c.label} style={{ ...s.card, background: c.bg, borderColor: 'transparent' }}>
+                <p style={{ ...s.metricValue, fontSize: '1.3rem', color: c.color }}>{c.value}</p>
+                <p style={s.metricLabel}>{c.label}</p>
+              </div>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', gap: 4, marginBottom: 16 }}>
+          {(['pending','approved','rejected','paid',''] as const).map(st => (
+              <button
+                  key={st || 'all'}
+                  style={{ ...s.periodBtn, ...(statusF === st ? s.periodBtnActive : {}) }}
+                  onClick={() => setStatusF(st)}
+              >
+                {st === '' ? 'Всі' : statusLabel[st]}
+              </button>
+          ))}
+        </div>
+
+        <div style={s.tableWrap}>
+          <table style={s.table}>
+            <thead>
+            <tr>
+              {['Викладач', 'Сума', 'Реквізити', 'Дата запиту', 'Статус', 'Дії'].map(h => (
+                  <th key={h} style={s.th}>{h}</th>
+              ))}
+            </tr>
+            </thead>
+            <tbody>
+            {loading ? (
+                [0,1,2,3].map(i => (
+                    <tr key={i}>{[180,90,200,90,80,180].map((w,j) => <td key={j} style={s.td}><Skeleton width={w} height={13} /></td>)}</tr>
+                ))
+            ) : payouts.map(p => (
+                <tr key={p.id}>
+                  <td style={s.td}>
+                    {p.teacher ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={s.miniAvatar}>{p.teacher.name?.[0]?.toUpperCase()}</div>
+                          <div>
+                            <p style={{ fontSize: '0.875rem', fontWeight: 500, marginBottom: 1 }}>{p.teacher.name}</p>
+                            <p style={{ fontSize: '0.72rem', color: '#9a9a9a' }}>{p.teacher.email}</p>
+                          </div>
+                        </div>
+                    ) : <span style={{ color: '#9a9a9a' }}>—</span>}
+                  </td>
+                  <td style={s.td}>
+                    <span style={{ fontSize: '1rem', fontWeight: 700 }}>{p.amount.toLocaleString('uk-UA')} ₴</span>
+                  </td>
+                  <td style={s.td}>
+                    <span style={{ fontSize: '0.78rem', color: '#5a5a5a', wordBreak: 'break-all' as const, maxWidth: 200, display: 'block' }}>
+                      {p.paymentDetails}
+                    </span>
+                  </td>
+                  <td style={s.td}>
+                    <span style={{ fontSize: '0.8rem', color: '#9a9a9a' }}>
+                      {new Date(p.createdAt).toLocaleDateString('uk-UA')}
+                    </span>
+                  </td>
+                  <td style={s.td}>
+                    <span style={statusBadge[p.status]}>{statusLabel[p.status]}</span>
+                    {p.adminComment && (
+                        <p style={{ fontSize: '0.68rem', color: '#9a9a9a', marginTop: 4, maxWidth: 140 }}>{p.adminComment}</p>
+                    )}
+                    {p.processedAt && (
+                        <p style={{ fontSize: '0.65rem', color: '#c0c0c0', marginTop: 2 }}>
+                          {new Date(p.processedAt).toLocaleDateString('uk-UA')}
+                        </p>
+                    )}
+                  </td>
+                  <td style={s.td}>
+                    {(p.status === 'pending' || p.status === 'approved') ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          <input
+                              placeholder="Коментар (необов.)"
+                              value={comment[p.id] || ''}
+                              onChange={e => setComment(prev => ({ ...prev, [p.id]: e.target.value }))}
+                              style={{ ...s.inlineSelect, width: '100%', boxSizing: 'border-box' as const }}
+                          />
+                          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' as const }}>
+                            {p.status === 'pending' && (
+                                <button style={s.btnApprove} onClick={() => review(p.id, 'approved')}>Схвалити</button>
+                            )}
+                            {p.status === 'approved' && (
+                                <button style={{ ...s.btnApprove, background: '#16a34a' }} onClick={() => review(p.id, 'paid')}>Виплачено ✓</button>
+                            )}
+                            {p.status === 'pending' && (
+                                <button style={s.btnReject} onClick={() => review(p.id, 'rejected')}>Відхилити</button>
+                            )}
+                          </div>
+                        </div>
+                    ) : (
+                        <span style={{ fontSize: '0.75rem', color: '#9a9a9a' }}>Оброблено</span>
+                    )}
+                  </td>
+                </tr>
+            ))}
+            </tbody>
+          </table>
+          {!loading && payouts.length === 0 && <p style={s.emptyText}>Нічого не знайдено</p>}
+        </div>
+      </div>
+  );
+}
 
 function DualBarChart({
                         registrations,

@@ -4,7 +4,7 @@ import { Repository, ILike } from 'typeorm';
 import { IsEnum, IsOptional, IsBoolean, IsString, MaxLength, IsNotEmpty } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { User, UserRole } from '../users/user.entity';
-import { Course, CourseStatus, Enrollment } from '../courses/course.entity';
+import { Course, CourseStatus, Enrollment, Lesson, Progress } from '../courses/course.entity';
 import { NotificationService } from '../notifications/notification.service';
 
 export class UpdateUserDto {
@@ -32,6 +32,8 @@ export class AdminService {
       @InjectRepository(User)       private userRepo:       Repository<User>,
       @InjectRepository(Course)     private courseRepo:     Repository<Course>,
       @InjectRepository(Enrollment) private enrollmentRepo: Repository<Enrollment>,
+      @InjectRepository(Lesson)     private lessonRepo:     Repository<Lesson>,
+      @InjectRepository(Progress)   private progressRepo:   Repository<Progress>,
       private readonly notifSvc: NotificationService,
   ) {}
 
@@ -222,9 +224,49 @@ export class AdminService {
     if (dateTo) topCoursesQb.andWhere('e."enrolledAt" <= :dt', { dt: dateTo });
     const topCoursesRaw = await topCoursesQb.getRawMany();
 
+    const completionRateQb = this.enrollmentRepo.createQueryBuilder('e')
+        .leftJoin('e.course', 'c')
+        .leftJoin(
+            qb => qb
+                .from(Lesson, 'l')
+                .select('m.course_id', 'cid')
+                .addSelect('COUNT(l.id)', 'total')
+                .innerJoin('modules', 'm', 'm.id = l."module_id"')
+                .groupBy('m.course_id'),
+            'lc',
+            'lc.cid = e."course_id"',
+        )
+        .leftJoin(
+            qb => qb
+                .from(Progress, 'p')
+                .innerJoin('lessons', 'l', 'l.id = p."lesson_id"')
+                .innerJoin('modules', 'm', 'm.id = l."module_id"')
+                .select('m.course_id', 'cid')
+                .addSelect('p."user_id"', 'uid')
+                .addSelect('COUNT(p.id)', 'done')
+                .where('p.completed = true')
+                .groupBy('m.course_id, p."user_id"'),
+            'pc',
+            'pc.cid = e."course_id" AND pc.uid = e."user_id"',
+        )
+        .select('COUNT(e.id)', 'totalEnrollments')
+        .addSelect(
+            'COUNT(CASE WHEN COALESCE(lc.total,0) > 0 AND COALESCE(pc.done,0) >= lc.total THEN 1 END)',
+            'completedEnrollments',
+        );
+
+    if (dateFrom) completionRateQb.andWhere('e."enrolledAt" >= :df', { df: dateFrom });
+    if (dateTo)   completionRateQb.andWhere('e."enrolledAt" <= :dt', { dt: dateTo });
+
+    const crRaw = await completionRateQb.getRawOne();
+    const crTotal     = parseInt(crRaw?.totalEnrollments)     || 0;
+    const crCompleted = parseInt(crRaw?.completedEnrollments) || 0;
+    const completionRate = crTotal > 0 ? Math.round((crCompleted / crTotal) * 100) : 0;
+
     return {
       totalUsers, totalCourses, totalEnrollments,
       totalRevenue: parseFloat(rev?.total) || 0,
+      completionRate,
       newUsersThisMonth, newCoursesThisMonth, periodLabel,
       usersByRole: Object.fromEntries(usersByRole.map(r => [r.role, parseInt(r.count)])),
       registrationsByDay: registrationsByDay.map(r => ({ date: r.day, count: parseInt(r.count) })),

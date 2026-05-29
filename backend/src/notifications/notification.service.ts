@@ -151,4 +151,45 @@ export class NotificationService {
             'Ваш акаунт було розблоковано. Ви знову можете користуватись платформою.',
         );
     }
+
+    async notifyAdminsPayoutRequest(teacherId: string, amount: number) {
+        const admins = await this.dataSource.query<{ id: string }[]>(
+            `SELECT id FROM users WHERE role = $1 AND "isActive" = true`, [UserRole.ADMIN],
+        );
+        const teacher = await this.dataSource.query<{ name: string }[]>(
+            `SELECT name FROM users WHERE id = $1`, [teacherId],
+        );
+        const name = teacher[0]?.name ?? 'Викладач';
+        await Promise.all(admins.map(a =>
+            this.save(a.id, NotificationType.PAYOUT_REQUEST_PENDING,
+                '💸 Новий запит на виплату',
+                `${name} подав запит на виплату ${amount.toLocaleString('uk-UA')} ₴. Перейдіть до адмін-панелі для обробки.`,
+                { teacherId, amount }),
+        ));
+    }
+
+    async notifyTeacherPayoutReviewed(teacherId: string, amount: number, status: string) {
+        const typeMap: Record<string, NotificationType> = {
+            approved: NotificationType.PAYOUT_APPROVED,
+            rejected: NotificationType.PAYOUT_REJECTED,
+            paid:     NotificationType.PAYOUT_PAID,
+        };
+        const titleMap: Record<string, string> = {
+            approved: '✅ Запит на виплату схвалено',
+            rejected: '❌ Запит на виплату відхилено',
+            paid:     '💰 Виплату здійснено',
+        };
+        const msgMap: Record<string, string> = {
+            approved: `Ваш запит на виплату ${amount.toLocaleString('uk-UA')} ₴ схвалено. Очікуйте зарахування коштів.`,
+            rejected: `Ваш запит на виплату ${amount.toLocaleString('uk-UA')} ₴ відхилено. Зверніться до підтримки.`,
+            paid:     `Виплату ${amount.toLocaleString('uk-UA')} ₴ здійснено. Кошти відправлені на ваші реквізити.`,
+        };
+        await this.save(
+            teacherId,
+            typeMap[status] ?? NotificationType.PAYOUT_APPROVED,
+            titleMap[status] ?? '💸 Зміна статусу виплати',
+            msgMap[status]   ?? `Статус вашої виплати змінено на "${status}".`,
+            { amount, status },
+        );
+    }
 }

@@ -18,6 +18,10 @@ export enum NotificationType {
     PROMO_CODE_REJECTED    = 'promo_code_rejected',
     ACCOUNT_BANNED         = 'account_banned',
     ACCOUNT_UNBANNED       = 'account_unbanned',
+    PAYOUT_REQUEST_PENDING = 'payout_request_pending',
+    PAYOUT_APPROVED        = 'payout_approved',
+    PAYOUT_REJECTED        = 'payout_rejected',
+    PAYOUT_PAID            = 'payout_paid',
 }
 
 @Entity('notifications')
