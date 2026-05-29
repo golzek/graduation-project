@@ -33,7 +33,7 @@ export function Footer() {
                     <p style={s.colTitle}>Підтримка</p>
                     <Link to="/terms"   style={s.link}>Terms &amp; Conditions</Link>
                     <Link to="/privacy" style={s.link}>Privacy Policy</Link>
-                    <a href="mailto:support@elearn.ua" style={s.link}>support@elearn.ua</a>
+                    <a href="mailto:elearn@gmail.com" style={s.link}>elearn@gmail.com</a>
                 </div>
 
             </div>

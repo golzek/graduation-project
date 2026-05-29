@@ -60,6 +60,7 @@ import { QaModule } from './qa/qa.module';
           Referral, PayoutRequest, QaQuestion, QaAnswer,
         ],
         synchronize: false,
+        decimalNumbers: true,
         logging: cfg.get('NODE_ENV') === 'development',
         migrations: cfg.get('NODE_ENV') === 'production'
             ? ['dist/database/migrations/*.js']

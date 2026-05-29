@@ -22,6 +22,10 @@ class CreateSubscriptionPaymentDto {
   @IsEnum(SubscriptionPlan) plan: SubscriptionPlan;
 }
 
+function uuidToHex(uuid: string): string {
+  return uuid.replace(/-/g, '');
+}
+
 @ApiTags('payments')
 @Controller('payments')
 export class PaymentController {
@@ -72,8 +76,11 @@ export class PaymentController {
       }
     }
 
-    const orderId = `order_${courseId}_${user.id}_${uuidv4().slice(0, 8)}`;
-    const form    = this.wfp.createPaymentForm({
+    const safeCourseId = uuidToHex(courseId);
+    const safeUserId   = uuidToHex(user.id);
+    const orderId = `order_${safeCourseId}_${safeUserId}_${uuidv4().slice(0, 8)}`;
+
+    const form = this.wfp.createPaymentForm({
       orderId,
       amount:      finalPrice,
       description: `Курс: ${course.title}${discountPercent ? ` (знижка ${discountPercent}%)` : ''}`,
@@ -101,8 +108,10 @@ export class PaymentController {
       [SubscriptionPlan.ANNUAL]:  'Річна підписка — доступ до всіх курсів',
     };
 
-    const orderId = `sub_${plan}_${user.id}_${uuidv4().slice(0, 8)}`;
-    const form    = this.wfp.createSubscriptionForm({
+    const safeUserId = uuidToHex(user.id);
+    const orderId = `sub_${plan}_${safeUserId}_${uuidv4().slice(0, 8)}`;
+
+    const form = this.wfp.createSubscriptionForm({
       orderId,
       amount,
       description: planLabels[plan],

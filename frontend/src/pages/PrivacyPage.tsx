@@ -11,7 +11,7 @@ export function PrivacyPage() {
                 </p>
 
                 <h1 style={s.h1}>Privacy Policy</h1>
-                <p style={s.updated}>Остання редакція: 1 січня 2025 р.</p>
+                <p style={s.updated}>Остання редакція: 1 червня 2026 р.</p>
 
                 <div style={s.body}>
 
@@ -54,7 +54,7 @@ export function PrivacyPage() {
                         отримати копію своїх даних; виправити неточні дані; видалити свій
                         акаунт і пов'язані дані; відкликати згоду на обробку даних.
                         Для реалізації цих прав зверніться до{' '}
-                        <a href="golzek12@gmail.com" style={s.a}>privacy@elearn.ua</a>.
+                        <a href="mailto:elearn@gmail.com" style={s.a}>elearn@gmail.com</a>.
                     </Section>
 
                     <Section title="7. Безпека">
@@ -72,7 +72,7 @@ export function PrivacyPage() {
 
                     <Section title="9. Контакти">
                         З питань конфіденційності звертайтесь:{' '}
-                        <a href="mailto:privacy@elearn.ua" style={s.a}>privacy@elearn.ua</a>
+                        <a href="mailto:elearn@gmail.com" style={s.a}>elearn@gmail.com</a>
                     </Section>
 
                 </div>

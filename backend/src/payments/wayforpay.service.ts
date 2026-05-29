@@ -29,7 +29,8 @@ export class WayForPayService {
         const orderDate     = Math.floor(Date.now() / 1000);
         const productName   = params.description;
         const productCount  = '1';
-        const productPrice  = String(params.amount);
+        const productPrice  = String(Number(params.amount));
+        const amount        = Number(params.amount);
         const currency      = 'UAH';
 
         const orderReference = params.orderId;
@@ -39,7 +40,7 @@ export class WayForPayService {
             this.merchantDomain,
             orderReference,
             orderDate,
-            params.amount,
+            amount,
             currency,
             productName,
             productCount,
@@ -77,7 +78,8 @@ export class WayForPayService {
         const orderDate    = Math.floor(Date.now() / 1000);
         const productName  = params.description;
         const productCount = '1';
-        const productPrice = String(params.amount);
+        const productPrice = String(Number(params.amount));
+        const amount       = Number(params.amount);
         const currency     = 'UAH';
 
         const signatureString = [
@@ -85,7 +87,7 @@ export class WayForPayService {
             this.merchantDomain,
             params.orderId,
             orderDate,
-            params.amount,
+            amount,
             currency,
             productName,
             productCount,
@@ -149,16 +151,25 @@ export class WayForPayService {
         const isSubscription = parts[0] === 'sub';
 
         if (isSubscription) {
+            const userId = parts[parts.length - 2];
+            const plan   = parts[1];
             return {
                 valid:   true,
                 orderId: orderReference,
                 status:  transactionStatus === 'Approved' ? 'success' : 'failure',
                 amount:  Number(amount),
                 type:    'subscription',
-                userId:  parts[2],
-                plan:    parts[1],
+                userId,
+                plan,
             };
         }
+
+        const rand8    = parts[parts.length - 1];
+        const userId   = parts[parts.length - 2];
+        const courseId = parts[parts.length - 3];
+
+        const toUUID = (hex: string) =>
+            `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
 
         return {
             valid:    true,
@@ -166,8 +177,8 @@ export class WayForPayService {
             status:   transactionStatus === 'Approved' ? 'success' : 'failure',
             amount:   Number(amount),
             type:     'course',
-            courseId: parts[1],
-            userId:   parts[2],
+            courseId: toUUID(courseId),
+            userId:   toUUID(userId),
         };
     }
 

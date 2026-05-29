@@ -11,7 +11,7 @@ export function TermsPage() {
                 </p>
 
                 <h1 style={s.h1}>Terms &amp; Conditions</h1>
-                <p style={s.updated}>Остання редакція: 1 січня 2025 р.</p>
+                <p style={s.updated}>Остання редакція: 1 червня 2026 р.</p>
 
                 <div style={s.body}>
 
@@ -38,7 +38,7 @@ export function TermsPage() {
                         Повернення коштів можливе протягом 14 днів з моменту придбання за
                         умови, що ви переглянули менше 30% матеріалів курсу. Запити на
                         повернення надсилайте на{' '}
-                        <a href="mailto:support@elearn.ua" style={s.a}>support@elearn.ua</a>.
+                        <a href="mailto:elearn@gmail.com" style={s.a}>elearn@gmail.com</a>.
                     </Section>
 
                     <Section title="5. Поведінка користувача">
@@ -69,7 +69,7 @@ export function TermsPage() {
 
                     <Section title="9. Контакти">
                         З питань щодо цих Умов звертайтесь:{' '}
-                        <a href="mailto:legal@elearn.ua" style={s.a}>legal@elearn.ua</a>
+                        <a href="mailto:elearn@gmail.com" style={s.a}>elearn@gmail.com</a>
                     </Section>
 
                 </div>
