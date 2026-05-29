@@ -182,11 +182,12 @@ export class PaymentController {
   @HttpCode(302)
   @ApiOperation({ summary: 'WayForPay returnUrl — приймає POST і редіректить на фронтенд' })
   async handleReturn(@Body() body: Record<string, any>, @Res() res: Response) {
+    console.log('[WFP return] headers:', JSON.stringify({}));
+    console.log('[WFP return] body:', JSON.stringify(body));
     const frontendUrl = process.env.FRONTEND_URL ?? 'https://graduation-frontend.onrender.com';
     const orderId     = body.orderReference ?? '';
     const reasonCode  = body.reasonCode;
 
-    // reasonCode 1100 = успішна оплата у WayForPay
     const status = reasonCode === '1100' || reasonCode === 1100 ? 'success' : 'failure';
 
     return res.redirect(`${frontendUrl}/payment/result?status=${status}&order_id=${orderId}`);
