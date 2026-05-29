@@ -299,40 +299,40 @@ export class AdminService {
     const revenueRows = await this.enrollmentRepo
         .createQueryBuilder('e')
         .leftJoin('e.course', 'c')
-        .select('c."authorId"', 'teacherId')
+        .select('c."author_id"', 'teacherId')
         .addSelect('SUM(e."paidPrice")', 'revenue')
         .addSelect('COUNT(e.id)', 'enrollments')
-        .where('c."authorId" IN (:...ids)', { ids: teacherIds })
-        .groupBy('c."authorId"')
+        .where('c."author_id" IN (:...ids)', { ids: teacherIds })
+        .groupBy('c."author_id"')
         .getRawMany();
 
     const courseRows = await this.courseRepo
         .createQueryBuilder('c')
-        .select('c."authorId"', 'teacherId')
+        .select('c."author_id"', 'teacherId')
         .addSelect('COUNT(c.id)', 'total')
         .addSelect(`COUNT(CASE WHEN c.status = 'published' THEN 1 END)`, 'published')
         .addSelect(`COUNT(CASE WHEN c.status = 'pending' THEN 1 END)`, 'pending')
-        .where('c."authorId" IN (:...ids)', { ids: teacherIds })
-        .groupBy('c."authorId"')
+        .where('c."author_id" IN (:...ids)', { ids: teacherIds })
+        .groupBy('c."author_id"')
         .getRawMany();
 
     const certRows = await this.certRepo
         .createQueryBuilder('cert')
         .leftJoin('cert.course', 'c')
-        .select('c."authorId"', 'teacherId')
+        .select('c."author_id"', 'teacherId')
         .addSelect('COUNT(cert.id)', 'certificates')
-        .where('c."authorId" IN (:...ids)', { ids: teacherIds })
-        .groupBy('c."authorId"')
+        .where('c."author_id" IN (:...ids)', { ids: teacherIds })
+        .groupBy('c."author_id"')
         .getRawMany();
 
     const ratingRows = await this.courseRepo
         .createQueryBuilder('c')
         .leftJoin('reviews', 'r', 'r."courseId" = c.id')
-        .select('c."authorId"', 'teacherId')
+        .select('c."author_id"', 'teacherId')
         .addSelect('AVG(r.rating)', 'avgRating')
         .addSelect('COUNT(r.id)', 'reviewCount')
-        .where('c."authorId" IN (:...ids)', { ids: teacherIds })
-        .groupBy('c."authorId"')
+        .where('c."author_id" IN (:...ids)', { ids: teacherIds })
+        .groupBy('c."author_id"')
         .getRawMany();
 
     const revenueMap    = Object.fromEntries(revenueRows.map(r => [r.teacherId, r]));

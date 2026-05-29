@@ -1,7 +1,8 @@
 import {
   Controller, Post, Get, Body, Param,
-  UseGuards, HttpCode,
+  UseGuards, HttpCode, Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
@@ -175,6 +176,20 @@ export class PaymentController {
       console.error('WayForPay callback error:', err.message);
       return { ok: false, error: err.message };
     }
+  }
+
+  @Post('return')
+  @HttpCode(302)
+  @ApiOperation({ summary: 'WayForPay returnUrl — приймає POST і редіректить на фронтенд' })
+  async handleReturn(@Body() body: Record<string, any>, @Res() res: Response) {
+    const frontendUrl = process.env.FRONTEND_URL ?? 'https://graduation-frontend.onrender.com';
+    const orderId     = body.orderReference ?? '';
+    const reasonCode  = body.reasonCode;
+
+    // reasonCode 1100 = успішна оплата у WayForPay
+    const status = reasonCode === '1100' || reasonCode === 1100 ? 'success' : 'failure';
+
+    return res.redirect(`${frontendUrl}/payment/result?status=${status}&order_id=${orderId}`);
   }
 
   @Get('status/:courseId')

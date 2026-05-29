@@ -14,7 +14,7 @@ export class WayForPayService {
         this.merchantAccount   = config.get('WFP_MERCHANT_ACCOUNT');
         this.merchantSecretKey = config.get('WFP_MERCHANT_SECRET_KEY');
         this.merchantDomain    = config.get('WFP_MERCHANT_DOMAIN', 'graduation-frontend.onrender.com');
-        this.resultUrl         = config.get('WFP_RESULT_URL', 'https://graduation-frontend.onrender.com/payment/result');
+        this.resultUrl         = config.get('WFP_RESULT_URL', 'https://elearning-backend-hhfg.onrender.com/payments/return');
         this.serverUrl         = config.get('WFP_SERVER_URL', 'https://elearning-backend-hhfg.onrender.com/payments/callback');
     }
 
