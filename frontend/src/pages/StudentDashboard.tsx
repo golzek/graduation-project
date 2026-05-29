@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StudentDashboardSkeleton } from '../components/Skeleton';
 import { Link } from 'react-router-dom';
 import { useAuth, apiFetch } from '../context/AuthContext';
+import { LearningStats } from '../components/LearningStats';
 
 interface EnrolledCourse {
     id: string;
@@ -117,6 +118,7 @@ export function StudentDashboard() {
             </div>
 
             <div style={s.body}>
+                <LearningStats />
                 <div style={s.metricsRow}>
                     <MetricCard label="Курсів записано"   value={totalCourses}    />
                     <MetricCard label="Завершено"          value={completedCourses}/>
