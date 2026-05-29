@@ -94,6 +94,7 @@ import { AuditModule } from './audit/audit.module';
     SubscriptionModule,
     WishlistModule,
     AuditModule,
+    TypeOrmModule.forFeature([AuditLog]),
   ],
   providers: [
     { provide: APP_GUARD,       useClass: ThrottlerGuard },
