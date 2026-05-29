@@ -92,7 +92,7 @@ export class CertificateService {
   }): Promise<Buffer> {
     return new Promise((resolve, reject) => {
       const path   = require('path');
-      const fontsDir = path.join(__dirname, '..', '..', 'certificates', 'fonts');
+      const fontsDir = path.join(__dirname, '..', 'certificates', 'fonts');
       const regular  = path.join(fontsDir, 'Roboto-Regular.ttf');
       const bold     = path.join(fontsDir, 'Roboto-Bold.ttf');
 

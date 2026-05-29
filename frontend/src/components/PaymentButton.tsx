@@ -102,7 +102,7 @@ export function PaymentButton({ courseId, price, title, onSuccess }: PaymentButt
                     <button onClick={clearPromo} style={{ background:'none', border:'none', cursor:'pointer', color:'#9ca3af', fontSize:16, lineHeight:1, padding:0 }}>×</button>
                   </div>
               ) : (
-                  <div style={{ display:'flex', gap:6, width:'100%', overflow:'hidden' }}>
+                  <div style={{ display:'flex', gap:6, width:'100%' }}>
                     <input
                         placeholder="Промокод"
                         value={promoInput}
@@ -113,7 +113,7 @@ export function PaymentButton({ courseId, price, title, onSuccess }: PaymentButt
                     <button
                         onClick={checkPromo}
                         disabled={promoState==='checking' || !promoInput.trim()}
-                        style={{ padding:'9px 10px', borderRadius:8, border:'1.5px solid #9ca3af', background:'#f9fafb', fontSize:12, cursor:'pointer', fontFamily:'inherit', color:'#374151', whiteSpace:'nowrap', flexShrink:0, minWidth:0 }}
+                        style={{ padding:'9px 12px', borderRadius:8, border:'1.5px solid #9ca3af', background:'#f9fafb', fontSize:12, cursor:'pointer', fontFamily:'inherit', color:'#374151', whiteSpace:'nowrap', flexShrink:0 }}
                     >{promoState==='checking' ? '...' : 'Застосувати'}</button>
                   </div>
               )}

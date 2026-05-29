@@ -22,5 +22,5 @@ export class Wishlist {
 
     @Column({ name: 'course_id' }) courseId: string;
 
-    @CreateDateColumn() addedAt: Date;
+    @CreateDateColumn({ name: 'added_at' }) addedAt: Date;
 }
