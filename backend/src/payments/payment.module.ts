@@ -2,17 +2,18 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Course, Enrollment } from '../courses/course.entity';
 import { PaymentController } from './payment.controller';
-import { LiqPayService } from './liqpay.service';
+import { WayForPayService } from './wayforpay.service';
 import { PromoCodeModule } from '../promo-codes/promo-code.module';
 import { SubscriptionModule } from '../subscription/subscription.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Course, Enrollment]),
+  imports: [
+    TypeOrmModule.forFeature([Course, Enrollment]),
     PromoCodeModule,
-  SubscriptionModule,
-      ],
+    SubscriptionModule,
+  ],
   controllers: [PaymentController],
-  providers: [LiqPayService],
-  exports: [LiqPayService],
+  providers: [WayForPayService],
+  exports: [WayForPayService],
 })
 export class PaymentModule {}

@@ -1060,15 +1060,17 @@ function DualBarChart({
 interface AuditLog {
   id: string;
   actorEmail: string | null;
+  actorRole: string | null;
   action: string;
   entity: string;
   entityId: string | null;
   path: string;
   method: string;
-  statusCode: number;
+  statusCode: number | null;
   isError: boolean;
   createdAt: string;
-  meta: any;
+  payload: any;
+  response: any;
 }
 
 function AuditTab() {
@@ -1098,7 +1100,7 @@ function AuditTab() {
 
   const actionColors: Record<string, string> = {
     CREATE: '#16a34a', UPDATE: '#2563eb', DELETE: '#dc2626',
-    LOGIN: '#7c3aed', LOGOUT: '#6b7280', VIEW: '#9ca3af',
+    LOGIN: '#7c3aed', LOGOUT: '#6b7280', BAN: '#dc2626', UNBAN: '#16a34a',
   };
 
   return (
@@ -1117,7 +1119,7 @@ function AuditTab() {
               style={{ padding: '7px 10px', border: '1.5px solid #ebebeb', borderRadius: 8, fontSize: '0.85rem', fontFamily: 'inherit' }}
           >
             <option value="">Всі дії</option>
-            {['CREATE','UPDATE','DELETE','LOGIN','LOGOUT','VIEW'].map(a => (
+            {['CREATE','UPDATE','DELETE','LOGIN','LOGOUT','BAN','UNBAN'].map(a => (
                 <option key={a} value={a}>{a}</option>
             ))}
           </select>
@@ -1161,7 +1163,7 @@ function AuditTab() {
                 }}>{log.action}</span>
 
                       <span style={{ fontSize: '0.8rem', color: '#6b7280', flexShrink: 0, minWidth: 80 }}>
-                  {log.method} <span style={{ color: log.isError ? '#dc2626' : log.statusCode < 300 ? '#16a34a' : '#d97706', fontWeight: 600 }}>{log.statusCode}</span>
+                  {log.method} <span style={{ color: log.isError ? '#dc2626' : (log.statusCode ?? 0) < 300 ? '#16a34a' : '#d97706', fontWeight: 600 }}>{log.statusCode ?? '—'}</span>
                 </span>
 
                       <span style={{ fontSize: '0.82rem', fontFamily: 'monospace', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
@@ -1184,11 +1186,21 @@ function AuditTab() {
                           <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '4px 16px', fontSize: '0.8rem', marginTop: 8 }}>
                             <span style={{ color: '#9a9a9a' }}>Entity</span>
                             <span>{log.entity}{log.entityId ? ` / ${log.entityId}` : ''}</span>
-                            {log.meta && (
+                            <span style={{ color: '#9a9a9a' }}>Role</span>
+                            <span>{log.actorRole ?? '—'}</span>
+                            {log.payload && (
                                 <>
-                                  <span style={{ color: '#9a9a9a' }}>Meta</span>
+                                  <span style={{ color: '#9a9a9a' }}>Payload</span>
                                   <pre style={{ margin: 0, fontSize: '0.75rem', color: '#374151', whiteSpace: 'pre-wrap' as const }}>
-                          {JSON.stringify(log.meta, null, 2)}
+                          {JSON.stringify(log.payload, null, 2)}
+                        </pre>
+                                </>
+                            )}
+                            {log.response && (
+                                <>
+                                  <span style={{ color: '#9a9a9a' }}>Response</span>
+                                  <pre style={{ margin: 0, fontSize: '0.75rem', color: '#374151', whiteSpace: 'pre-wrap' as const }}>
+                          {JSON.stringify(log.response, null, 2)}
                         </pre>
                                 </>
                             )}

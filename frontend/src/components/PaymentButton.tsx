@@ -61,14 +61,26 @@ export function PaymentButton({ courseId, price, title, onSuccess }: PaymentButt
         method: 'POST',
         body: JSON.stringify({ promoCode: promoCode || undefined }),
       });
+
       if (res.free) { onSuccess?.(); return; }
+      if (res.subscriptionAccess) { onSuccess?.(); return; }
 
       const form = document.createElement('form');
-      form.method = 'POST'; form.action = res.action; form.target = '_blank';
-      const d = document.createElement('input'); d.type='hidden'; d.name='data'; d.value=res.data;
-      const s = document.createElement('input'); s.type='hidden'; s.name='signature'; s.value=res.signature;
-      form.appendChild(d); form.appendChild(s);
-      document.body.appendChild(form); form.submit(); document.body.removeChild(form);
+      form.method = 'POST';
+      form.action = res.action;
+      form.target = '_blank';
+
+      Object.entries(res.formData as Record<string, string>).forEach(([name, value]) => {
+        const input = document.createElement('input');
+        input.type  = 'hidden';
+        input.name  = name;
+        input.value = value;
+        form.appendChild(input);
+      });
+
+      document.body.appendChild(form);
+      form.submit();
+      document.body.removeChild(form);
       setLoading(false);
       alert('Завершіть оплату у відкритому вікні. Після успішної оплати поверніться на цю сторінку.');
     } catch (err: any) { setError(err.message); setLoading(false); }
@@ -126,8 +138,8 @@ export function PaymentButton({ courseId, price, title, onSuccess }: PaymentButt
 
         {price > 0 && (
             <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginTop:12 }}>
-              <img src="https://static.liqpay.ua/buttons/logo-small.png" alt="LiqPay" style={{ height:20 }} />
-              <span style={{ fontSize:11, color:'#9ca3af' }}>Безпечна оплата через LiqPay</span>
+              <img src="https://wayforpay.com/images/logo.svg" alt="WayForPay" style={{ height:20 }} />
+              <span style={{ fontSize:11, color:'#9ca3af' }}>Безпечна оплата через WayForPay</span>
             </div>
         )}
       </div>

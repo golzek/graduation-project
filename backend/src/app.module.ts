@@ -29,6 +29,8 @@ import { Referral } from './referral/referral.entity';
 import { ReferralModule } from './referral/referral.module';
 import { PayoutRequest } from './payouts/payout-request.entity';
 import { PayoutModule }  from './payouts/payout.module';
+import { QaQuestion, QaAnswer } from './qa/qa.entity';
+import { QaModule } from './qa/qa.module';
 
 @Module({
   imports: [
@@ -52,7 +54,11 @@ import { PayoutModule }  from './payouts/payout.module';
         username: cfg.get('DB_USERNAME', 'postgres'),
         password: cfg.get('DB_PASSWORD', 'postgres'),
         database: cfg.get('DB_NAME',     'elearning'),
-        entities: [User, Course, CourseModule, Lesson, Enrollment, Progress, Certificate, Review, Notification, PromoCode, Wishlist, Referral, PayoutRequest],
+        entities: [
+          User, Course, CourseModule, Lesson, Enrollment, Progress,
+          Certificate, Review, Notification, PromoCode, Wishlist,
+          Referral, PayoutRequest, QaQuestion, QaAnswer,
+        ],
         synchronize: false,
         logging: cfg.get('NODE_ENV') === 'development',
         migrations: cfg.get('NODE_ENV') === 'production'
@@ -77,6 +83,7 @@ import { PayoutModule }  from './payouts/payout.module';
     InstructorModule,
     ReferralModule,
     PayoutModule,
+    QaModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

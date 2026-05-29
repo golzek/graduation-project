@@ -4,6 +4,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useCourse, useCourseProgress, useCourseActions, Lesson, CourseModule } from '../hooks/useCourses';
 import { useAuth, apiFetch } from '../context/AuthContext';
 import { WishlistButton } from '../components/WishlistButton';
+import { LessonQA } from '../components/LessonQA';
 
 export function CoursePage() {
   const { id } = useParams<{ id: string }>();
@@ -230,6 +231,7 @@ function QuizPlayer({ lesson, isEnrolled, onDone, completed }: {
               <button style={ps.btnMark} onClick={onDone}>Позначити як завершений</button>
           )}
           {completed && <button style={ps.btnDone} disabled>✓ Завершено</button>}
+          <LessonQA lessonId={lesson.id} isEnrolled={isEnrolled} />
         </div>
     );
   }
@@ -372,6 +374,7 @@ function LessonPlayer({ lesson, isEnrolled, onProgressSaved }: {
               {completed ? '✓ Завершено' : 'Позначити як завершений'}
             </button>
         )}
+        <LessonQA lessonId={lesson.id} isEnrolled={isEnrolled} />
       </div>
   );
 }

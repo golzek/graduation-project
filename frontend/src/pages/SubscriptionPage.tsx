@@ -66,9 +66,11 @@ export function SubscriptionPage() {
 
             const form = document.createElement('form');
             form.method = 'POST'; form.action = res.action; form.target = '_blank';
-            const d = document.createElement('input'); d.type = 'hidden'; d.name = 'data'; d.value = res.data;
-            const s = document.createElement('input'); s.type = 'hidden'; s.name = 'signature'; s.value = res.signature;
-            form.appendChild(d); form.appendChild(s);
+            Object.entries(res.formData as Record<string, string>).forEach(([name, value]) => {
+                const input = document.createElement('input');
+                input.type = 'hidden'; input.name = name; input.value = value;
+                form.appendChild(input);
+            });
             document.body.appendChild(form); form.submit(); document.body.removeChild(form);
             alert('Завершіть оплату у відкритому вікні. Після успішної оплати поверніться на цю сторінку.');
         } catch (e: any) {
@@ -209,8 +211,8 @@ export function SubscriptionPage() {
 
                                 {!isCurrentPlan && (
                                     <p style={s.liqpayNote}>
-                                        <img src="https://static.liqpay.ua/buttons/logo-small.png" alt="LiqPay" style={{ height: 14, verticalAlign: 'middle', marginRight: 4 }} />
-                                        Безпечна оплата через LiqPay
+                                        <img src="https://wayforpay.com/images/logo.svg" alt="WayForPay" style={{ height: 14, verticalAlign: 'middle', marginRight: 4 }} />
+                                        Безпечна оплата через WayForPay
                                     </p>
                                 )}
                             </div>

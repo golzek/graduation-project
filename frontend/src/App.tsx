@@ -2,6 +2,7 @@ import React from 'react';
 import { ThemeProvider } from './context/ThemeContext';
 import './styles/global.css';
 import { Navbar } from './components/Navbar';
+import { Footer } from './components/Footer';
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './components/Toast';
@@ -22,6 +23,8 @@ import { WishlistPage } from './pages/WishlistPage';
 import { WishlistProvider } from './context/WishlistContext';
 import { SubscriptionPage } from './pages/SubscriptionPage';
 import { InstructorPage } from './pages/InstructorPage';
+import { TermsPage } from './pages/TermsPage';
+import { PrivacyPage } from './pages/PrivacyPage';
 
 function AppRoutes() {
   return (
@@ -93,6 +96,9 @@ function AppRoutes() {
 
               <Route path="/payment/result" element={<PaymentResultPage />}/>
 
+              <Route path="/terms"   element={<TermsPage />} />
+              <Route path="/privacy" element={<PrivacyPage />} />
+
               <Route path="/forbidden" element={
                 <div style={{ textAlign: 'center', padding: '80px 32px' }}>
                   <h2>403 — Доступ заборонено</h2>
@@ -103,6 +109,7 @@ function AppRoutes() {
 
               <Route path="*" element={<Navigate to="/courses" replace />} />
             </Routes>
+            <Footer />
           </>
         }/>
       </Routes>

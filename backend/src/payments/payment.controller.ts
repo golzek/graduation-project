@@ -1,13 +1,13 @@
 import {
-  Controller, Post, Get, Body, Param, Query,
+  Controller, Post, Get, Body, Param,
   UseGuards, HttpCode,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { IsOptional, IsString, IsEnum } from 'class-validator';
 import { v4 as uuidv4 } from 'uuid';
-import { LiqPayService } from './liqpay.service';
+import { WayForPayService } from './wayforpay.service';
 import { Course, Enrollment } from '../courses/course.entity';
 import { JwtAuthGuard, CurrentUser } from '../auth/auth.guards';
 import { PromoCodeService } from '../promo-codes/promo-code.service';
@@ -26,9 +26,9 @@ class CreateSubscriptionPaymentDto {
 @Controller('payments')
 export class PaymentController {
   constructor(
-      private readonly liqpay:      LiqPayService,
-      @InjectRepository(Course)     private courseRepo:      Repository<Course>,
-      @InjectRepository(Enrollment) private enrollmentRepo:  Repository<Enrollment>,
+      private readonly wfp:              WayForPayService,
+      @InjectRepository(Course)     private courseRepo:     Repository<Course>,
+      @InjectRepository(Enrollment) private enrollmentRepo: Repository<Enrollment>,
       private readonly promoSvc:    PromoCodeService,
       private readonly subSvc:      SubscriptionService,
   ) {}
@@ -36,7 +36,7 @@ export class PaymentController {
   @Post('create/:courseId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT')
-  @ApiOperation({ summary: 'Отримати дані для форми оплати курсу LiqPay' })
+  @ApiOperation({ summary: 'Отримати дані для форми оплати курсу WayForPay' })
   async createPayment(
       @Param('courseId') courseId: string,
       @CurrentUser() user: any,
@@ -73,13 +73,13 @@ export class PaymentController {
     }
 
     const orderId = `order_${courseId}_${user.id}_${uuidv4().slice(0, 8)}`;
-    const form    = this.liqpay.createPaymentForm({
+    const form    = this.wfp.createPaymentForm({
       orderId,
       amount:      finalPrice,
       description: `Курс: ${course.title}${discountPercent ? ` (знижка ${discountPercent}%)` : ''}`,
       courseId,
-      userId:    user.id,
-      promoCode: dto.promoCode,
+      userId:      user.id,
+      promoCode:   dto.promoCode,
     });
 
     return { free: false, orderId, price: course.price, finalPrice, discountPercent, ...form };
@@ -88,7 +88,7 @@ export class PaymentController {
   @Post('subscribe')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT')
-  @ApiOperation({ summary: 'Отримати дані для форми оплати підписки LiqPay' })
+  @ApiOperation({ summary: 'Отримати дані для форми оплати підписки WayForPay' })
   async createSubscriptionPayment(
       @CurrentUser() user: any,
       @Body() dto: CreateSubscriptionPaymentDto,
@@ -102,7 +102,7 @@ export class PaymentController {
     };
 
     const orderId = `sub_${plan}_${user.id}_${uuidv4().slice(0, 8)}`;
-    const form    = this.liqpay.createSubscriptionForm({
+    const form    = this.wfp.createSubscriptionForm({
       orderId,
       amount,
       description: planLabels[plan],
@@ -115,18 +115,18 @@ export class PaymentController {
 
   @Post('callback')
   @HttpCode(200)
-  @ApiOperation({ summary: 'Webhook від LiqPay (не викликати вручну)' })
-  async handleCallback(@Body() body: { data: string; signature: string }) {
+  @ApiOperation({ summary: 'Webhook від WayForPay (не викликати вручну)' })
+  async handleCallback(@Body() body: Record<string, any>) {
     try {
-      const result = this.liqpay.verifyCallback(body.data, body.signature);
+      const result = this.wfp.verifyCallback(body);
 
-      if (result.status !== 'success' && result.status !== 'sandbox') {
-        return { ok: false, status: result.status };
+      if (result.status !== 'success') {
+        return this.wfp.buildCallbackResponse(result.orderId, 'decline');
       }
 
       if (result.type === 'subscription') {
         const { userId, plan, orderId, amount } = result;
-        if (!userId || !plan) return { ok: false, error: 'Missing subscription info' };
+        if (!userId || !plan) return this.wfp.buildCallbackResponse(orderId, 'decline');
 
         await this.subSvc.activate({
           userId,
@@ -134,11 +134,11 @@ export class PaymentController {
           paidPrice: amount,
           orderId,
         });
-        return { ok: true, type: 'subscription' };
+        return this.wfp.buildCallbackResponse(orderId, 'accept');
       }
 
       const { courseId, userId, promoCode, orderId } = result;
-      if (!courseId || !userId) return { ok: false, error: 'Missing course info' };
+      if (!courseId || !userId) return this.wfp.buildCallbackResponse(orderId, 'decline');
 
       const exists = await this.enrollmentRepo.findOne({ where: { userId, courseId } });
       if (!exists) {
@@ -152,9 +152,9 @@ export class PaymentController {
         );
       }
 
-      return { ok: true, type: 'course' };
+      return this.wfp.buildCallbackResponse(orderId, 'accept');
     } catch (err) {
-      console.error('LiqPay callback error:', err.message);
+      console.error('WayForPay callback error:', err.message);
       return { ok: false, error: err.message };
     }
   }
@@ -172,9 +172,9 @@ export class PaymentController {
       this.subSvc.hasActiveSubscription(user.id),
     ]);
     return {
-      enrolled:        !!enrollment || hasSubscription,
-      byEnrollment:    !!enrollment,
-      bySubscription:  hasSubscription,
+      enrolled:       !!enrollment || hasSubscription,
+      byEnrollment:   !!enrollment,
+      bySubscription: hasSubscription,
     };
   }
 }
