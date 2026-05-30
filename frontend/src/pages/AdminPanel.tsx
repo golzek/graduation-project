@@ -332,7 +332,8 @@ function CompletionRing({ pct }: { pct: number }) {
 
 function UsersTab() {
   const toast = useToast();
-  const { isSuperAdmin } = useAuth();
+  const { user } = useAuth();
+  const isSuperAdmin = user?.role === 'super_admin';
   const [users, setUsers]           = useState<AdminUser[]>([]);
   const [search, setSearch]         = useState('');
   const [roleFilter, setRoleFilter] = useState('');
