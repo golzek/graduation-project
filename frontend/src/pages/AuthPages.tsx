@@ -266,20 +266,34 @@ export function RegisterPage() {
 }
 
 export function GoogleCallbackPage() {
-  const { handleGoogleCallback } = useAuth();
+  const { handleGoogleCallback, user, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [error, setError] = useState('');
+  const [processed, setProcessed] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.get('accessToken')) {
       handleGoogleCallback(params);
-      navigate('/courses', { replace: true });
+      setProcessed(true);
     } else {
       setError('Помилка авторизації через Google. Спробуй ще раз.');
     }
-  }, [handleGoogleCallback, location.search, navigate]);
+  }, []);
+
+  useEffect(() => {
+    if (!processed || isLoading) return;
+    if (user) {
+      if (user.role === 'admin' || user.role === 'super_admin') {
+        navigate('/admin', { replace: true });
+      } else if (user.role === 'teacher') {
+        navigate('/teacher', { replace: true });
+      } else {
+        navigate('/courses', { replace: true });
+      }
+    }
+  }, [processed, user, isLoading, navigate]);
 
   if (error) {
     return (
