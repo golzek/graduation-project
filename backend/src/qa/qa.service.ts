@@ -20,12 +20,28 @@ export class QaService {
         private readonly notifSvc: NotificationService,
     ) {}
 
-    async getByLesson(lessonId: string): Promise<QaQuestion[]> {
-        return this.questionRepo.find({
+    async getByLesson(lessonId: string, requesterId?: string): Promise<QaQuestion[]> {
+        const all = await this.questionRepo.find({
             where: { lessonId },
             relations: ['answers'],
             order: { createdAt: 'DESC' } as any,
         });
+
+        if (!requesterId) return [];
+
+        const course = await this.courseRepo
+            .createQueryBuilder('c')
+            .innerJoin('c.modules', 'm')
+            .innerJoin('m.lessons', 'l')
+            .where('l.id = :lessonId', { lessonId })
+            .select(['c.authorId'])
+            .getOne();
+
+        const isInstructor = course && course.authorId === requesterId;
+
+        // Students only see their own questions; instructor sees all
+        if (isInstructor) return all;
+        return all.filter(q => q.authorId === requesterId);
     }
 
     async createQuestion(dto: CreateQuestionDto, user: any): Promise<QaQuestion> {
@@ -73,27 +89,41 @@ export class QaService {
             user.role === UserRole.SUPER_ADMIN ||
             user.role === UserRole.MODERATOR;
 
+        const course = await this.courseRepo
+            .createQueryBuilder('c')
+            .innerJoin('c.modules', 'm')
+            .innerJoin('m.lessons', 'l')
+            .where('l.id = :lessonId', { lessonId: question.lessonId })
+            .select(['c.id', 'c.title', 'c.authorId'])
+            .getOne();
+
         if (!isAdminOrMod) {
-            const course = await this.courseRepo
-                .createQueryBuilder('c')
-                .innerJoin('c.modules', 'm')
-                .innerJoin('m.lessons', 'l')
-                .where('l.id = :lessonId', { lessonId: question.lessonId })
-                .select(['c.authorId'])
-                .getOne();
             if (!course || course.authorId !== user.id) {
                 throw new ForbiddenException('Відповідати може тільки викладач курсу');
             }
         }
 
         const answer = this.answerRepo.create({
-            body:        dto.body,
-            questionId:  dto.questionId,
-            authorId:    user.id,
+            body:         dto.body,
+            questionId:   dto.questionId,
+            authorId:     user.id,
             isInstructor: true,
         });
         const saved = await this.answerRepo.save(answer);
         await this.questionRepo.increment({ id: dto.questionId }, 'answerCount', 1);
+
+        try {
+            if (question.authorId !== user.id && course) {
+                await this.notifSvc.notifyStudentNewAnswer(
+                    question.authorId,
+                    user.name,
+                    course.title,
+                    course.id,
+                    question.id,
+                );
+            }
+        } catch { /* ignore */ }
+
         return saved;
     }
 
@@ -108,7 +138,8 @@ export class QaService {
     async deleteQuestion(id: string, user: any): Promise<{ deleted: boolean }> {
         const q = await this.questionRepo.findOne({ where: { id } });
         if (!q) throw new NotFoundException();
-        if (q.authorId !== user.id && user.role !== UserRole.ADMIN && user.role !== UserRole.SUPER_ADMIN)
+        const isAdmin = user.role === UserRole.ADMIN || user.role === UserRole.SUPER_ADMIN;
+        if (q.authorId !== user.id && !isAdmin)
             throw new ForbiddenException();
         await this.questionRepo.remove(q);
         return { deleted: true };
@@ -117,10 +148,10 @@ export class QaService {
     async deleteAnswer(id: string, user: any): Promise<{ deleted: boolean }> {
         const a = await this.answerRepo.findOne({ where: { id } });
         if (!a) throw new NotFoundException();
-        // Студент не може видаляти відповіді викладача
         if (a.isInstructor && user.role === UserRole.STUDENT)
             throw new ForbiddenException('Не можна видаляти відповідь викладача');
-        if (a.authorId !== user.id && user.role !== UserRole.ADMIN && user.role !== UserRole.SUPER_ADMIN)
+        const isAdmin = user.role === UserRole.ADMIN || user.role === UserRole.SUPER_ADMIN;
+        if (a.authorId !== user.id && !isAdmin)
             throw new ForbiddenException();
         await this.answerRepo.remove(a);
         await this.questionRepo.decrement({ id: a.questionId }, 'answerCount', 1);

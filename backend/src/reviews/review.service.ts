@@ -7,7 +7,7 @@ import { Repository } from 'typeorm';
 import { IsInt, IsString, IsOptional, Min, Max } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Review } from './review.entity';
-import { Enrollment } from '../courses/course.entity';
+import { Course, Enrollment } from '../courses/course.entity';
 import { User, UserRole } from '../users/user.entity';
 
 export class CreateReviewDto {
@@ -23,6 +23,7 @@ export class ReviewService {
   constructor(
       @InjectRepository(Review)     private reviewRepo:     Repository<Review>,
       @InjectRepository(Enrollment) private enrollmentRepo: Repository<Enrollment>,
+      @InjectRepository(Course)     private courseRepo:     Repository<Course>,
   ) {}
 
   async create(courseId: string, dto: CreateReviewDto, user: User) {
@@ -61,6 +62,7 @@ export class ReviewService {
     if (!r) throw new NotFoundException();
     if (r.userId !== user.id && user.role !== UserRole.ADMIN) throw new ForbiddenException();
     await this.reviewRepo.remove(r);
+    await this.recalcCourseRating(r.courseId);
   }
 
   findPending() {
@@ -76,6 +78,26 @@ export class ReviewService {
     const r = await this.reviewRepo.findOne({ where: { id } });
     if (!r) throw new NotFoundException();
     r.isApproved = true;
-    return this.reviewRepo.save(r);
+    const saved = await this.reviewRepo.save(r);
+    await this.recalcCourseRating(r.courseId);
+    return saved;
+  }
+
+  private async recalcCourseRating(courseId: string): Promise<void> {
+    const approved = await this.reviewRepo.find({
+      where: { courseId, isApproved: true },
+      select: ['rating'],
+    });
+    const avg = approved.length
+        ? approved.reduce((s, r) => s + r.rating, 0) / approved.length
+        : 0;
+    await this.courseRepo.update(courseId, {
+      rating: approved.length ? Math.round(avg * 100) / 100 : null,
+    });
+  }
+
+  async hasReview(courseId: string, userId: string): Promise<boolean> {
+    const r = await this.reviewRepo.findOne({ where: { userId, courseId } });
+    return !!r;
   }
 }

@@ -211,4 +211,14 @@ export class NotificationService {
             { courseId, questionId },
         );
     }
+
+    async notifyStudentNewAnswer(studentId: string, instructorName: string, courseTitle: string, courseId: string, questionId: string) {
+        await this.save(
+            studentId,
+            NotificationType.NEW_QA_ANSWER,
+            '💬 Викладач відповів на ваше питання',
+            `${instructorName} відповів на ваше питання у курсі «${courseTitle}».`,
+            { courseId, questionId },
+        );
+    }
 }

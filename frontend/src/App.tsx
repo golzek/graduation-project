@@ -35,7 +35,7 @@ function AppRoutes() {
         <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
 
         <Route path="/admin/*" element={
-          <ProtectedRoute roles={['admin']}>
+          <ProtectedRoute roles={['admin', 'super_admin']}>
             <AdminPanel />
           </ProtectedRoute>
         }/>
@@ -49,36 +49,37 @@ function AppRoutes() {
               <Route path="/courses/:id" element={<CoursePage />} />
               <Route path="/instructors/:id" element={<InstructorPage />} />
               <Route path="/courses/create" element={
-                <ProtectedRoute roles={['teacher', 'admin']}>
+                <ProtectedRoute roles={['teacher', 'admin', 'super_admin']}>
                   <CourseCreatePage />
                 </ProtectedRoute>
               }/>
               <Route path="/courses/:id/edit" element={
-                <ProtectedRoute roles={['teacher', 'admin']}>
+                <ProtectedRoute roles={['teacher', 'admin', 'super_admin']}>
                   <CourseEditPage />
                 </ProtectedRoute>
               }/>
 
               <Route path="/certificates/verify/:code" element={<VerifyCertPage />} />
+              <Route path="/certificates/verify" element={<VerifyCertPage />} />
 
               <Route path="/certificates" element={
                 <ProtectedRoute><MyCertificatesPage /></ProtectedRoute>
               }/>
 
               <Route path="/teacher" element={
-                <ProtectedRoute roles={['teacher', 'admin']}>
+                <ProtectedRoute roles={['teacher', 'admin', 'super_admin']}>
                   <TeacherDashboard />
                 </ProtectedRoute>
               }/>
 
               <Route path="/analytics/courses/:id" element={
-                <ProtectedRoute roles={['teacher', 'admin']}>
+                <ProtectedRoute roles={['teacher', 'admin', 'super_admin']}>
                   <CourseAnalyticsPage />
                 </ProtectedRoute>
               }/>
 
               <Route path="/student" element={
-                <ProtectedRoute roles={['student', 'admin']}>
+                <ProtectedRoute roles={['student', 'admin', 'super_admin']}>
                   <StudentDashboard />
                 </ProtectedRoute>
               }/>

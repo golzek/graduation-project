@@ -1,24 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-
-const API = process.env.REACT_APP_API_URL ?? 'http://localhost:3000';
-
-async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = localStorage.getItem('accessToken');
-  const res = await fetch(`${API}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  });
-  if (!res.ok) {
-    const e = await res.json().catch(() => ({ message: 'Помилка' }));
-    throw new Error(e.message);
-  }
-  return res.json();
-}
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useAuth, apiFetch } from '../context/AuthContext';
 
 interface Cert {
   id: string;
@@ -35,35 +17,35 @@ export function MyCertificatesPage() {
 
   useEffect(() => {
     apiFetch<Cert[]>('/certificates/my')
-      .then(setCerts)
-      .finally(() => setLoading(false));
+        .then(setCerts)
+        .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div style={s.centered}>Завантаження...</div>;
 
   return (
-    <div style={s.page}>
-      <div style={s.header}>
-        <h1 style={s.title}>Мої сертифікати</h1>
-        <p style={s.sub}>Отримано: {certs.length}</p>
-      </div>
+      <div style={s.page}>
+        <div style={s.header}>
+          <h1 style={s.title}>Мої сертифікати</h1>
+          <p style={s.sub}>Отримано: {certs.length}</p>
+        </div>
 
-      {certs.length === 0 ? (
-        <div style={s.empty}>
-          <p style={{ fontSize: 48, margin: 0 }}>🎓</p>
-          <p style={{ color: '#6b7280', marginTop: 12 }}>
-            Ще немає сертифікатів. Завершуй курси на 100%!
-          </p>
-          <Link to="/courses" style={s.btnLink}>Перейти до каталогу</Link>
-        </div>
-      ) : (
-        <div style={s.grid}>
-          {certs.map((cert) => (
-            <CertCard key={cert.id} cert={cert} />
-          ))}
-        </div>
-      )}
-    </div>
+        {certs.length === 0 ? (
+            <div style={s.empty}>
+              <p style={{ fontSize: 48, margin: 0 }}>🎓</p>
+              <p style={{ color: '#6b7280', marginTop: 12 }}>
+                Ще немає сертифікатів. Завершуй курси на 100%!
+              </p>
+              <Link to="/courses" style={s.btnLink}>Перейти до каталогу</Link>
+            </div>
+        ) : (
+            <div style={s.grid}>
+              {certs.map((cert) => (
+                  <CertCard key={cert.id} cert={cert} />
+              ))}
+            </div>
+        )}
+      </div>
   );
 }
 
@@ -74,83 +56,176 @@ function CertCard({ cert }: { cert: Cert }) {
   });
 
   return (
-    <div style={s.card}>
-      <div style={s.cardTop}>
-        <span style={{ fontSize: 36 }}>🏆</span>
-        <p style={s.cardTopLabel}>Сертифікат</p>
-      </div>
-
-      <div style={s.cardBody}>
-        <h3 style={s.courseTitle}>{cert.course.title}</h3>
-        <p style={s.authorLine}>Викладач: {cert.course.author?.name}</p>
-        <p style={s.dateLine}>Видано: {date}</p>
-
-        <div style={s.codeBlock}>
-          <span style={s.codeLabel}>Код верифікації</span>
-          <span style={s.code}>{cert.verifyCode}</span>
+      <div style={s.card}>
+        <div style={s.cardTop}>
+          <span style={{ fontSize: 36 }}>🏆</span>
+          <p style={s.cardTopLabel}>Сертифікат</p>
         </div>
 
-        <div style={s.actions}>
-          <a href={cert.pdfUrl} target="_blank" rel="noreferrer" style={s.btnDownload}>
-            ⬇ Завантажити PDF
-          </a>
-          <Link to={`/certificates/verify/${cert.verifyCode}`} style={s.btnVerify}>
-            Перевірити
-          </Link>
+        <div style={s.cardBody}>
+          <h3 style={s.courseTitle}>{cert.course.title}</h3>
+          <p style={s.authorLine}>Викладач: {cert.course.author?.name}</p>
+          <p style={s.dateLine}>Видано: {date}</p>
+
+          <div style={s.codeBlock}>
+            <span style={s.codeLabel}>Код верифікації</span>
+            <span style={s.code}>{cert.verifyCode}</span>
+          </div>
+
+          <div style={s.actions}>
+            <a href={cert.pdfUrl} target="_blank" rel="noreferrer" style={s.btnDownload}>
+              ⬇ Завантажити PDF
+            </a>
+            <Link to={`/certificates/verify/${cert.verifyCode}`} style={s.btnVerify}>
+              Перевірити
+            </Link>
+          </div>
         </div>
       </div>
-    </div>
   );
 }
 
 export function VerifyCertPage() {
-  const { code } = useParams<{ code: string }>();
+  const { code: codeParam } = useParams<{ code?: string }>();
+  const navigate = useNavigate();
+  const [input, setInput]   = useState(codeParam ?? '');
   const [result, setResult] = useState<any>(null);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [error, setError]   = useState('');
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!code) return;
-    apiFetch(`/certificates/verify/${code}`)
-      .then(setResult)
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, [code]);
+  const check = async (code: string) => {
+    if (!code.trim()) return;
+    setLoading(true); setResult(null); setError('');
+    try {
+      const data = await apiFetch<any>(`/certificates/verify/${code.trim().toUpperCase()}`);
+      setResult(data);
+    } catch (e: any) {
+      setError(e.message ?? 'Сертифікат не знайдено');
+    } finally { setLoading(false); }
+  };
 
-  if (loading) return <div style={s.centered}>Перевірка...</div>;
+  // auto-check if code is in URL
+  useEffect(() => { if (codeParam) check(codeParam); }, [codeParam]);
+
+  const handleSubmit = () => {
+    if (input.trim()) {
+      navigate(`/certificates/verify/${input.trim().toUpperCase()}`, { replace: true });
+    }
+  };
 
   return (
-    <div style={s.verifyPage}>
-      <div style={s.verifyCard}>
-        {error ? (
-          <>
-            <div style={{ fontSize: 56, textAlign: 'center' }}>❌</div>
-            <h2 style={{ color: '#dc2626', textAlign: 'center' }}>Сертифікат не знайдено</h2>
-            <p style={{ color: '#6b7280', textAlign: 'center' }}>{error}</p>
-          </>
-        ) : (
-          <>
-            <div style={{ fontSize: 56, textAlign: 'center' }}>✅</div>
-            <h2 style={{ color: '#065f46', textAlign: 'center', marginBottom: 24 }}>
-              Сертифікат дійсний
-            </h2>
-            <div style={s.verifyRow}><span>Студент</span><strong>{result.studentName}</strong></div>
-            <div style={s.verifyRow}><span>Курс</span><strong>{result.courseName}</strong></div>
-            <div style={s.verifyRow}>
-              <span>Дата видачі</span>
-              <strong>
-                {new Date(result.issuedAt).toLocaleDateString('uk-UA', {
-                  day: 'numeric', month: 'long', year: 'numeric',
-                })}
-              </strong>
-            </div>
-            <div style={s.verifyRow}><span>Код</span><code style={s.code}>{result.verifyCode}</code></div>
-          </>
-        )}
+      <div style={sv.page}>
+        <div style={sv.card}>
+          {/* Header */}
+          <div style={{ textAlign: 'center', marginBottom: 28 }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: 10 }}>🎓</div>
+            <h1 style={{ fontSize: '1.3rem', fontWeight: 700, margin: '0 0 6px', color: '#111827' }}>
+              Перевірка сертифікату
+            </h1>
+            <p style={{ fontSize: '0.85rem', color: '#6b7280', margin: 0 }}>
+              Введіть код верифікації щоб підтвердити автентичність сертифіката
+            </p>
+          </div>
+
+          {/* Input */}
+          <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
+            <input
+                value={input}
+                onChange={e => setInput(e.target.value.toUpperCase())}
+                onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+                placeholder="Наприклад: A1B2C3D4E5F6..."
+                style={{
+                  flex: 1, padding: '11px 14px', borderRadius: 8,
+                  border: '1.5px solid #e5e7eb', fontSize: '0.875rem',
+                  fontFamily: 'monospace', letterSpacing: '0.05em', outline: 'none',
+                  background: '#fafafa',
+                }}
+            />
+            <button
+                onClick={handleSubmit}
+                disabled={loading || !input.trim()}
+                style={{
+                  padding: '11px 20px', borderRadius: 8, border: 'none',
+                  background: loading || !input.trim() ? '#d1d5db' : '#4f46e5',
+                  color: '#fff', fontWeight: 600, fontSize: '0.875rem',
+                  cursor: loading || !input.trim() ? 'default' : 'pointer',
+                  fontFamily: 'inherit', flexShrink: 0,
+                }}
+            >{loading ? '...' : 'Перевірити'}</button>
+          </div>
+
+          {/* Result */}
+          {loading && (
+              <div style={{ textAlign: 'center', padding: '24px 0', color: '#6b7280', fontSize: '0.875rem' }}>
+                Перевірка...
+              </div>
+          )}
+
+          {error && !loading && (
+              <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '16px 20px', textAlign: 'center' }}>
+                <div style={{ fontSize: '2rem', marginBottom: 8 }}>❌</div>
+                <p style={{ color: '#dc2626', fontWeight: 600, margin: '0 0 4px' }}>Сертифікат не знайдено</p>
+                <p style={{ color: '#9ca3af', fontSize: '0.8rem', margin: 0 }}>Перевірте правильність коду</p>
+              </div>
+          )}
+
+          {result && !loading && (
+              <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, overflow: 'hidden' }}>
+                <div style={{ background: 'linear-gradient(135deg, #059669, #047857)', padding: '20px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '2.5rem', marginBottom: 6 }}>✅</div>
+                  <p style={{ color: '#fff', fontWeight: 700, fontSize: '1rem', margin: 0 }}>Сертифікат дійсний</p>
+                </div>
+                <div style={{ padding: '20px 24px' }}>
+                  {[
+                    { label: 'Студент',      value: result.studentName },
+                    { label: 'Курс',         value: result.courseName },
+                    { label: 'Дата видачі',  value: new Date(result.issuedAt).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' }) },
+                    { label: 'Код',          value: result.verifyCode, mono: true },
+                  ].map(row => (
+                      <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #d1fae5' }}>
+                        <span style={{ fontSize: '0.82rem', color: '#6b7280' }}>{row.label}</span>
+                        <strong style={{ fontSize: '0.88rem', color: '#111827', fontFamily: row.mono ? 'monospace' : 'inherit', letterSpacing: row.mono ? '0.1em' : 'normal' }}>
+                          {row.value}
+                        </strong>
+                      </div>
+                  ))}
+                  {result.pdfUrl && (
+                      <a href={result.pdfUrl} target="_blank" rel="noreferrer" style={{
+                        display: 'block', marginTop: 16, padding: '11px', textAlign: 'center',
+                        background: '#059669', color: '#fff', borderRadius: 8,
+                        textDecoration: 'none', fontWeight: 600, fontSize: '0.875rem',
+                      }}>
+                        Завантажити PDF
+                      </a>
+                  )}
+                </div>
+              </div>
+          )}
+
+          {!result && !error && !loading && (
+              <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: 20, marginTop: 4 }}>
+                <p style={{ fontSize: '0.75rem', color: '#9ca3af', textAlign: 'center', margin: 0, lineHeight: 1.6 }}>
+                  💡 Код верифікації вказаний на самому сертифікаті у форматі <code style={{ background: '#f3f4f6', padding: '1px 6px', borderRadius: 4 }}>XXXXXXXXXXXXXXXXXXXXXXXX</code>
+                </p>
+              </div>
+          )}
+        </div>
       </div>
-    </div>
   );
 }
+
+const sv: Record<string, React.CSSProperties> = {
+  page: {
+    minHeight: '100vh', background: '#f9fafb',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    padding: '32px 16px',
+  },
+  card: {
+    background: '#fff', borderRadius: 20, padding: '40px 36px',
+    maxWidth: 500, width: '100%',
+    boxShadow: '0 4px 24px rgba(0,0,0,0.08)', border: '1px solid #f3f4f6',
+  },
+};
 
 const s: Record<string, React.CSSProperties> = {
   page: { minHeight: '100vh', background: '#f9fafb', paddingBottom: 60 },

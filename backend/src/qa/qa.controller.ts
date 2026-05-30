@@ -1,6 +1,6 @@
 import {
     Controller, Get, Post, Delete, Patch,
-    Body, Param, UseGuards,
+    Body, Param, UseGuards, Query,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { QaService } from './qa.service';
@@ -15,9 +15,9 @@ export class QaController {
     @Get('lesson/:lessonId')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth('JWT')
-    @ApiOperation({ summary: 'Список питань до уроку' })
-    getByLesson(@Param('lessonId') lessonId: string) {
-        return this.svc.getByLesson(lessonId);
+    @ApiOperation({ summary: 'Список питань до уроку (студент — тільки свої; викладач — всі)' })
+    getByLesson(@Param('lessonId') lessonId: string, @CurrentUser() u: any) {
+        return this.svc.getByLesson(lessonId, u?.id);
     }
 
     @Post('questions')
@@ -51,7 +51,7 @@ export class QaController {
     @Post('answers')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth('JWT')
-    @ApiOperation({ summary: 'Відповісти на питання' })
+    @ApiOperation({ summary: 'Відповісти на питання (тільки викладач курсу або адмін)' })
     createAnswer(@Body() dto: CreateAnswerDto, @CurrentUser() u: any) {
         return this.svc.createAnswer(dto, u);
     }

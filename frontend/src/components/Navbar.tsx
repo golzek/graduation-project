@@ -75,7 +75,7 @@ export function Navbar() {
 
   const goToProfile = () => {
     setOpen(false);
-    if (user?.role === 'teacher' || user?.role === 'admin') {
+    if (user?.role === 'teacher' || user?.role === 'admin' || user?.role === 'super_admin') {
       navigate('/teacher');
     } else {
       navigate('/student');
@@ -153,9 +153,10 @@ export function Navbar() {
                           <div>
                             <p style={s.dropName}>{user?.name}</p>
                             <p style={s.dropRole}>{
-                              user?.role === 'teacher' ? 'Викладач'
-                                  : user?.role === 'admin' ? 'Адміністратор'
-                                      : 'Студент'
+                              user?.role === 'teacher'     ? 'Викладач'
+                                  : user?.role === 'admin'       ? 'Адміністратор'
+                                      : user?.role === 'super_admin' ? 'Супер-адмін'
+                                          : 'Студент'
                             }</p>
                           </div>
                         </div>
@@ -164,7 +165,7 @@ export function Navbar() {
 
                         <button style={s.dropItem} onClick={goToProfile}>
                           <span style={s.dropIcon}>👤</span>
-                          {user?.role === 'teacher' || user?.role === 'admin'
+                          {user?.role === 'teacher' || user?.role === 'admin' || user?.role === 'super_admin'
                               ? 'Кабінет викладача'
                               : 'Кабінет студента'}
                         </button>
@@ -189,7 +190,7 @@ export function Navbar() {
                           Підписка
                         </Link>
 
-                        {user?.role === 'admin' && (
+                        {(user?.role === 'admin' || user?.role === 'super_admin') && (
                             <Link to="/admin" style={s.dropItem} onClick={() => setOpen(false)}>
                               <span style={s.dropIcon}>🛡️</span>
                               Адмін-панель

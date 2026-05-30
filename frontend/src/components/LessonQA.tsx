@@ -57,11 +57,12 @@ export function LessonQA({
     const canAnswer = isInstructor || isAdmin;
 
     const load = useCallback(async () => {
+        if (!user) { setLoading(false); return; }
         try {
             const data = await apiFetch<QaQuestion[]>(`/qa/lesson/${lessonId}`);
             setQuestions(data);
         } catch { /* ignore */ } finally { setLoading(false); }
-    }, [lessonId]);
+    }, [lessonId, user]);
 
     useEffect(() => { setLoading(true); load(); }, [load]);
 
@@ -98,6 +99,12 @@ export function LessonQA({
                 </div>
             )}
 
+            {isEnrolled && !canAnswer && (
+                <div style={s.privacyNote}>
+                    🔒 Ваші питання бачите тільки ви та викладач курсу
+                </div>
+            )}
+
             {isEnrolled && !canAnswer ? (
                 <div style={s.form}>
           <textarea
@@ -124,7 +131,9 @@ export function LessonQA({
             ) : null}
 
             {questions.length === 0
-                ? <div style={s.empty}>Поки немає питань</div>
+                ? <div style={s.empty}>
+                    {isInstructor ? 'Студенти ще не поставили питань' : 'Поки немає питань'}
+                </div>
                 : (
                     <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 0 }}>
                         {questions.map((q, i) => (
@@ -133,6 +142,7 @@ export function LessonQA({
                                 question={q}
                                 currentUserId={user?.id}
                                 canAnswer={canAnswer}
+                                isInstructor={isInstructor}
                                 onDelete={() => deleteQuestion(q.id)}
                                 onAnswered={load}
                                 divider={i < questions.length - 1}
@@ -146,11 +156,12 @@ export function LessonQA({
 }
 
 function QuestionItem({
-                          question, currentUserId, canAnswer, onDelete, onAnswered, divider,
+                          question, currentUserId, canAnswer, isInstructor, onDelete, onAnswered, divider,
                       }: {
     question: QaQuestion;
     currentUserId?: string;
     canAnswer: boolean;
+    isInstructor: boolean;
     onDelete: () => void;
     onAnswered: () => void;
     divider: boolean;
@@ -162,6 +173,8 @@ function QuestionItem({
     const { user } = useAuth();
     const isAdmin = !!user && (user.role === 'admin' || user.role === 'super_admin');
     const isOwner = currentUserId === question.author?.id;
+
+    const canDelete = isOwner || isAdmin;
 
     const submitAnswer = async () => {
         if (!replyBody.trim()) return;
@@ -187,9 +200,14 @@ function QuestionItem({
                 <div style={s.avatar}>{(question.author?.name ?? '?')[0].toUpperCase()}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={s.qMeta}>
-                        <span style={s.qAuthor}>{question.author?.name ?? 'Студент'}</span>
+                        <span style={s.qAuthor}>
+                            {isInstructor
+                                ? (question.author?.name ?? 'Студент')
+                                : isOwner ? 'Ви' : question.author?.name ?? 'Студент'
+                            }
+                        </span>
                         <span style={s.qTime}>{timeAgo(question.createdAt)}</span>
-                        {(isOwner || isAdmin) && (
+                        {canDelete && (
                             <button style={s.delBtn} onClick={onDelete} title="Видалити питання">✕</button>
                         )}
                     </div>
@@ -269,7 +287,7 @@ function AnswerItem({
 }) {
     const { user: currentUser } = useAuth();
     const isAdmin = !!currentUser && (currentUser.role === 'admin' || currentUser.role === 'super_admin');
-    const isOwner = currentUserId === answer.author?.id;
+    const canDelete = isAdmin || (currentUserId === answer.author?.id && !answer.isInstructor);
 
     const del = async () => {
         await apiFetch(`/qa/answers/${answer.id}`, { method: 'DELETE' });
@@ -288,7 +306,7 @@ function AnswerItem({
           </span>
                     {answer.isInstructor && <span style={s.badge}>Викладач</span>}
                     <span style={s.qTime}>{timeAgo(answer.createdAt)}</span>
-                    {(isAdmin || (isOwner && !answer.isInstructor)) && (
+                    {canDelete && (
                         <button style={s.delBtn} onClick={del} title="Видалити відповідь">✕</button>
                     )}
                 </div>
@@ -312,6 +330,12 @@ const s: Record<string, React.CSSProperties> = {
         background: '#f5f3ff', border: '1px solid #ddd6fe',
         borderRadius: 8, fontSize: '0.83rem', color: '#5b21b6',
         fontWeight: 500,
+    },
+
+    privacyNote: {
+        padding: '8px 14px', marginBottom: 16,
+        background: '#f0f9ff', border: '1px solid #bae6fd',
+        borderRadius: 8, fontSize: '0.8rem', color: '#0369a1',
     },
 
     form: {

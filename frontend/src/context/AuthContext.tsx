@@ -17,7 +17,6 @@ interface AuthCtx {
   handleGoogleCallback: (params: URLSearchParams) => void;
   logout:   () => void;
   hasRole:  (...roles: UserRole[]) => boolean;
-  isSuperAdmin: boolean;
 }
 
 const API = process.env.REACT_APP_API_URL ?? 'http://localhost:3000';
@@ -87,10 +86,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout  = useCallback(() => { Tokens.clear(); setUser(null); }, []);
   const hasRole = useCallback((...roles: UserRole[]) => !!user && roles.includes(user.role), [user]);
-  const isSuperAdmin = !!user && user.role === 'super_admin';
 
   return (
-      <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, register, login, loginWithGoogle, handleGoogleCallback, logout, hasRole, isSuperAdmin }}>
+      <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, register, login, loginWithGoogle, handleGoogleCallback, logout, hasRole }}>
         {children}
       </AuthContext.Provider>
   );

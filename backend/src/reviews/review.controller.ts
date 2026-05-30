@@ -29,8 +29,16 @@ export class ReviewController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.MODERATOR)
   @ApiBearerAuth('JWT')
-  @ApiOperation({ summary: 'Схвалити відгук' })
+  @ApiOperation({ summary: 'Схвалити відгук і перерахувати рейтинг курсу' })
   approve(@Param('id') id: string) { return this.svc.approve(id); }
+
+  @Get(':courseId/my')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT')
+  @ApiOperation({ summary: 'Чи залишив поточний юзер відгук' })
+  hasReview(@Param('courseId') courseId: string, @CurrentUser() u: any) {
+    return this.svc.hasReview(courseId, u.id).then(has => ({ has }));
+  }
 
   @Get(':courseId')
   @ApiOperation({ summary: 'Відгуки курсу (публічні)' })
