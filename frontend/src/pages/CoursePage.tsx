@@ -26,22 +26,26 @@ export function CoursePage() {
       if (first && (first.isFree || course.isEnrolled)) setActiveLesson(first);
     }
   }, [course]);
-  const handleProgressSaved = async () => {
-    refreshProgress();
-    try {
-      const updated = await apiFetch<{ percent: number }>(`/courses/${id}/progress`);
-      if (updated.percent === 100) {
-        console.log('100% — викликаємо issue...');
+    const issuingRef = React.useRef(false);
+    const handleProgressSaved = async () => {
+        refreshProgress();
         try {
-          const cert = await issueCertificate(id!);
-          setCertModal({ pdfUrl: cert.pdfUrl, verifyCode: cert.verifyCode });
-        }  catch (e: any) {
-          console.error('issue cert error:', e?.message);
-          setCertModal({ pdfUrl: '', verifyCode: '' });
-        }
-      }
-    } catch { /* ignore */ }
-  };
+            const updated = await apiFetch<{ percent: number }>(`/courses/${id}/progress`);
+            if (updated.percent === 100 && !issuingRef.current) {
+                issuingRef.current = true;
+                try {
+                    const cert = await issueCertificate(id!);
+                    setCertModal({ pdfUrl: cert.pdfUrl, verifyCode: cert.verifyCode });
+                } catch (e: any) {
+                    if (!e?.message?.includes('вже виданий')) {
+                        setCertModal({ pdfUrl: '', verifyCode: '' });
+                    }
+                } finally {
+                    issuingRef.current = false;
+                }
+            }
+        } catch { /* ignore */ }
+    };
 
   const handleEnroll = async () => {
     if (!isAuthenticated) { navigate('/login'); return; }

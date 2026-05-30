@@ -65,14 +65,13 @@ export function SubscriptionPage() {
             if (res.free) { load(); return; }
 
             const form = document.createElement('form');
-            form.method = 'POST'; form.action = res.action; form.target = '_blank';
+            form.method = 'POST'; form.action = res.action;
             Object.entries(res.formData as Record<string, string>).forEach(([name, value]) => {
                 const input = document.createElement('input');
                 input.type = 'hidden'; input.name = name; input.value = value;
                 form.appendChild(input);
             });
             document.body.appendChild(form); form.submit(); document.body.removeChild(form);
-            alert('Завершіть оплату у відкритому вікні. Після успішної оплати поверніться на цю сторінку.');
         } catch (e: any) {
             setError(e.message || 'Помилка під час оплати');
         } finally {
@@ -211,7 +210,7 @@ export function SubscriptionPage() {
 
                                 {!isCurrentPlan && (
                                     <p style={s.liqpayNote}>
-                                        <img src="https://wayforpay.com/images/logo.svg" alt="WayForPay" style={{ height: 14, verticalAlign: 'middle', marginRight: 4 }} />
+                                        <img src="https://cdn.wayforpay.com/icons/wfp-logo.png" alt="WayForPay" style={{ height: 14, verticalAlign: 'middle', marginRight: 4 }} onError={e => (e.currentTarget.style.display='none')} />
                                         Безпечна оплата через WayForPay
                                     </p>
                                 )}
