@@ -8,6 +8,7 @@ import { Course, Enrollment, Progress } from '../courses/course.entity';
 import { User } from '../users/user.entity';
 import { StorageService } from '../storage/storage.service';
 import { NotificationService } from '../notifications/notification.service';
+import { fireAndForget } from '../common/logger.util';
 
 @Injectable()
 export class CertificateService {
@@ -63,7 +64,7 @@ export class CertificateService {
         this.certRepo.create({ userId: user.id, courseId, verifyCode, pdfUrl }),
     );
 
-    this.notifSvc.notifyCertificateIssued(user.id, courseId, course.title, verifyCode, pdfUrl).catch(() => {});
+    fireAndForget(this.notifSvc.notifyCertificateIssued(user.id, courseId, course.title, verifyCode, pdfUrl), 'notif:notifyCertificateIssued');
 
     return cert;
   }

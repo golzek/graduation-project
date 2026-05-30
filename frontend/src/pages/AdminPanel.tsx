@@ -264,7 +264,7 @@ function StatsTab() {
           <div style={s.card}>
             <p style={s.cardTitle}>Користувачі по ролях</p>
             {(() => {
-              const roleLabel: Record<string, string> = { student: 'Студент', teacher: 'Викладач', admin: 'Адмін', moderator: 'Модератор' };
+              const roleLabel: Record<string, string> = { student: 'Студент', teacher: 'Викладач', admin: 'Адмін', moderator: 'Модератор', super_admin: 'Супер-адмін' };
               const roleTotal = Object.values(stats.usersByRole).reduce((a, b) => a + Number(b), 0) || 1;
               return Object.entries(stats.usersByRole).map(([role, count]) => {
                 const pct = Math.round((Number(count) / roleTotal) * 100);
@@ -338,14 +338,21 @@ function UsersTab() {
   const [search, setSearch]         = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [loading, setLoading]       = useState(true);
+  const [page, setPage]             = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const LIMIT = 20;
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (p = 1) => {
     const params = new URLSearchParams();
     if (search) params.set('search', search);
     if (roleFilter) params.set('role', roleFilter);
+    params.set('page', String(p));
+    params.set('limit', String(LIMIT));
     try {
-      const data = await apiFetch<AdminUser[]>(`/admin/users?${params}`);
-      setUsers(data);
+      const res = await apiFetch<{ data: AdminUser[]; total: number; page: number; totalPages: number }>(`/admin/users?${params}`);
+      setUsers(res.data);
+      setTotalPages(res.totalPages);
+      setPage(p);
     } catch { toast.error('Не вдалось завантажити користувачів'); }
     finally { setLoading(false); }
   }, [search, roleFilter]);
@@ -356,7 +363,7 @@ function UsersTab() {
     try {
       await apiFetch(`/admin/users/${id}`, { method: 'PATCH', body: JSON.stringify({ role }) });
       toast.success('Роль оновлено');
-      load();
+      load(page);
     } catch { toast.error('Помилка зміни ролі'); }
   };
 
@@ -364,7 +371,7 @@ function UsersTab() {
     try {
       await apiFetch(`/admin/users/${id}`, { method: 'PATCH', body: JSON.stringify({ isActive: !isActive }) });
       toast.success(isActive ? 'Користувача заблоковано' : 'Користувача розблоковано');
-      load();
+      load(page);
     } catch { toast.error('Помилка'); }
   };
 
@@ -373,7 +380,7 @@ function UsersTab() {
     try {
       await apiFetch(`/admin/users/${id}`, { method: 'DELETE' });
       toast.success('Видалено');
-      load();
+      load(page);
     } catch { toast.error('Помилка видалення'); }
   };
 
@@ -396,7 +403,7 @@ function UsersTab() {
               onChange={e => setRoleFilter(e.target.value)}
           >
             <option value="">Всі ролі</option>
-            {['student','teacher','moderator','admin'].map(r => (
+            {['student','teacher','admin','super_admin'].map(r => (
                 <option key={r} value={r}>{r}</option>
             ))}
           </select>
@@ -440,7 +447,7 @@ function UsersTab() {
                             onChange={e => handleRoleChange(u.id, e.target.value)}
                             style={s.inlineSelect}
                         >
-                          {['student','teacher','moderator', ...(isSuperAdmin ? ['admin'] : [])].map(r => (
+                          {['student','teacher', ...(isSuperAdmin ? ['admin','super_admin'] : ['admin'])].map(r => (
                               <option key={r} value={r}>{r}</option>
                           ))}
                         </select>
@@ -472,6 +479,13 @@ function UsersTab() {
           </table>
           {!loading && users.length === 0 && <p style={s.emptyText}>Нічого не знайдено</p>}
         </div>
+        {totalPages > 1 && (
+            <div style={{ display:'flex', justifyContent:'center', alignItems:'center', gap:8, marginTop:16 }}>
+              <button className="btn" onClick={() => load(page - 1)} disabled={page <= 1} style={{ padding:'4px 12px' }}>←</button>
+              <span style={{ fontSize:13, color:'var(--color-text-secondary)' }}>{page} / {totalPages}</span>
+              <button className="btn" onClick={() => load(page + 1)} disabled={page >= totalPages} style={{ padding:'4px 12px' }}>→</button>
+            </div>
+        )}
       </div>
   );
 }
@@ -748,19 +762,26 @@ function ModuleAccordion({
 
 function CoursesTab() {
   const toast = useToast();
-  const [courses, setCourses]         = useState<AdminCourse[]>([]);
-  const [search, setSearch]           = useState('');
+  const [courses, setCourses]           = useState<AdminCourse[]>([]);
+  const [search, setSearch]             = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [loading, setLoading]         = useState(true);
+  const [loading, setLoading]           = useState(true);
   const [viewCourseId, setViewCourseId] = useState<string | null>(null);
+  const [page, setPage]                 = useState(1);
+  const [totalPages, setTotalPages]     = useState(1);
+  const LIMIT = 20;
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (p = 1) => {
     const params = new URLSearchParams();
     if (search) params.set('search', search);
     if (statusFilter) params.set('status', statusFilter);
+    params.set('page', String(p));
+    params.set('limit', String(LIMIT));
     try {
-      const data = await apiFetch<AdminCourse[]>(`/admin/courses?${params}`);
-      setCourses(data);
+      const res = await apiFetch<{ data: AdminCourse[]; total: number; page: number; totalPages: number }>(`/admin/courses?${params}`);
+      setCourses(res.data);
+      setTotalPages(res.totalPages);
+      setPage(p);
     } catch { toast.error('Не вдалось завантажити курси'); }
     finally { setLoading(false); }
   }, [search, statusFilter]);
@@ -771,7 +792,7 @@ function CoursesTab() {
     try {
       await apiFetch(`/admin/courses/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) });
       toast.success('Статус оновлено');
-      load();
+      load(page);
     } catch { toast.error('Помилка'); }
   };
 
@@ -780,7 +801,7 @@ function CoursesTab() {
     try {
       await apiFetch(`/admin/courses/${id}`, { method: 'DELETE' });
       toast.success('Курс видалено');
-      load();
+      load(page);
     } catch { toast.error('Помилка видалення'); }
   };
 
@@ -889,6 +910,13 @@ function CoursesTab() {
           </table>
           {!loading && courses.length === 0 && <p style={s.emptyText}>Нічого не знайдено</p>}
         </div>
+        {totalPages > 1 && (
+            <div style={{ display:'flex', justifyContent:'center', alignItems:'center', gap:8, marginTop:16 }}>
+              <button className="btn" onClick={() => load(page - 1)} disabled={page <= 1} style={{ padding:'4px 12px' }}>←</button>
+              <span style={{ fontSize:13, color:'var(--color-text-secondary)' }}>{page} / {totalPages}</span>
+              <button className="btn" onClick={() => load(page + 1)} disabled={page >= totalPages} style={{ padding:'4px 12px' }}>→</button>
+            </div>
+        )}
       </div>
   );
 }

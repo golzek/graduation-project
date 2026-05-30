@@ -7,6 +7,7 @@ import { User, UserRole } from '../users/user.entity';
 import { Course, CourseStatus, Enrollment, Lesson, Progress } from '../courses/course.entity';
 import { Certificate } from '../certificates/certificate.entity';
 import { NotificationService } from '../notifications/notification.service';
+import { fireAndForget } from '../common/logger.util';
 
 export class UpdateUserDto {
   @ApiPropertyOptional({ enum: UserRole })
@@ -39,14 +40,17 @@ export class AdminService {
       private readonly notifSvc: NotificationService,
   ) {}
 
-  getUsers(search?: string, role?: UserRole) {
+  async getUsers(search?: string, role?: UserRole, page = 1, limit = 20) {
+    const skip = (page - 1) * limit;
     const where: any = {};
     if (role)   where.role  = role;
     if (search) where.email = ILike(`%${search}%`);
-    return this.userRepo.find({
+    const [data, total] = await this.userRepo.findAndCount({
       where, order: { createdAt: 'DESC' },
       select: ['id', 'name', 'email', 'role', 'isActive', 'createdAt'],
+      skip, take: limit,
     });
+    return { data, total, page, totalPages: Math.ceil(total / limit) };
   }
 
   async updateUser(id: string, dto: UpdateUserDto, requesterId?: string) {
@@ -76,7 +80,7 @@ export class AdminService {
     u.bannedBy  = adminId;
     await this.userRepo.save(u);
 
-    this.notifSvc.notifyUserBanned(u.id, dto.reason).catch(() => {});
+    fireAndForget(this.notifSvc.notifyUserBanned(u.id, dto.reason), 'admin:notifyUserBanned');
 
     return {
       id: u.id, name: u.name, email: u.email,
@@ -95,7 +99,7 @@ export class AdminService {
     u.bannedBy  = null;
     await this.userRepo.save(u);
 
-    this.notifSvc.notifyUserUnbanned(u.id).catch(() => {});
+    fireAndForget(this.notifSvc.notifyUserUnbanned(u.id), 'admin:notifyUserUnbanned');
 
     return { id: u.id, name: u.name, email: u.email, isActive: true };
   }
@@ -106,13 +110,15 @@ export class AdminService {
     await this.userRepo.remove(u);
   }
 
-  getCourses(search?: string, status?: CourseStatus) {
+  async getCourses(search?: string, status?: CourseStatus, page = 1, limit = 20) {
+    const skip = (page - 1) * limit;
     const qb = this.courseRepo.createQueryBuilder('c')
         .leftJoinAndSelect('c.author', 'author')
         .select(['c.id','c.title','c.status','c.price','c.createdAt','author.id','author.name','author.email']);
     if (search) qb.andWhere('c.title ILIKE :s', { s: `%${search}%` });
     if (status) qb.andWhere('c.status = :status', { status });
-    return qb.orderBy('c.createdAt', 'DESC').getMany();
+    const [data, total] = await qb.orderBy('c.createdAt', 'DESC').skip(skip).take(limit).getManyAndCount();
+    return { data, total, page, totalPages: Math.ceil(total / limit) };
   }
 
   async updateCourseStatus(id: string, dto: UpdateCourseStatusDto) {
@@ -121,12 +127,13 @@ export class AdminService {
     c.status = dto.status;
     const saved = await this.courseRepo.save(c);
 
-    this.notifSvc
-        .notifyTeacherCourseStatusChanged(c.authorId, c.id, c.title, dto.status)
-        .catch(() => {});
+    fireAndForget(
+        this.notifSvc.notifyTeacherCourseStatusChanged(c.authorId, c.id, c.title, dto.status),
+        'admin:notifyTeacherCourseStatusChanged',
+    );
 
     if (dto.status === CourseStatus.PUBLISHED) {
-      this.notifSvc.notifyStudentsNewCourse(c.id, c.title).catch(() => {});
+      fireAndForget(this.notifSvc.notifyStudentsNewCourse(c.id, c.title), 'admin:notifyStudentsNewCourse');
     }
 
     return saved;

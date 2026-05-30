@@ -11,11 +11,11 @@ export class WayForPayService {
     private readonly serverUrl: string;
 
     constructor(private readonly config: ConfigService) {
-        this.merchantAccount   = config.get('WFP_MERCHANT_ACCOUNT');
-        this.merchantSecretKey = config.get('WFP_MERCHANT_SECRET_KEY');
-        this.merchantDomain    = config.get('WFP_MERCHANT_DOMAIN', 'graduation-frontend.onrender.com');
-        this.resultUrl         = config.get('WFP_RESULT_URL', 'https://graduation-frontend.onrender.com/payment/result');
-        this.serverUrl         = config.get('WFP_SERVER_URL', 'https://elearning-backend-hhfg.onrender.com/payments/callback');
+        this.merchantAccount   = config.getOrThrow('WFP_MERCHANT_ACCOUNT');
+        this.merchantSecretKey = config.getOrThrow('WFP_MERCHANT_SECRET_KEY');
+        this.merchantDomain    = config.getOrThrow('WFP_MERCHANT_DOMAIN');
+        this.resultUrl         = config.getOrThrow('WFP_RESULT_URL');
+        this.serverUrl         = config.getOrThrow('WFP_SERVER_URL');
     }
 
     createPaymentForm(params: {

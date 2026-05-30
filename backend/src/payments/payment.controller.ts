@@ -15,6 +15,7 @@ import { PromoCodeService } from '../promo-codes/promo-code.service';
 import { SubscriptionService, SUBSCRIPTION_PRICES } from '../subscription/subscription.service';
 import { SubscriptionPlan } from '../subscription/subscription.entity';
 import { NotificationService } from '../notifications/notification.service';
+import { fireAndForget } from '../common/logger.util';
 
 class CreatePaymentDto {
   @IsOptional() @IsString() promoCode?: string;
@@ -65,8 +66,8 @@ export class PaymentController {
         await this.enrollmentRepo.save(
             this.enrollmentRepo.create({ userId: user.id, courseId, paidPrice: 0 }),
         );
-        this.notifSvc.notifyStudentEnrolled(user.id, courseId, course.title).catch(() => {});
-        this.notifSvc.notifyTeacherNewEnrollment(course.authorId, user.name, courseId, course.title).catch(() => {});
+        fireAndForget(this.notifSvc.notifyStudentEnrolled(user.id, courseId, course.title), 'notif:notifyStudentEnrolled');
+        fireAndForget(this.notifSvc.notifyTeacherNewEnrollment(course.authorId, user.name, courseId, course.title), 'notif:notifyTeacherNewEnrollment');
       }
       return { free: true, message: 'Записаний безкоштовно' };
     }
@@ -166,8 +167,8 @@ export class PaymentController {
         );
         const courseForNotif = await this.courseRepo.findOne({ where: { id: courseId } });
         if (courseForNotif) {
-          this.notifSvc.notifyStudentEnrolled(userId, courseId, courseForNotif.title).catch(() => {});
-          this.notifSvc.notifyTeacherNewEnrollment(courseForNotif.authorId, userId, courseId, courseForNotif.title).catch(() => {});
+          fireAndForget(this.notifSvc.notifyStudentEnrolled(userId, courseId, courseForNotif.title), 'notif:notifyStudentEnrolled');
+          fireAndForget(this.notifSvc.notifyTeacherNewEnrollment(courseForNotif.authorId, userId, courseId, courseForNotif.title), 'notif:notifyTeacherNewEnrollment');
         }
       }
 

@@ -29,7 +29,14 @@ export class AdminController {
   @ApiOperation({ summary: 'Список користувачів' })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'role',   required: false, enum: UserRole })
-  users(@Query('search') s?: string, @Query('role') r?: UserRole) { return this.svc.getUsers(s, r); }
+  @ApiQuery({ name: 'page',   required: false })
+  @ApiQuery({ name: 'limit',  required: false })
+  users(
+      @Query('search') s?: string,
+      @Query('role')   r?: UserRole,
+      @Query('page')   page?: number,
+      @Query('limit')  limit?: number,
+  ) { return this.svc.getUsers(s, r, page ? +page : 1, limit ? +limit : 20); }
 
   @Patch('users/:id')
   @ApiOperation({ summary: 'Змінити роль юзера' })
@@ -55,7 +62,14 @@ export class AdminController {
   @ApiOperation({ summary: 'Список усіх курсів' })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'status', required: false, enum: CourseStatus })
-  courses(@Query('search') s?: string, @Query('status') st?: CourseStatus) { return this.svc.getCourses(s, st); }
+  @ApiQuery({ name: 'page',   required: false })
+  @ApiQuery({ name: 'limit',  required: false })
+  courses(
+      @Query('search') s?: string,
+      @Query('status') st?: CourseStatus,
+      @Query('page')   page?: number,
+      @Query('limit')  limit?: number,
+  ) { return this.svc.getCourses(s, st, page ? +page : 1, limit ? +limit : 20); }
 
   @Patch('courses/:id/status')
   @ApiOperation({ summary: 'Змінити статус курсу' })

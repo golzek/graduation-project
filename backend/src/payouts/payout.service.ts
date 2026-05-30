@@ -11,6 +11,7 @@ import { PayoutRequest, PayoutStatus } from './payout-request.entity';
 import { Enrollment }                  from '../courses/course.entity';
 import { User }                        from '../users/user.entity';
 import { NotificationService }         from '../notifications/notification.service';
+import { fireAndForget } from '../common/logger.util';
 
 
 export class CreatePayoutRequestDto {
@@ -119,7 +120,7 @@ export class PayoutService {
         });
         const saved = await this.payoutRepo.save(req);
 
-        this.notifSvc.notifyAdminsPayoutRequest(teacherId, dto.amount).catch(() => {});
+        fireAndForget(this.notifSvc.notifyAdminsPayoutRequest(teacherId, dto.amount), 'notif:notifyAdminsPayoutRequest');
 
         return this.mapRequest(saved);
     }
@@ -160,7 +161,7 @@ export class PayoutService {
 
         const saved = await this.payoutRepo.save(req);
 
-        this.notifSvc.notifyTeacherPayoutReviewed(req.teacherId, req.amount, dto.status).catch(() => {});
+        fireAndForget(this.notifSvc.notifyTeacherPayoutReviewed(req.teacherId, req.amount, dto.status), 'notif:notifyTeacherPayoutReviewed');
 
         return this.mapRequest(saved);
     }

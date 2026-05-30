@@ -10,6 +10,7 @@ import {
   CreateModuleDto, CreateLessonDto, UpdateProgressDto,
 } from './course.dto';
 import { NotificationService } from '../notifications/notification.service';
+import { fireAndForget } from '../common/logger.util';
 
 @Injectable()
 export class CourseService {
@@ -59,8 +60,7 @@ export class CourseService {
 
   async create(dto: CreateCourseDto, author: User) {
     const course = await this.courseRepo.save(this.courseRepo.create({ ...dto, authorId: author.id }));
-    // Повідомляємо адмінів що є новий курс на перевірку
-    this.notifSvc.notifyAdminsCourseNeedsReview(course.id, course.title, author.name).catch(() => {});
+    fireAndForget(this.notifSvc.notifyAdminsCourseNeedsReview(course.id, course.title, author.name), 'course:notifyReview');
     return course;
   }
 
@@ -147,9 +147,9 @@ export class CourseService {
     const enrollment = await this.enrollmentRepo.save(
         this.enrollmentRepo.create({ userId: user.id, courseId, paidPrice: c.price }),
     );
-    this.notifSvc.notifyStudentEnrolled(user.id, courseId, c.title).catch(() => {});
+    fireAndForget(this.notifSvc.notifyStudentEnrolled(user.id, courseId, c.title), 'enroll:notifyStudent');
     if (c.authorId) {
-      this.notifSvc.notifyTeacherNewEnrollment(c.authorId, user.name, courseId, c.title).catch(() => {});
+      fireAndForget(this.notifSvc.notifyTeacherNewEnrollment(c.authorId, user.name, courseId, c.title), 'enroll:notifyTeacher');
     }
     return enrollment;
   }
@@ -192,7 +192,7 @@ export class CourseService {
   }
 
   private checkOwner(course: Course, user: User) {
-    if (course.authorId !== user.id && user.role !== UserRole.ADMIN)
+    if (course.authorId !== user.id && user.role !== UserRole.ADMIN && user.role !== UserRole.SUPER_ADMIN)
       throw new ForbiddenException('Це не твій курс');
   }
 

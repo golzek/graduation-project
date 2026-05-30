@@ -20,9 +20,10 @@ export function ProfilePage() {
         : '?';
 
     const roleLabel =
-        user?.role === 'teacher' ? 'Викладач'
+        user?.role === 'super_admin' ? 'Супер-адмін'
             : user?.role === 'admin' ? 'Адміністратор'
-                : 'Студент';
+                : user?.role === 'teacher' ? 'Викладач'
+                    : 'Студент';
 
     const handleSaveInfo = async (e: React.FormEvent) => {
         e.preventDefault();

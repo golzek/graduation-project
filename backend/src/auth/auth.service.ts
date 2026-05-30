@@ -8,6 +8,7 @@ import { User } from '../users/user.entity';
 import { RegisterDto, LoginDto } from './auth.dto';
 import { NotificationService } from '../notifications/notification.service';
 import { ReferralService } from '../referral/referral.service';
+import { fireAndForget } from '../common/logger.util';
 
 @Injectable()
 export class AuthService {
@@ -29,11 +30,11 @@ export class AuthService {
     if (dto.referralToken) {
       const referrerId = this.referralSvc.decodeToken(dto.referralToken);
       if (referrerId && referrerId !== user.id) {
-        this.referralSvc.track(referrerId, user.id).catch(() => {});
+        fireAndForget(this.referralSvc.track(referrerId, user.id), 'register:referralTrack');
       }
     }
 
-    this.notifSvc.notifyAdminsNewUser(user.name, user.email, user.id).catch(() => {});
+    fireAndForget(this.notifSvc.notifyAdminsNewUser(user.name, user.email, user.id), 'register:notifyAdmins');
     return this.buildResponse(user);
   }
 
@@ -83,7 +84,7 @@ export class AuthService {
           password:  null as any,
         });
         await this.userRepo.save(user);
-        this.notifSvc.notifyAdminsNewUser(user.name, user.email, user.id).catch(() => {});
+        fireAndForget(this.notifSvc.notifyAdminsNewUser(user.name, user.email, user.id), 'googleLogin:notifyAdmins');
       }
     }
 
