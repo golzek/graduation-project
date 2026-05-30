@@ -33,7 +33,7 @@ export class AdminController {
 
   @Patch('users/:id')
   @ApiOperation({ summary: 'Змінити роль юзера' })
-  updateUser(@Param('id') id: string, @Body() dto: UpdateUserDto) { return this.svc.updateUser(id, dto); }
+  updateUser(@Param('id') id: string, @Body() dto: UpdateUserDto, @CurrentUser() admin: any) { return this.svc.updateUser(id, dto, admin.id); }
 
   @Post('users/:id/ban')
   @ApiOperation({ summary: 'Заблокувати користувача з причиною' })

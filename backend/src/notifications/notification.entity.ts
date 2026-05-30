@@ -23,6 +23,7 @@ export enum NotificationType {
     PAYOUT_REJECTED        = 'payout_rejected',
     PAYOUT_PAID            = 'payout_paid',
     CERTIFICATE_ISSUED     = 'certificate_issued',
+    NEW_QA_QUESTION        = 'new_qa_question',
 }
 
 @Entity('notifications')

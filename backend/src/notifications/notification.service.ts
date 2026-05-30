@@ -201,4 +201,14 @@ export class NotificationService {
             { courseId, courseTitle, verifyCode, pdfUrl },
         );
     }
+
+    async notifyTeacherNewQuestion(teacherId: string, studentName: string, courseTitle: string, courseId: string, questionId: string) {
+        await this.save(
+            teacherId,
+            NotificationType.NEW_QA_QUESTION,
+            '❓ Нове питання до курсу',
+            `${studentName} задав питання у курсі «${courseTitle}».`,
+            { courseId, questionId },
+        );
+    }
 }

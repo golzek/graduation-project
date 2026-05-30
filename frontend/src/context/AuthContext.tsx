@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 
-export type UserRole = 'student' | 'teacher' | 'admin' | 'moderator';
+export type UserRole = 'student' | 'teacher' | 'admin' | 'moderator' | 'super_admin';
 
 export interface AuthUser {
   id: string; name: string; email: string;
@@ -17,6 +17,7 @@ interface AuthCtx {
   handleGoogleCallback: (params: URLSearchParams) => void;
   logout:   () => void;
   hasRole:  (...roles: UserRole[]) => boolean;
+  isSuperAdmin: boolean;
 }
 
 const API = process.env.REACT_APP_API_URL ?? 'http://localhost:3000';
@@ -86,9 +87,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout  = useCallback(() => { Tokens.clear(); setUser(null); }, []);
   const hasRole = useCallback((...roles: UserRole[]) => !!user && roles.includes(user.role), [user]);
+  const isSuperAdmin = !!user && user.role === 'super_admin';
 
   return (
-      <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, register, login, loginWithGoogle, handleGoogleCallback, logout, hasRole }}>
+      <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, register, login, loginWithGoogle, handleGoogleCallback, logout, hasRole, isSuperAdmin }}>
         {children}
       </AuthContext.Provider>
   );

@@ -4,10 +4,11 @@ import {
 } from 'typeorm';
 
 export enum UserRole {
-  STUDENT   = 'student',
-  TEACHER   = 'teacher',
-  ADMIN     = 'admin',
-  MODERATOR = 'moderator',
+  STUDENT    = 'student',
+  TEACHER    = 'teacher',
+  ADMIN      = 'admin',
+  MODERATOR  = 'moderator',
+  SUPER_ADMIN = 'super_admin',
 }
 
 @Entity('users')

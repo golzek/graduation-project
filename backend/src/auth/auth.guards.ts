@@ -81,6 +81,7 @@ export class RolesGuard implements CanActivate {
     ]);
     if (!required || required.length === 0) return true;
     const { user } = ctx.switchToHttp().getRequest();
+    if (user.role === UserRole.SUPER_ADMIN) return true;
     if (!required.includes(user.role)) {
       throw new ForbiddenException(`Потрібна роль: ${required.join(' або ')}`);
     }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import { IsEnum, IsOptional, IsBoolean, IsString, MaxLength, IsNotEmpty } from 'class-validator';
@@ -49,9 +49,17 @@ export class AdminService {
     });
   }
 
-  async updateUser(id: string, dto: UpdateUserDto) {
+  async updateUser(id: string, dto: UpdateUserDto, requesterId?: string) {
     const u = await this.userRepo.findOne({ where: { id } });
     if (!u) throw new NotFoundException('Користувача не знайдено');
+    if (u.role === UserRole.SUPER_ADMIN) throw new BadRequestException('Не можна змінювати супер-адміна');
+    if (dto.role === UserRole.SUPER_ADMIN) throw new BadRequestException('Не можна призначити роль супер-адміна');
+    if (dto.role === UserRole.ADMIN) {
+      const requester = requesterId ? await this.userRepo.findOne({ where: { id: requesterId } }) : null;
+      if (!requester || requester.role !== UserRole.SUPER_ADMIN) {
+        throw new ForbiddenException('Тільки супер-адмін може призначати адміністраторів');
+      }
+    }
     return this.userRepo.save(Object.assign(u, dto));
   }
 
@@ -60,6 +68,7 @@ export class AdminService {
     if (!u) throw new NotFoundException('Користувача не знайдено');
     if (!u.isActive) throw new BadRequestException('Користувач вже заблокований');
     if (u.role === UserRole.ADMIN) throw new BadRequestException('Не можна заблокувати адміна');
+    if (u.role === UserRole.SUPER_ADMIN) throw new BadRequestException('Не можна заблокувати супер-адміна');
 
     u.isActive  = false;
     u.banReason = dto.reason;

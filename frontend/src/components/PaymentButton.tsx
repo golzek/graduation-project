@@ -106,12 +106,12 @@ export function PaymentButton({ courseId, price, title, onSuccess }: PaymentButt
                         value={promoInput}
                         onChange={e => { setPromoInput(e.target.value); setPromoState('idle'); setPromoMsg(''); }}
                         onKeyDown={e => e.key==='Enter' && checkPromo()}
-                        style={{ flex:1, padding:'9px 12px', border:'1.5px solid', borderColor: promoState==='invalid' ? '#fca5a5' : '#e5e7eb', borderRadius:8, fontSize:13, outline:'none', background:'#fff', fontFamily:'inherit' }}
+                        style={{ flex:1, minWidth:0, padding:'9px 8px', border:'1.5px solid', borderColor: promoState==='invalid' ? '#fca5a5' : '#e5e7eb', borderRadius:8, fontSize:13, outline:'none', background:'#fff', fontFamily:'inherit' }}
                     />
                     <button
                         onClick={checkPromo}
                         disabled={promoState==='checking' || !promoInput.trim()}
-                        style={{ padding:'9px 12px', borderRadius:8, border:'1.5px solid #9ca3af', background:'#f9fafb', fontSize:12, cursor:'pointer', fontFamily:'inherit', color:'#374151', whiteSpace:'nowrap', flexShrink:0 }}
+                        style={{ padding:'9px 10px', borderRadius:8, border:'1.5px solid #9ca3af', background:'#f9fafb', fontSize:12, cursor:'pointer', fontFamily:'inherit', color:'#374151', whiteSpace:'nowrap', flexShrink:0 }}
                     >{promoState==='checking' ? '...' : 'Застосувати'}</button>
                   </div>
               )}

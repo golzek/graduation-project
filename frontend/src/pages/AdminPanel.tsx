@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { apiFetch } from '../context/AuthContext';
+import { apiFetch, useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 import { Skeleton } from '../components/Skeleton';
 
@@ -332,6 +332,7 @@ function CompletionRing({ pct }: { pct: number }) {
 
 function UsersTab() {
   const toast = useToast();
+  const { isSuperAdmin } = useAuth();
   const [users, setUsers]           = useState<AdminUser[]>([]);
   const [search, setSearch]         = useState('');
   const [roleFilter, setRoleFilter] = useState('');
@@ -430,15 +431,19 @@ function UsersTab() {
                     </div>
                   </td>
                   <td style={s.td}>
-                    <select
-                        value={u.role}
-                        onChange={e => handleRoleChange(u.id, e.target.value)}
-                        style={s.inlineSelect}
-                    >
-                      {['student','teacher','moderator','admin'].map(r => (
-                          <option key={r} value={r}>{r}</option>
-                      ))}
-                    </select>
+                    {u.role === 'super_admin' ? (
+                        <span style={{ fontSize: '0.8rem', color: '#7c3aed', fontWeight: 600 }}>Супер-адмін</span>
+                    ) : (
+                        <select
+                            value={u.role}
+                            onChange={e => handleRoleChange(u.id, e.target.value)}
+                            style={s.inlineSelect}
+                        >
+                          {['student','teacher','moderator', ...(isSuperAdmin ? ['admin'] : [])].map(r => (
+                              <option key={r} value={r}>{r}</option>
+                          ))}
+                        </select>
+                    )}
                   </td>
                   <td style={s.td}>
                   <span style={{ ...s.badge, ...(u.isActive ? s.badgeGreen : s.badgeRed) }}>

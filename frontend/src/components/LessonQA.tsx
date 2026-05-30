@@ -36,13 +36,25 @@ function timeAgo(iso: string): string {
 }
 
 
-export function LessonQA({ lessonId, isEnrolled }: { lessonId: string; isEnrolled: boolean }) {
+export function LessonQA({
+                             lessonId,
+                             isEnrolled,
+                             courseAuthorId,
+                         }: {
+    lessonId: string;
+    isEnrolled: boolean;
+    courseAuthorId?: string;
+}) {
     const { user } = useAuth();
     const [questions,  setQuestions]  = useState<QaQuestion[]>([]);
     const [loading,    setLoading]    = useState(true);
     const [newBody,    setNewBody]    = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [error,      setError]      = useState<string | null>(null);
+
+    const isInstructor = !!user && !!courseAuthorId && user.id === courseAuthorId;
+    const isAdmin = !!user && (user.role === 'admin' || user.role === 'super_admin');
+    const canAnswer = isInstructor || isAdmin;
 
     const load = useCallback(async () => {
         try {
@@ -80,7 +92,13 @@ export function LessonQA({ lessonId, isEnrolled }: { lessonId: string; isEnrolle
         <div style={s.wrap}>
             <p style={s.sectionLabel}>ПИТАННЯ ТА ВІДПОВІДІ</p>
 
-            {isEnrolled ? (
+            {isInstructor && (
+                <div style={s.instructorBanner}>
+                    📚 Це ваш курс — ви бачите всі питання студентів і можете на них відповідати
+                </div>
+            )}
+
+            {isEnrolled && !canAnswer ? (
                 <div style={s.form}>
           <textarea
               style={s.textarea}
@@ -101,12 +119,12 @@ export function LessonQA({ lessonId, isEnrolled }: { lessonId: string; isEnrolle
                         </button>
                     </div>
                 </div>
-            ) : (
+            ) : !isEnrolled && !canAnswer ? (
                 <div style={s.lockedNote}>Запишіться на курс, щоб задавати питання</div>
-            )}
+            ) : null}
 
             {questions.length === 0
-                ? <div style={s.empty}>Поки немає питань — будь першим!</div>
+                ? <div style={s.empty}>Поки немає питань</div>
                 : (
                     <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 0 }}>
                         {questions.map((q, i) => (
@@ -114,7 +132,7 @@ export function LessonQA({ lessonId, isEnrolled }: { lessonId: string; isEnrolle
                                 key={q.id}
                                 question={q}
                                 currentUserId={user?.id}
-                                isEnrolled={isEnrolled}
+                                canAnswer={canAnswer}
                                 onDelete={() => deleteQuestion(q.id)}
                                 onAnswered={load}
                                 divider={i < questions.length - 1}
@@ -128,11 +146,11 @@ export function LessonQA({ lessonId, isEnrolled }: { lessonId: string; isEnrolle
 }
 
 function QuestionItem({
-                          question, currentUserId, isEnrolled, onDelete, onAnswered, divider,
+                          question, currentUserId, canAnswer, onDelete, onAnswered, divider,
                       }: {
     question: QaQuestion;
     currentUserId?: string;
-    isEnrolled: boolean;
+    canAnswer: boolean;
     onDelete: () => void;
     onAnswered: () => void;
     divider: boolean;
@@ -141,6 +159,8 @@ function QuestionItem({
     const [replyBody, setReplyBody] = useState('');
     const [replying,  setReplying]  = useState(false);
     const [showForm,  setShowForm]  = useState(false);
+    const { user } = useAuth();
+    const isAdmin = !!user && (user.role === 'admin' || user.role === 'super_admin');
     const isOwner = currentUserId === question.author?.id;
 
     const submitAnswer = async () => {
@@ -169,7 +189,7 @@ function QuestionItem({
                     <div style={s.qMeta}>
                         <span style={s.qAuthor}>{question.author?.name ?? 'Студент'}</span>
                         <span style={s.qTime}>{timeAgo(question.createdAt)}</span>
-                        {isOwner && (
+                        {(isOwner || isAdmin) && (
                             <button style={s.delBtn} onClick={onDelete} title="Видалити питання">✕</button>
                         )}
                     </div>
@@ -191,12 +211,12 @@ function QuestionItem({
                                     onDeleted={onAnswered}
                                 />
                             ))}
-                            {isEnrolled && !showForm && (
+                            {canAnswer && !showForm && (
                                 <button style={{ ...s.toggleBtn, marginTop: 8 }} onClick={() => setShowForm(true)}>
                                     + Написати відповідь
                                 </button>
                             )}
-                            {showForm && (
+                            {canAnswer && showForm && (
                                 <div style={{ marginTop: 12 }}>
                   <textarea
                       style={s.textarea}
@@ -226,7 +246,7 @@ function QuestionItem({
                         </div>
                     )}
 
-                    {isEnrolled && ansCount === 0 && !open && (
+                    {canAnswer && ansCount === 0 && !open && (
                         <button
                             style={s.toggleBtn}
                             onClick={() => { setOpen(true); setShowForm(true); }}
@@ -247,6 +267,8 @@ function AnswerItem({
     currentUserId?: string;
     onDeleted: () => void;
 }) {
+    const { user: currentUser } = useAuth();
+    const isAdmin = !!currentUser && (currentUser.role === 'admin' || currentUser.role === 'super_admin');
     const isOwner = currentUserId === answer.author?.id;
 
     const del = async () => {
@@ -266,7 +288,7 @@ function AnswerItem({
           </span>
                     {answer.isInstructor && <span style={s.badge}>Викладач</span>}
                     <span style={s.qTime}>{timeAgo(answer.createdAt)}</span>
-                    {isOwner && (
+                    {(isAdmin || (isOwner && !answer.isInstructor)) && (
                         <button style={s.delBtn} onClick={del} title="Видалити відповідь">✕</button>
                     )}
                 </div>
@@ -283,6 +305,13 @@ const s: Record<string, React.CSSProperties> = {
         fontSize: '0.7rem', fontWeight: 500,
         textTransform: 'uppercase' as const, letterSpacing: '0.07em',
         color: '#9a9a9a', marginBottom: 20,
+    },
+
+    instructorBanner: {
+        padding: '10px 14px', marginBottom: 20,
+        background: '#f5f3ff', border: '1px solid #ddd6fe',
+        borderRadius: 8, fontSize: '0.83rem', color: '#5b21b6',
+        fontWeight: 500,
     },
 
     form: {

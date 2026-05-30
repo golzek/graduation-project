@@ -26,6 +26,8 @@ export class CourseService {
     const { search, category, level, page = 1, limit = 12, minPrice, maxPrice, minRating } = f;
     const qb = this.courseRepo.createQueryBuilder('c')
         .leftJoinAndSelect('c.author', 'author')
+        .leftJoinAndSelect('c.modules', 'modules')
+        .leftJoinAndSelect('modules.lessons', 'lessons')
         .where('c.status = :s', { s: CourseStatus.PUBLISHED });
     if (search)    qb.andWhere('(c.title ILIKE :q OR c.description ILIKE :q)', { q: `%${search}%` });
     if (category)  qb.andWhere('c.category = :category', { category });
