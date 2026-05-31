@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 const s: Record<string, React.CSSProperties> = {
   page: {
     minHeight: '100vh', display: 'flex',
-    background: '#fafafa',
+    background: 'var(--bg)',
   },
   left: {
     width: 420, flexShrink: 0,
@@ -16,21 +16,21 @@ const s: Record<string, React.CSSProperties> = {
   right: {
     flex: 1, display: 'flex', alignItems: 'center',
     justifyContent: 'center', padding: 48,
-    background: '#f5f5f5',
+    background: 'var(--bg-subtle)',
   },
   tagline: {
     fontSize: '2.2rem', fontWeight: 600,
     letterSpacing: '-0.03em', lineHeight: 1.2,
-    color: '#0a0a0a', maxWidth: 340,
+    color: 'var(--text)', maxWidth: 340,
   },
-  sub: { marginTop: 12, color: '#9a9a9a', fontSize: '0.9rem', lineHeight: 1.6 },
+  sub: { marginTop: 12, color: 'var(--text-tertiary)', fontSize: '0.9rem', lineHeight: 1.6 },
   logo: {
     display: 'flex', alignItems: 'center', gap: 8,
     fontSize: '0.9rem', fontWeight: 600,
-    color: '#0a0a0a', marginBottom: 48,
+    color: 'var(--text)', marginBottom: 48,
     textDecoration: 'none',
   },
-  dot: { width: 7, height: 7, borderRadius: '50%', background: '#0a0a0a' },
+  dot: { width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)' },
   formBox: {
     width: '100%', maxWidth: 360,
   },
@@ -38,25 +38,25 @@ const s: Record<string, React.CSSProperties> = {
     fontSize: '1.4rem', fontWeight: 600,
     letterSpacing: '-0.02em', marginBottom: 6,
   },
-  hint: { fontSize: '0.85rem', color: '#9a9a9a', marginBottom: 32 },
+  hint: { fontSize: '0.85rem', color: 'var(--text-tertiary)', marginBottom: 32 },
   field: { marginBottom: 16 },
   label: {
     display: 'block', marginBottom: 6,
     fontSize: '0.75rem', fontWeight: 500,
-    color: '#5a5a5a', textTransform: 'uppercase' as const,
+    color: 'var(--text-secondary)', textTransform: 'uppercase' as const,
     letterSpacing: '0.05em',
   },
   input: {
     width: '100%', padding: '10px 14px',
-    background: '#fff', color: '#0a0a0a',
-    border: '1.5px solid #ebebeb', borderRadius: 8,
+    background: 'var(--bg-elevated)', color: 'var(--text)',
+    border: '1.5px solid var(--border)', borderRadius: 8,
     fontSize: '0.9rem', outline: 'none',
     boxSizing: 'border-box' as const,
     transition: 'border-color 0.15s',
   },
   btn: {
     width: '100%', padding: '11px',
-    background: '#0a0a0a', color: '#fafafa',
+    background: 'var(--accent)', color: 'var(--accent-inv)',
     border: 'none', borderRadius: 8,
     fontSize: '0.9rem', fontWeight: 500,
     cursor: 'pointer', marginTop: 8,
@@ -64,8 +64,8 @@ const s: Record<string, React.CSSProperties> = {
   },
   googleBtn: {
     width: '100%', padding: '11px',
-    background: '#fff', color: '#0a0a0a',
-    border: '1.5px solid #ebebeb', borderRadius: 8,
+    background: 'var(--bg-elevated)', color: 'var(--text)',
+    border: '1.5px solid var(--border)', borderRadius: 8,
     fontSize: '0.9rem', fontWeight: 500,
     cursor: 'pointer', marginTop: 12,
     display: 'flex', alignItems: 'center',
@@ -75,20 +75,20 @@ const s: Record<string, React.CSSProperties> = {
   },
   divider: {
     display: 'flex', alignItems: 'center', gap: 12,
-    margin: '20px 0', color: '#d6d6d6', fontSize: '0.8rem',
+    margin: '20px 0', color: 'var(--border-strong)', fontSize: '0.8rem',
   },
-  dividerLine: { flex: 1, height: 1, background: '#ebebeb' },
+  dividerLine: { flex: 1, height: 1, background: 'var(--border)' },
   error: {
     padding: '10px 14px', borderRadius: 8,
-    background: '#fafafa', border: '1.5px solid #d6d6d6',
-    fontSize: '0.85rem', color: '#0a0a0a',
+    background: 'var(--bg)', border: '1.5px solid var(--border-strong)',
+    fontSize: '0.85rem', color: 'var(--text)',
     marginBottom: 16,
   },
   switch: {
     marginTop: 24, textAlign: 'center' as const,
-    fontSize: '0.85rem', color: '#9a9a9a',
+    fontSize: '0.85rem', color: 'var(--text-tertiary)',
   },
-  switchLink: { color: '#0a0a0a', fontWeight: 500 },
+  switchLink: { color: 'var(--text)', fontWeight: 500 },
 };
 
 const GoogleLogo = () => (
@@ -109,7 +109,7 @@ function GoogleButton({ onClick, loading }: { onClick: () => void; loading?: boo
           style={{
             ...s.googleBtn,
             opacity: loading ? 0.6 : 1,
-            borderColor: hovered ? '#bbb' : '#ebebeb',
+            borderColor: hovered ? 'var(--border-strong)' : 'var(--border)',
             boxShadow: hovered ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
           }}
           onClick={onClick}
@@ -298,15 +298,15 @@ export function GoogleCallbackPage() {
   if (error) {
     return (
         <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
-          <p style={{ color: '#0a0a0a', fontSize: '0.95rem' }}>{error}</p>
-          <Link to="/login" style={{ color: '#0a0a0a', fontWeight: 500, fontSize: '0.9rem' }}>← Повернутись до входу</Link>
+          <p style={{ color: 'var(--text)', fontSize: '0.95rem' }}>{error}</p>
+          <Link to="/login" style={{ color: 'var(--text)', fontWeight: 500, fontSize: '0.9rem' }}>← Повернутись до входу</Link>
         </div>
     );
   }
 
   return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: '#9a9a9a', fontSize: '0.9rem' }}>Авторизація через Google…</p>
+        <p style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem' }}>Авторизація через Google…</p>
       </div>
   );
 }

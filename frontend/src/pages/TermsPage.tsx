@@ -10,7 +10,7 @@ export function TermsPage() {
                     {' / '}Умови використання
                 </p>
 
-                <h1 style={s.h1}>Terms &amp; Conditions</h1>
+                <h1 style={s.h1}>Умови використання</h1>
                 <p style={s.updated}>Остання редакція: 1 червня 2026 р.</p>
 
                 <div style={s.body}>
@@ -92,24 +92,24 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 const ss: Record<string, React.CSSProperties> = {
-    h2: { fontSize: '1rem', fontWeight: 600, color: '#0a0a0a', marginBottom: 10, letterSpacing: '-0.01em' },
-    p:  { fontSize: '0.9rem', color: '#3a3a3a', lineHeight: 1.8 },
+    h2: { fontSize: '1rem', fontWeight: 600, color: 'var(--text)', marginBottom: 10, letterSpacing: '-0.01em' },
+    p:  { fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.8 },
 };
 
 const s: Record<string, React.CSSProperties> = {
-    page:  { minHeight: '100vh', background: '#fafafa', paddingBottom: 80 },
+    page:  { minHeight: '100vh', background: 'var(--bg)', paddingBottom: 80 },
     inner: { maxWidth: 720, margin: '0 auto', padding: '48px 32px 0' },
 
-    breadcrumb: { fontSize: '0.8rem', color: '#9a9a9a', marginBottom: 32 },
-    breadLink:  { color: '#9a9a9a', textDecoration: 'none' },
+    breadcrumb: { fontSize: '0.8rem', color: 'var(--text-tertiary)', marginBottom: 32 },
+    breadLink:  { color: 'var(--text-tertiary)', textDecoration: 'none' },
 
-    h1:      { fontSize: '2rem', fontWeight: 700, letterSpacing: '-0.04em', color: '#0a0a0a', marginBottom: 8 },
-    updated: { fontSize: '0.8rem', color: '#b0b0b0', marginBottom: 48 },
+    h1:      { fontSize: '2rem', fontWeight: 700, letterSpacing: '-0.04em', color: 'var(--text)', marginBottom: 8 },
+    updated: { fontSize: '0.8rem', color: 'var(--text-tertiary)', marginBottom: 48 },
 
     body: {},
 
-    a: { color: '#0a0a0a', textDecoration: 'underline', textUnderlineOffset: 3 },
+    a: { color: 'var(--text)', textDecoration: 'underline', textUnderlineOffset: 3 },
 
-    footer:     { borderTop: '1px solid #ebebeb', paddingTop: 24, marginTop: 16 },
-    footerLink: { fontSize: '0.875rem', color: '#5a5a5a', textDecoration: 'none' },
+    footer:     { borderTop: '1px solid var(--border)', paddingTop: 24, marginTop: 16 },
+    footerLink: { fontSize: '0.875rem', color: 'var(--text-secondary)', textDecoration: 'none' },
 };

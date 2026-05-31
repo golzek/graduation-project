@@ -37,7 +37,7 @@ function levelLabel(level: string) {
         intermediate: { label: 'Середній',   color: '#b45309', bg: '#fef3c7' },
         advanced:     { label: 'Просунутий', color: '#7c3aed', bg: '#ede9fe' },
     };
-    return map[level] ?? { label: level, color: '#5a5a5a', bg: '#f5f5f5' };
+    return map[level] ?? { label: level, color: 'var(--text-secondary)', bg: 'var(--bg-subtle)' };
 }
 
 function memberSinceLabel(dateStr: string) {
@@ -269,7 +269,7 @@ function LoadingSkeleton() {
         <div style={s.page}>
             <div style={s.hero}>
                 <div style={{ ...s.heroInner, gap: 20 }}>
-                    <div style={{ width: 96, height: 96, borderRadius: '50%', background: '#e8e8e8', flexShrink: 0 }} />
+                    <div style={{ width: 96, height: 96, borderRadius: '50%', background: 'var(--border)', flexShrink: 0 }} />
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
                         <Skeleton w={80}  h={14} />
                         <Skeleton w={200} h={28} />
@@ -295,9 +295,9 @@ function LoadingSkeleton() {
 
 
 const s: Record<string, React.CSSProperties> = {
-    page:   { minHeight: '100vh', background: '#fafafa' },
+    page:   { minHeight: '100vh', background: 'var(--bg)' },
 
-    hero:      { background: '#fff', borderBottom: '1px solid #ebebeb', padding: '36px 0' },
+    hero:      { background: 'var(--bg-elevated)', borderBottom: '1px solid var(--border)', padding: '36px 0' },
     heroInner: {
         maxWidth: 1100, margin: '0 auto', padding: '0 32px',
         display: 'flex', alignItems: 'center', gap: 28,
@@ -307,14 +307,14 @@ const s: Record<string, React.CSSProperties> = {
     avatarFallback: {
         width: 96, height: 96, borderRadius: '50%',
         background: 'linear-gradient(135deg,#0a0a0a,#444)',
-        color: '#fff', fontSize: '2rem', fontWeight: 700,
+        color: 'var(--bg-elevated)', fontSize: '2rem', fontWeight: 700,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
     },
-    roleTag: { fontSize: '0.72rem', fontWeight: 600, color: '#9a9a9a', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 },
-    name:    { fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.04em', color: '#0a0a0a', marginBottom: 6 },
-    since:   { fontSize: '0.82rem', color: '#b0b0b0' },
+    roleTag: { fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 },
+    name:    { fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.04em', color: 'var(--text)', marginBottom: 6 },
+    since:   { fontSize: '0.82rem', color: 'var(--text-tertiary)' },
 
-    statsBar:   { background: '#fff', borderBottom: '1px solid #ebebeb', padding: '20px 0' },
+    statsBar:   { background: 'var(--bg-elevated)', borderBottom: '1px solid var(--border)', padding: '20px 0' },
     statsInner: { maxWidth: 1100, margin: '0 auto', padding: '0 32px' },
     statsGrid: {
         display: 'grid',
@@ -324,12 +324,12 @@ const s: Record<string, React.CSSProperties> = {
     statCard: {
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         padding: '16px 12px', borderRadius: 12,
-        border: '1.5px solid #ebebeb', background: '#fafafa',
+        border: '1.5px solid var(--border)', background: 'var(--bg)',
         gap: 4,
     },
     statIcon:  { fontSize: '1.4rem', lineHeight: 1, marginBottom: 4 },
-    statValue: { fontSize: '1.4rem', fontWeight: 800, letterSpacing: '-0.03em', color: '#0a0a0a' },
-    statLabel: { fontSize: '0.72rem', color: '#9a9a9a', textAlign: 'center' },
+    statValue: { fontSize: '1.4rem', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text)' },
+    statLabel: { fontSize: '0.72rem', color: 'var(--text-tertiary)', textAlign: 'center' },
 
     body: { maxWidth: 1100, margin: '32px auto', padding: '0 32px' },
 
@@ -339,29 +339,29 @@ const s: Record<string, React.CSSProperties> = {
     },
     sectionTitle: {
         fontSize: '1.15rem', fontWeight: 700, letterSpacing: '-0.02em',
-        color: '#0a0a0a', display: 'flex', alignItems: 'center', gap: 10,
+        color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 10,
     },
     countBadge: {
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
         minWidth: 24, height: 24, borderRadius: 99,
-        background: '#0a0a0a', color: '#fff',
+        background: 'var(--accent)', color: 'var(--bg-elevated)',
         fontSize: '0.7rem', fontWeight: 700, padding: '0 7px',
     },
     toolbarRight: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
     searchInput: {
         padding: '7px 12px', borderRadius: 8,
-        border: '1.5px solid #ebebeb', background: '#fff',
-        fontSize: '0.82rem', color: '#0a0a0a', outline: 'none',
+        border: '1.5px solid var(--border)', background: 'var(--bg-elevated)',
+        fontSize: '0.82rem', color: 'var(--text)', outline: 'none',
         width: 180,
     },
     sortWrap:      { display: 'flex', gap: 6 },
     sortBtn: {
         padding: '6px 14px', borderRadius: 6,
-        border: '1.5px solid #ebebeb', background: 'transparent',
-        fontSize: '0.78rem', color: '#5a5a5a', cursor: 'pointer',
+        border: '1.5px solid var(--border)', background: 'transparent',
+        fontSize: '0.78rem', color: 'var(--text-secondary)', cursor: 'pointer',
         transition: 'all 0.15s',
     },
-    sortBtnActive: { background: '#0a0a0a', color: '#fff', border: '1.5px solid #0a0a0a' },
+    sortBtnActive: { background: 'var(--accent)', color: 'var(--bg-elevated)', border: '1.5px solid var(--accent)' },
 
     grid: {
         display: 'grid',
@@ -370,37 +370,37 @@ const s: Record<string, React.CSSProperties> = {
     },
 
     card: {
-        background: '#fff', border: '1.5px solid #ebebeb',
+        background: 'var(--bg-elevated)', border: '1.5px solid var(--border)',
         borderRadius: 14, overflow: 'hidden',
         display: 'flex', flexDirection: 'column',
         transition: 'box-shadow 0.2s',
     },
-    thumb: { height: 160, overflow: 'hidden', background: '#f5f5f5', position: 'relative' },
+    thumb: { height: 160, overflow: 'hidden', background: 'var(--bg-subtle)', position: 'relative' },
     thumbImg: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' },
     thumbPlaceholder: {
         width: '100%', height: '100%',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '2.5rem', fontWeight: 700, color: '#d0d0d0',
+        fontSize: '2.5rem', fontWeight: 700, color: 'var(--text-tertiary)',
     },
     cardBody:  { padding: 16, display: 'flex', flexDirection: 'column', flex: 1 },
     badge: { display: 'inline-block', padding: '2px 8px', borderRadius: 99, fontSize: '0.68rem', fontWeight: 500 },
-    categoryChip: { fontSize: '0.7rem', color: '#9a9a9a' },
+    categoryChip: { fontSize: '0.7rem', color: 'var(--text-tertiary)' },
     cardTitle: {
         fontSize: '0.95rem', fontWeight: 600, lineHeight: 1.4,
         letterSpacing: '-0.01em', marginBottom: 6,
         display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
     },
     cardDesc: {
-        fontSize: '0.78rem', color: '#7a7a7a', lineHeight: 1.5, marginBottom: 12,
+        fontSize: '0.78rem', color: 'var(--text-tertiary)', lineHeight: 1.5, marginBottom: 12,
         display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
     },
     cardFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, marginTop: 'auto' },
-    rating:   { fontSize: '0.82rem', fontWeight: 500, color: '#0a0a0a', display: 'flex', alignItems: 'center', gap: 4 },
-    noRating: { fontSize: '0.75rem', color: '#c0c0c0' },
-    price:    { fontSize: '1rem', fontWeight: 700, letterSpacing: '-0.02em', color: '#0a0a0a' },
+    rating:   { fontSize: '0.82rem', fontWeight: 500, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 4 },
+    noRating: { fontSize: '0.75rem', color: 'var(--text-tertiary)' },
+    price:    { fontSize: '1rem', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text)' },
     btnGo: {
         display: 'block', textAlign: 'center', padding: '9px',
-        borderRadius: 8, background: '#0a0a0a', color: '#fafafa',
+        borderRadius: 8, background: 'var(--accent)', color: 'var(--accent-inv)',
         fontSize: '0.85rem', fontWeight: 500, textDecoration: 'none',
         transition: 'opacity 0.15s',
     },
@@ -410,18 +410,18 @@ const s: Record<string, React.CSSProperties> = {
         alignItems: 'center', justifyContent: 'center', textAlign: 'center',
     },
     emptyIcon: { fontSize: '3rem', marginBottom: 16 },
-    emptyText: { color: '#9a9a9a', fontSize: '0.95rem', marginBottom: 20 },
+    emptyText: { color: 'var(--text-tertiary)', fontSize: '0.95rem', marginBottom: 20 },
 
     errorWrap: {
         minHeight: '60vh', display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 32,
     },
     errorIcon:  { fontSize: '3rem', marginBottom: 16 },
-    errorTitle: { fontSize: '1.25rem', fontWeight: 600, color: '#0a0a0a', marginBottom: 20 },
+    errorTitle: { fontSize: '1.25rem', fontWeight: 600, color: 'var(--text)', marginBottom: 20 },
 
     btnPrimary: {
         display: 'inline-block', padding: '10px 24px', borderRadius: 8,
-        background: '#0a0a0a', color: '#fafafa',
+        background: 'var(--accent)', color: 'var(--accent-inv)',
         fontSize: '0.9rem', fontWeight: 500, textDecoration: 'none',
         border: 'none', cursor: 'pointer',
     },

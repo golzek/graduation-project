@@ -22,25 +22,28 @@ function LogoutModal({ onConfirm, onCancel }: { onConfirm: () => void; onCancel:
 const m: Record<string, React.CSSProperties> = {
   overlay: {
     position: 'fixed', inset: 0, zIndex: 9000,
-    background: 'rgba(0,0,0,0.35)',
+    background: 'rgba(0,0,0,0.45)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
   box: {
-    background: '#fff', borderRadius: 14, padding: '28px 28px 22px',
-    width: 320, boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+    background: 'var(--bg-elevated)', borderRadius: 14, padding: '28px 28px 22px',
+    width: 320, boxShadow: 'var(--shadow-lg)',
+    border: '1.5px solid var(--border)',
   },
-  title: { fontSize: '1rem', fontWeight: 600, color: '#0a0a0a', marginBottom: 8 },
-  sub:   { fontSize: '0.875rem', color: '#9a9a9a', lineHeight: 1.5, marginBottom: 22 },
+  title: { fontSize: '1rem', fontWeight: 600, color: 'var(--text)', marginBottom: 8 },
+  sub:   { fontSize: '0.875rem', color: 'var(--text-tertiary)', lineHeight: 1.5, marginBottom: 22 },
   btns:  { display: 'flex', gap: 10 },
   btnCancel: {
     flex: 1, padding: '9px', borderRadius: 8,
-    border: '1.5px solid #ebebeb', background: 'transparent',
-    fontSize: '0.875rem', cursor: 'pointer', color: '#5a5a5a',
+    border: '1.5px solid var(--border)', background: 'transparent',
+    fontSize: '0.875rem', cursor: 'pointer', color: 'var(--text-secondary)',
+    fontFamily: 'inherit',
   },
   btnConfirm: {
     flex: 1, padding: '9px', borderRadius: 8,
-    border: 'none', background: '#0a0a0a',
-    fontSize: '0.875rem', cursor: 'pointer', color: '#fafafa', fontWeight: 500,
+    border: 'none', background: 'var(--accent)',
+    fontSize: '0.875rem', cursor: 'pointer', color: 'var(--accent-inv)', fontWeight: 500,
+    fontFamily: 'inherit',
   },
 };
 
@@ -49,7 +52,6 @@ export function Navbar() {
   const { theme, toggle } = useTheme();
   const loc = useLocation();
   const navigate = useNavigate();
-  const active = (path: string) => loc.pathname.startsWith(path);
 
   const [open, setOpen]             = useState(false);
   const [showLogout, setShowLogout] = useState(false);
@@ -95,28 +97,19 @@ export function Navbar() {
             />
         )}
 
-        <header style={{
-          ...s.header,
-          background: theme === 'dark' ? 'rgba(17,17,17,0.92)' : 'rgba(250,250,250,0.92)',
-          borderBottom: theme === 'dark' ? '1px solid #2a2a2a' : '1px solid #ebebeb',
-        }}>
+        <header style={s.header}>
           <nav style={s.nav}>
-            <Link to="/courses" style={{ ...s.logo, color: theme === 'dark' ? '#f0f0f0' : '#0a0a0a' }}>
+            <Link to="/courses" style={s.logo}>
               <span style={s.logoDot} />
               LearnHub
             </Link>
 
-            <div style={s.links}>
-            </div>
+            <div style={s.links} />
 
             <div style={s.right}>
               <button
                   onClick={toggle}
-                  style={{
-                    ...s.themeBtn,
-                    border: theme === 'dark' ? '1.5px solid #2a2a2a' : '1.5px solid #ebebeb',
-                    background: theme === 'dark' ? '#1a1a1a' : 'transparent',
-                  }}
+                  style={s.themeBtn}
                   aria-label="Змінити тему"
                   title={theme === 'dark' ? 'Світла тема' : 'Темна тема'}
               >
@@ -137,16 +130,13 @@ export function Navbar() {
                             width="12" height="12" viewBox="0 0 12 12" fill="none"
                             style={{ ...s.chevron, ...(open ? s.chevronOpen : {}) }}
                         >
-                          <path d="M2 4l4 4 4-4" stroke="#9a9a9a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
                       </button>
 
                       <div style={{
                         ...s.dropdown,
                         ...(open ? s.dropdownOpen : s.dropdownClosed),
-                        background: theme === 'dark' ? '#1a1a1a' : '#fff',
-                        border: theme === 'dark' ? '1.5px solid #2a2a2a' : '1.5px solid #ebebeb',
-                        boxShadow: theme === 'dark' ? '0 8px 32px rgba(0,0,0,0.5)' : '0 8px 32px rgba(0,0,0,0.10)',
                       }}>
                         <div style={s.dropHeader}>
                           <div style={{ ...s.avatar, ...s.avatarLg }}>{initials}</div>
@@ -226,6 +216,8 @@ const s: Record<string, React.CSSProperties> = {
   header: {
     position: 'sticky', top: 0, zIndex: 100,
     backdropFilter: 'blur(12px)',
+    background: 'rgba(var(--bg-rgb, 250,250,250),0.92)',
+    borderBottom: '1px solid var(--border)',
   },
   nav: {
     maxWidth: 1160, margin: '0 auto',
@@ -236,41 +228,40 @@ const s: Record<string, React.CSSProperties> = {
     display: 'flex', alignItems: 'center', gap: 8,
     fontSize: '0.95rem', fontWeight: 600,
     letterSpacing: '-0.02em',
-    marginRight: 24,
+    marginRight: 24, color: 'var(--text)',
   },
   logoDot: {
     width: 7, height: 7,
-    borderRadius: '50%', background: '#0a0a0a', flexShrink: 0,
+    borderRadius: '50%', background: 'var(--accent)', flexShrink: 0,
   },
   links: { display: 'flex', gap: 2, flex: 1 },
   link: {
     padding: '5px 12px', borderRadius: 6,
-    fontSize: '0.875rem', color: '#5a5a5a',
+    fontSize: '0.875rem', color: 'var(--text-secondary)',
   },
-  linkActive: { color: '#0a0a0a', fontWeight: 500 },
   right: { display: 'flex', alignItems: 'center', gap: 8 },
   registerBtn: {
     padding: '6px 16px', borderRadius: 6,
-    background: '#0a0a0a', color: '#fafafa',
+    background: 'var(--accent)', color: 'var(--accent-inv)',
     fontSize: '0.875rem', fontWeight: 500,
   },
   profileWrap: { position: 'relative' },
   profileBtn: {
     display: 'flex', alignItems: 'center', gap: 8,
-    background: 'transparent', border: '1.5px solid #ebebeb',
+    background: 'transparent', border: '1.5px solid var(--border)',
     borderRadius: 8, padding: '4px 10px 4px 5px',
-    cursor: 'pointer',
+    cursor: 'pointer', color: 'var(--text-secondary)',
   },
   avatar: {
     width: 28, height: 28, borderRadius: '50%',
-    background: '#0a0a0a', color: '#fafafa',
+    background: 'var(--accent)', color: 'var(--accent-inv)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     fontSize: '0.7rem', fontWeight: 600, flexShrink: 0,
   },
-  userName: { fontSize: '0.8rem', color: '#3a3a3a', fontWeight: 500 },
+  userName: { fontSize: '0.8rem', color: 'var(--text)', fontWeight: 500 },
   chevron: {
     transition: 'transform 0.2s ease',
-    flexShrink: 0,
+    flexShrink: 0, color: 'var(--text-tertiary)',
   },
   chevronOpen: { transform: 'rotate(180deg)' },
 
@@ -282,6 +273,9 @@ const s: Record<string, React.CSSProperties> = {
     zIndex: 200,
     transformOrigin: 'top right',
     transition: 'opacity 0.18s ease, transform 0.18s ease, visibility 0.18s',
+    background: 'var(--bg-elevated)',
+    border: '1.5px solid var(--border)',
+    boxShadow: 'var(--shadow-lg)',
   },
   dropdownOpen: {
     opacity: 1,
@@ -300,23 +294,25 @@ const s: Record<string, React.CSSProperties> = {
     padding: '14px 16px',
   },
   avatarLg: { width: 38, height: 38, fontSize: '0.85rem' },
-  dropName: { fontSize: '0.875rem', fontWeight: 600, color: '#0a0a0a', marginBottom: 1 },
-  dropRole: { fontSize: '0.72rem', color: '#9a9a9a' },
-  dropDivider: { height: 1, background: '#f0f0f0', margin: '0 12px' },
+  dropName: { fontSize: '0.875rem', fontWeight: 600, color: 'var(--text)', marginBottom: 1 },
+  dropRole: { fontSize: '0.72rem', color: 'var(--text-tertiary)' },
+  dropDivider: { height: 1, background: 'var(--border)', margin: '0 12px' },
   dropItem: {
     display: 'flex', alignItems: 'center', gap: 10,
     width: '100%', padding: '10px 16px',
-    fontSize: '0.875rem', color: '#3a3a3a',
+    fontSize: '0.875rem', color: 'var(--text-secondary)',
     background: 'transparent', border: 'none',
     textDecoration: 'none', cursor: 'pointer',
     textAlign: 'left' as const,
+    fontFamily: 'inherit',
   },
   dropItemDanger: { color: '#e53e3e' },
   dropIcon: { fontSize: '0.85rem', width: 18, flexShrink: 0 },
   themeBtn: {
     width: 32, height: 32,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    background: 'transparent',
+    background: 'var(--bg-elevated)',
+    border: '1.5px solid var(--border)',
     borderRadius: 8, cursor: 'pointer', fontSize: '0.9rem',
     transition: 'border-color 0.2s, background 0.2s',
     flexShrink: 0,

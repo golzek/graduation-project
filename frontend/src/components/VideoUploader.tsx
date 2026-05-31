@@ -85,12 +85,12 @@ export function VideoUploader({ onUploaded, accept = 'video/mp4,video/webm,video
         onDrop={onDrop}
         onClick={() => !uploading && inputRef.current?.click()}
         style={{
-          border: `2px dashed ${dragging ? '#4f46e5' : '#e5e7eb'}`,
+          border: `2px dashed ${dragging ? '#4f46e5' : 'var(--border)'}`,
           borderRadius: 12,
           padding: '32px 24px',
           textAlign: 'center',
           cursor: uploading ? 'default' : 'pointer',
-          background: dragging ? '#ede9fe' : '#fafafa',
+          background: dragging ? '#ede9fe' : 'var(--bg)',
           transition: 'all 0.15s',
         }}
       >
@@ -106,10 +106,10 @@ export function VideoUploader({ onUploaded, accept = 'video/mp4,video/webm,video
           <div>
             <div style={{ fontSize: 32, marginBottom: 8 }}>✅</div>
             <p style={{ fontWeight: 600, color: '#059669' }}>Завантажено!</p>
-            <p style={{ fontSize: 13, color: '#6b7280', marginTop: 4 }}>{uploaded}</p>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>{uploaded}</p>
             <button
               onClick={e => { e.stopPropagation(); setUploaded(null); setProgress(0); }}
-              style={{ marginTop: 12, padding: '6px 16px', border: '1px solid #e5e7eb', borderRadius: 6, background: '#fff', cursor: 'pointer', fontSize: 13 }}
+              style={{ marginTop: 12, padding: '6px 16px', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--bg-elevated)', cursor: 'pointer', fontSize: 13 }}
             >
               Замінити відео
             </button>
@@ -118,15 +118,15 @@ export function VideoUploader({ onUploaded, accept = 'video/mp4,video/webm,video
           <div>
             <div style={{ fontSize: 32, marginBottom: 8 }}>⏳</div>
             <p style={{ fontWeight: 600 }}>Завантаження... {progress}%</p>
-            <div style={{ margin: '12px auto 0', maxWidth: 240, height: 8, background: '#e5e7eb', borderRadius: 4, overflow: 'hidden' }}>
+            <div style={{ margin: '12px auto 0', maxWidth: 240, height: 8, background: 'var(--border)', borderRadius: 4, overflow: 'hidden' }}>
               <div style={{ height: '100%', width: `${progress}%`, background: '#4f46e5', borderRadius: 4, transition: 'width 0.3s' }}/>
             </div>
           </div>
         ) : (
           <div>
             <div style={{ fontSize: 36, marginBottom: 8 }}>🎬</div>
-            <p style={{ fontWeight: 600, color: '#374151' }}>Перетягни відео або клікни</p>
-            <p style={{ fontSize: 13, color: '#9ca3af', marginTop: 6 }}>MP4, WebM, OGG · до 500MB</p>
+            <p style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>Перетягни відео або клікни</p>
+            <p style={{ fontSize: 13, color: 'var(--text-tertiary)', marginTop: 6 }}>MP4, WebM, OGG · до 500MB</p>
           </div>
         )}
       </div>

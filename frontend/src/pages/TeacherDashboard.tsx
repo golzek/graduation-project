@@ -73,8 +73,8 @@ export function TeacherDashboard() {
   if (loading) return <TeacherDashboardSkeleton />;
   if (fetchError) return (
       <div style={{ textAlign: 'center', padding: 80 }}>
-        <p style={{ color: '#6b7280' }}>Не вдалося завантажити дані. Перевірте підключення до сервера.</p>
-        <Link to="/courses/create" style={{ display: 'inline-block', marginTop: 16, padding: '12px 24px', background: '#4f46e5', color: '#fff', borderRadius: 10, textDecoration: 'none', fontWeight: 600 }}>
+        <p style={{ color: 'var(--text-secondary)' }}>Не вдалося завантажити дані. Перевірте підключення до сервера.</p>
+        <Link to="/courses/create" style={{ display: 'inline-block', marginTop: 16, padding: '12px 24px', background: '#4f46e5', color: 'var(--bg-elevated)', borderRadius: 10, textDecoration: 'none', fontWeight: 600 }}>
           Створити перший курс
         </Link>
       </div>
@@ -123,7 +123,7 @@ export function TeacherDashboard() {
                       >
                         <div>
                           <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>{c.title}</p>
-                          <p style={{ margin: '4px 0 0', fontSize: 12, color: '#6b7280' }}>
+                          <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--text-secondary)' }}>
                             {c.students} студентів · {c.avgProgressPercent}% прогрес
                           </p>
                         </div>
@@ -150,7 +150,7 @@ export function TeacherDashboard() {
 
                       <div style={{ marginBottom: 24 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 6 }}>
-                          <span style={{ color: '#6b7280' }}>Середнє завершення курсу</span>
+                          <span style={{ color: 'var(--text-secondary)' }}>Середнє завершення курсу</span>
                           <strong>{selectedCourse.avgProgressPercent}%</strong>
                         </div>
                         <div style={s.progressTrack}>
@@ -182,7 +182,7 @@ export function TeacherDashboard() {
                                     <span style={{ width: 70, textAlign: 'right' as const, fontSize: 13, fontWeight: 600 }}>
                             {l.views}
                           </span>
-                                    <span style={{ width: 90, textAlign: 'right' as const, fontSize: 12, color: '#6b7280' }}>
+                                    <span style={{ width: 90, textAlign: 'right' as const, fontSize: 12, color: 'var(--text-secondary)' }}>
                             {Math.round(l.avgWatchedSec / 60)} хв
                           </span>
                                   </div>
@@ -277,34 +277,34 @@ function PayoutsPanel() {
   };
 
   return (
-      <div style={{ marginTop: 28, background: '#fff', borderRadius: 14, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+      <div style={{ marginTop: 28, background: 'var(--bg-elevated)', borderRadius: 14, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <h3 style={{ ...s.sectionTitle, margin: 0 }}>💸 Виплати</h3>
           {data && data.available > 0 && !showForm && (
               <button
                   onClick={() => { setShowForm(true); setErr(''); setOk(''); }}
-                  style={{ padding: '8px 18px', background: '#059669', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+                  style={{ padding: '8px 18px', background: '#059669', color: 'var(--bg-elevated)', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
               >Запит на виплату</button>
           )}
         </div>
 
         {loading ? (
-            <p style={{ color: '#9ca3af', fontSize: 13 }}>Завантаження...</p>
+            <p style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>Завантаження...</p>
         ) : !data ? (
-            <p style={{ color: '#9ca3af', fontSize: 13 }}>Не вдалось завантажити дані</p>
+            <p style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>Не вдалось завантажити дані</p>
         ) : (
             <>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 20 }}>
                 {[
-                  { label: 'Валовий дохід', value: `${data.gross.toLocaleString('uk-UA')} ₴`, sub: 'від продажів', color: '#6b7280' },
+                  { label: 'Валовий дохід', value: `${data.gross.toLocaleString('uk-UA')} ₴`, sub: 'від продажів', color: 'var(--text-secondary)' },
                   { label: 'Комісія платформи', value: `${data.platformFeePercent}%`, sub: `−${(data.gross * data.platformFeePercent / 100).toLocaleString('uk-UA')} ₴`, color: '#d97706' },
                   { label: 'Чистий заробіток', value: `${data.netEarnings.toLocaleString('uk-UA')} ₴`, sub: `виведено: ${data.alreadyRequested.toLocaleString('uk-UA')} ₴`, color: '#2563eb' },
-                  { label: 'Доступно до виводу', value: `${data.available.toLocaleString('uk-UA')} ₴`, sub: data.available > 0 ? 'можна вивести' : 'немає коштів', color: data.available > 0 ? '#059669' : '#9ca3af' },
+                  { label: 'Доступно до виводу', value: `${data.available.toLocaleString('uk-UA')} ₴`, sub: data.available > 0 ? 'можна вивести' : 'немає коштів', color: data.available > 0 ? '#059669' : 'var(--text-tertiary)' },
                 ].map(c => (
-                    <div key={c.label} style={{ background: '#f9fafb', borderRadius: 10, padding: '14px 16px' }}>
+                    <div key={c.label} style={{ background: 'var(--bg)', borderRadius: 10, padding: '14px 16px' }}>
                       <p style={{ margin: 0, fontSize: 18, fontWeight: 700, color: c.color }}>{c.value}</p>
-                      <p style={{ margin: '3px 0 0', fontSize: 12, fontWeight: 600, color: '#374151' }}>{c.label}</p>
-                      <p style={{ margin: '2px 0 0', fontSize: 11, color: '#9ca3af' }}>{c.sub}</p>
+                      <p style={{ margin: '3px 0 0', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>{c.label}</p>
+                      <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--text-tertiary)' }}>{c.sub}</p>
                     </div>
                 ))}
               </div>
@@ -317,9 +317,9 @@ function PayoutsPanel() {
                         const h = Math.max((m.net / maxBar) * 60, m.net > 0 ? 4 : 0);
                         return (
                             <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-                              {m.net > 0 && <span style={{ fontSize: 9, color: '#9ca3af' }}>{m.net >= 1000 ? `${(m.net/1000).toFixed(1)}k` : m.net}</span>}
+                              {m.net > 0 && <span style={{ fontSize: 9, color: 'var(--text-tertiary)' }}>{m.net >= 1000 ? `${(m.net/1000).toFixed(1)}k` : m.net}</span>}
                               <div title={`${fmtMonth(m.month)}: ${m.net.toLocaleString('uk-UA')} ₴`} style={{ width: '100%', height: `${h}px`, background: '#059669', borderRadius: '3px 3px 0 0', opacity: 0.8 }} />
-                              <span style={{ fontSize: 9, color: '#9ca3af', whiteSpace: 'nowrap' }}>{fmtMonth(m.month)}</span>
+                              <span style={{ fontSize: 9, color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>{fmtMonth(m.month)}</span>
                             </div>
                         );
                       })}
@@ -338,7 +338,7 @@ function PayoutsPanel() {
                     <p style={{ margin: '0 0 14px', fontWeight: 600, fontSize: 14, color: '#065f46' }}>Новий запит на виплату</p>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 10, marginBottom: 12 }}>
                       <div>
-                        <label style={{ fontSize: 12, color: '#6b7280', display: 'block', marginBottom: 4 }}>Сума (₴) *</label>
+                        <label style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Сума (₴) *</label>
                         <input
                             type="number" min="1" max={data.available} step="0.01"
                             placeholder={`макс. ${data.available}`}
@@ -348,7 +348,7 @@ function PayoutsPanel() {
                         />
                       </div>
                       <div>
-                        <label style={{ fontSize: 12, color: '#6b7280', display: 'block', marginBottom: 4 }}>Реквізити (IBAN / картка) *</label>
+                        <label style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Реквізити (IBAN / картка) *</label>
                         <input
                             placeholder="UA123456… або 4111 1111 1111 1111"
                             value={details}
@@ -358,17 +358,17 @@ function PayoutsPanel() {
                       </div>
                     </div>
                     {err && <p style={{ fontSize: 12, color: '#dc2626', marginBottom: 8 }}>{err}</p>}
-                    <p style={{ fontSize: 11, color: '#9ca3af', marginBottom: 10 }}>
+                    <p style={{ fontSize: 11, color: 'var(--text-tertiary)', marginBottom: 10 }}>
                       Запит буде розглянуто адміністратором. Після схвалення кошти буде переказано на вказані реквізити.
                     </p>
                     <div style={{ display: 'flex', gap: 8 }}>
                       <button
                           onClick={handleRequest} disabled={submitting}
-                          style={{ padding: '8px 20px', background: submitting ? '#9ca3af' : '#059669', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: submitting ? 'default' : 'pointer', fontFamily: 'inherit' }}
+                          style={{ padding: '8px 20px', background: submitting ? 'var(--text-tertiary)' : '#059669', color: 'var(--bg-elevated)', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: submitting ? 'default' : 'pointer', fontFamily: 'inherit' }}
                       >{submitting ? 'Відправка...' : 'Відправити'}</button>
                       <button
                           onClick={() => { setShowForm(false); setErr(''); }}
-                          style={{ padding: '8px 16px', background: 'transparent', color: '#6b7280', border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}
+                          style={{ padding: '8px 16px', background: 'transparent', color: 'var(--text-secondary)', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}
                       >Скасувати</button>
                     </div>
                   </div>
@@ -379,22 +379,22 @@ function PayoutsPanel() {
                     <p style={{ ...s.chartTitle, marginBottom: 10 }}>Історія запитів</p>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                       {data.requests.map(r => (
-                          <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: '#f9fafb', borderRadius: 10, border: '1.5px solid #f3f4f6' }}>
-                            <span style={{ fontWeight: 700, fontSize: 15, color: '#111827', minWidth: 100 }}>
+                          <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: 'var(--bg)', borderRadius: 10, border: '1.5px solid #f3f4f6' }}>
+                            <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)', minWidth: 100 }}>
                               {r.amount.toLocaleString('uk-UA')} ₴
                             </span>
                             <span style={{ padding: '3px 10px', borderRadius: 99, fontSize: 11, fontWeight: 600, background: statusBg[r.status], color: statusColor[r.status], flexShrink: 0 }}>
                               {statusLabel[r.status]}
                             </span>
-                            <span style={{ fontSize: 12, color: '#9ca3af', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <span style={{ fontSize: 12, color: 'var(--text-tertiary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {r.paymentDetails}
                             </span>
                             {r.adminComment && (
-                                <span style={{ fontSize: 11, color: '#9ca3af', maxWidth: 160 }} title={r.adminComment}>
+                                <span style={{ fontSize: 11, color: 'var(--text-tertiary)', maxWidth: 160 }} title={r.adminComment}>
                                   💬 {r.adminComment.slice(0, 40)}{r.adminComment.length > 40 ? '…' : ''}
                                 </span>
                             )}
-                            <span style={{ fontSize: 11, color: '#9ca3af', flexShrink: 0 }}>
+                            <span style={{ fontSize: 11, color: 'var(--text-tertiary)', flexShrink: 0 }}>
                               {new Date(r.createdAt).toLocaleDateString('uk-UA')}
                             </span>
                           </div>
@@ -404,7 +404,7 @@ function PayoutsPanel() {
               )}
 
               {data.requests.length === 0 && data.available === 0 && (
-                  <p style={{ fontSize: 13, color: '#9ca3af', textAlign: 'center', padding: '20px 0' }}>
+                  <p style={{ fontSize: 13, color: 'var(--text-tertiary)', textAlign: 'center', padding: '20px 0' }}>
                     Запитів на виплату ще не було
                   </p>
               )}
@@ -470,22 +470,22 @@ function PromoCodesPanel({ courseId }: { courseId: string }) {
   const statusBg:    Record<string, string> = { pending: '#fffbeb', approved: '#f0fdf4', rejected: '#fef2f2' };
 
   return (
-      <div style={{ marginTop: 24, borderTop: '1px solid #f3f4f6', paddingTop: 20 }}>
+      <div style={{ marginTop: 24, borderTop: '1px solid var(--border)', paddingTop: 20 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <p style={s.chartTitle}>🏷 Промокоди</p>
           <button
               onClick={() => { setShowForm(f => !f); setErr(''); setSuccess(''); }}
-              style={{ padding: '6px 14px', borderRadius: 7, border: '1.5px solid #ede9fe', background: showForm ? '#ede9fe' : '#fff', color: '#4f46e5', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+              style={{ padding: '6px 14px', borderRadius: 7, border: '1.5px solid #ede9fe', background: showForm ? '#ede9fe' : 'var(--bg-elevated)', color: '#4f46e5', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
           >{showForm ? 'Скасувати' : '+ Новий промокод'}</button>
         </div>
 
         {success && <div style={{ padding: '8px 12px', background: '#f0fdf4', borderRadius: 8, border: '1px solid #bbf7d0', fontSize: 13, color: '#16a34a', marginBottom: 12 }}>✓ {success}</div>}
 
         {showForm && (
-            <div style={{ background: '#f9fafb', borderRadius: 10, padding: 16, marginBottom: 16, border: '1.5px solid #ede9fe' }}>
+            <div style={{ background: 'var(--bg)', borderRadius: 10, padding: 16, marginBottom: 16, border: '1.5px solid #ede9fe' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
                 <div>
-                  <label style={{ fontSize: 12, color: '#6b7280', display: 'block', marginBottom: 4 }}>Код *</label>
+                  <label style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Код *</label>
                   <input
                       placeholder="SUMMER20"
                       value={code}
@@ -494,7 +494,7 @@ function PromoCodesPanel({ courseId }: { courseId: string }) {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: 12, color: '#6b7280', display: 'block', marginBottom: 4 }}>Знижка (%) *</label>
+                  <label style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Знижка (%) *</label>
                   <input
                       type="number" min="1" max="100" placeholder="20"
                       value={discount}
@@ -503,7 +503,7 @@ function PromoCodesPanel({ courseId }: { courseId: string }) {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: 12, color: '#6b7280', display: 'block', marginBottom: 4 }}>Ліміт використань</label>
+                  <label style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Ліміт використань</label>
                   <input
                       type="number" min="1" placeholder="Необмежено"
                       value={limit}
@@ -512,7 +512,7 @@ function PromoCodesPanel({ courseId }: { courseId: string }) {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: 12, color: '#6b7280', display: 'block', marginBottom: 4 }}>Дійсний до</label>
+                  <label style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Дійсний до</label>
                   <input
                       type="date"
                       value={expires}
@@ -522,28 +522,28 @@ function PromoCodesPanel({ courseId }: { courseId: string }) {
                 </div>
               </div>
               {err && <p style={{ fontSize: 12, color: '#dc2626', marginBottom: 8 }}>{err}</p>}
-              <p style={{ fontSize: 11, color: '#9ca3af', marginBottom: 10 }}>
+              <p style={{ fontSize: 11, color: 'var(--text-tertiary)', marginBottom: 10 }}>
                 Промокод буде активований після схвалення адміністратором.
               </p>
               <button
                   onClick={handleCreate}
                   disabled={submitting}
-                  style={{ padding: '8px 20px', background: submitting ? '#9ca3af' : '#4f46e5', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: submitting ? 'default' : 'pointer', fontFamily: 'inherit' }}
+                  style={{ padding: '8px 20px', background: submitting ? 'var(--text-tertiary)' : '#4f46e5', color: 'var(--bg-elevated)', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: submitting ? 'default' : 'pointer', fontFamily: 'inherit' }}
               >{submitting ? 'Відправка...' : 'Відправити на схвалення'}</button>
             </div>
         )}
 
         {loading ? (
-            <p style={{ fontSize: 13, color: '#9ca3af' }}>Завантаження...</p>
+            <p style={{ fontSize: 13, color: 'var(--text-tertiary)' }}>Завантаження...</p>
         ) : promos.length === 0 ? (
-            <p style={{ fontSize: 13, color: '#9ca3af' }}>Промокодів ще немає</p>
+            <p style={{ fontSize: 13, color: 'var(--text-tertiary)' }}>Промокодів ще немає</p>
         ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {promos.map(p => (
-                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: '#fff', borderRadius: 10, border: '1.5px solid #f3f4f6' }}>
+                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: 'var(--bg-elevated)', borderRadius: 10, border: '1.5px solid #f3f4f6' }}>
                     <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 14, letterSpacing: '0.05em', flex: '0 0 auto' }}>{p.code}</span>
                     <span style={{ fontWeight: 600, color: '#4f46e5', fontSize: 13 }}>−{p.discountPercent}%</span>
-                    <span style={{ fontSize: 12, color: '#6b7280', flex: 1 }}>
+                    <span style={{ fontSize: 12, color: 'var(--text-secondary)', flex: 1 }}>
                 {p.usedCount}/{p.usageLimit ?? '∞'} використань
                       {p.expiresAt ? ` · до ${new Date(p.expiresAt).toLocaleDateString('uk-UA')}` : ''}
               </span>
@@ -551,7 +551,7 @@ function PromoCodesPanel({ courseId }: { courseId: string }) {
                 {statusLabel[p.status]}
               </span>
                     {p.adminComment && p.status === 'rejected' && (
-                        <span style={{ fontSize: 11, color: '#9ca3af', maxWidth: 120 }} title={p.adminComment}>💬 {p.adminComment.slice(0, 30)}{p.adminComment.length > 30 ? '...' : ''}</span>
+                        <span style={{ fontSize: 11, color: 'var(--text-tertiary)', maxWidth: 120 }} title={p.adminComment}>💬 {p.adminComment.slice(0, 30)}{p.adminComment.length > 30 ? '...' : ''}</span>
                     )}
                     {p.status !== 'approved' && (
                         <button
@@ -570,8 +570,8 @@ function PromoCodesPanel({ courseId }: { courseId: string }) {
 
 const inp: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box', padding: '8px 10px',
-  border: '1.5px solid #e5e7eb', borderRadius: 7,
-  fontSize: 13, fontFamily: 'inherit', outline: 'none', background: '#fff',
+  border: '1.5px solid var(--border)', borderRadius: 7,
+  fontSize: 13, fontFamily: 'inherit', outline: 'none', background: 'var(--bg-elevated)',
 };
 
 function MetricCard({ icon, label, value, color }: { icon: string; label: string; value: any; color: string }) {
@@ -589,8 +589,8 @@ function MetricCard({ icon, label, value, color }: { icon: string; label: string
 function MiniMetric({ label, value }: { label: string; value: any }) {
   return (
       <div style={s.miniMetric}>
-        <p style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#111827' }}>{value}</p>
-        <p style={{ margin: 0, fontSize: 12, color: '#6b7280' }}>{label}</p>
+        <p style={{ margin: 0, fontSize: 20, fontWeight: 700, color: 'var(--text)' }}>{value}</p>
+        <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>{label}</p>
       </div>
   );
 }
@@ -601,7 +601,7 @@ function MiniBarChart({ data }: { data: { date: string; count: number }[] }) {
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 80 }}>
         {data.map((d, i) => (
             <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-              <span style={{ fontSize: 9, color: '#9ca3af' }}>{d.count || ''}</span>
+              <span style={{ fontSize: 9, color: 'var(--text-tertiary)' }}>{d.count || ''}</span>
               <div
                   title={`${new Date(d.date).toLocaleDateString('uk-UA')}: ${d.count}`}
                   style={{
@@ -621,35 +621,35 @@ function MiniBarChart({ data }: { data: { date: string; count: number }[] }) {
 }
 
 const s: Record<string, React.CSSProperties> = {
-  page: { minHeight: '100vh', background: '#f9fafb' },
-  centered: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', color: '#6b7280' },
-  header: { background: '#1e1b4b', color: '#fff', padding: '36px 32px' },
+  page: { minHeight: '100vh', background: 'var(--bg)' },
+  centered: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', color: 'var(--text-secondary)' },
+  header: { background: '#1e1b4b', color: 'var(--bg-elevated)', padding: '36px 32px' },
   headerRow: { maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   title: { fontSize: 26, fontWeight: 700, margin: 0 },
   sub: { opacity: 0.7, marginTop: 4 },
-  btnCreate: { padding: '12px 24px', background: '#4f46e5', color: '#fff', borderRadius: 10, textDecoration: 'none', fontWeight: 600, fontSize: 14 },
+  btnCreate: { padding: '12px 24px', background: '#4f46e5', color: 'var(--bg-elevated)', borderRadius: 10, textDecoration: 'none', fontWeight: 600, fontSize: 14 },
   body: { maxWidth: 1200, margin: '32px auto', padding: '0 32px' },
   metricsRow: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 },
-  metricCard: { background: '#fff', borderRadius: 14, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' },
+  metricCard: { background: 'var(--bg-elevated)', borderRadius: 14, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' },
   metricIcon: { width: 48, height: 48, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 },
-  metricValue: { margin: 0, fontSize: 24, fontWeight: 700, color: '#111827' },
-  metricLabel: { margin: '2px 0 0', fontSize: 13, color: '#6b7280' },
+  metricValue: { margin: 0, fontSize: 24, fontWeight: 700, color: 'var(--text)' },
+  metricLabel: { margin: '2px 0 0', fontSize: 13, color: 'var(--text-secondary)' },
   twoCol: { display: 'grid', gridTemplateColumns: '300px 1fr', gap: 24 },
-  courseList: { background: '#fff', borderRadius: 14, padding: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', height: 'fit-content' },
-  sectionTitle: { fontSize: 15, fontWeight: 700, margin: '0 0 16px', color: '#111827' },
+  courseList: { background: 'var(--bg-elevated)', borderRadius: 14, padding: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', height: 'fit-content' },
+  sectionTitle: { fontSize: 15, fontWeight: 700, margin: '0 0 16px', color: 'var(--text)' },
   courseRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', borderRadius: 10, cursor: 'pointer', marginBottom: 6, transition: 'background 0.15s' },
   courseRowActive: { background: '#ede9fe' },
-  courseDetail: { background: '#fff', borderRadius: 14, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' },
+  courseDetail: { background: 'var(--bg-elevated)', borderRadius: 14, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' },
   miniMetrics: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 },
-  miniMetric: { background: '#f9fafb', borderRadius: 10, padding: '12px 16px' },
-  progressTrack: { height: 10, background: '#e5e7eb', borderRadius: 5, overflow: 'hidden' },
+  miniMetric: { background: 'var(--bg)', borderRadius: 10, padding: '12px 16px' },
+  progressTrack: { height: 10, background: 'var(--border)', borderRadius: 5, overflow: 'hidden' },
   progressFill: { height: '100%', background: '#4f46e5', borderRadius: 5, transition: 'width 0.5s' },
-  chartTitle: { fontWeight: 600, fontSize: 13, color: '#374151', margin: '0 0 10px' },
+  chartTitle: { fontWeight: 600, fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 10px' },
   lessonTable: { border: '1px solid #f3f4f6', borderRadius: 10, overflow: 'hidden' },
-  tableHeader: { display: 'flex', padding: '10px 14px', background: '#f9fafb', fontSize: 12, fontWeight: 600, color: '#6b7280' },
-  tableRow: { display: 'flex', padding: '10px 14px', borderTop: '1px solid #f3f4f6', alignItems: 'center' },
+  tableHeader: { display: 'flex', padding: '10px 14px', background: 'var(--bg)', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' },
+  tableRow: { display: 'flex', padding: '10px 14px', borderTop: '1px solid var(--border)', alignItems: 'center' },
   btnEdit: { padding: '10px 18px', background: '#ede9fe', color: '#4f46e5', borderRadius: 8, textDecoration: 'none', fontSize: 13, fontWeight: 600 },
-  btnFull: { padding: '10px 18px', background: '#f3f4f6', color: '#374151', borderRadius: 8, textDecoration: 'none', fontSize: 13 },
+  btnFull: { padding: '10px 18px', background: 'var(--bg-muted)', color: 'var(--text-secondary)', borderRadius: 8, textDecoration: 'none', fontSize: 13 },
   empty: { textAlign: 'center', padding: 80 },
-  btnLink: { display: 'inline-block', marginTop: 16, padding: '12px 24px', background: '#4f46e5', color: '#fff', borderRadius: 10, textDecoration: 'none', fontWeight: 600 },
+  btnLink: { display: 'inline-block', marginTop: 16, padding: '12px 24px', background: '#4f46e5', color: 'var(--bg-elevated)', borderRadius: 10, textDecoration: 'none', fontWeight: 600 },
 };

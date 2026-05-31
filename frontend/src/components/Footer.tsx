@@ -56,8 +56,8 @@ export function Footer() {
 
 const s: Record<string, React.CSSProperties> = {
     footer: {
-        borderTop: '1px solid #ebebeb',
-        background: '#fff',
+        borderTop: '1px solid var(--border)',
+        background: 'var(--bg-elevated)',
         marginTop: 80,
     },
     inner: {
@@ -72,32 +72,32 @@ const s: Record<string, React.CSSProperties> = {
     brand: { display: 'flex', flexDirection: 'column' as const, gap: 10 },
     logo: {
         fontSize: '1.1rem', fontWeight: 700,
-        letterSpacing: '-0.03em', color: '#0a0a0a',
+        letterSpacing: '-0.03em', color: 'var(--text)',
         textDecoration: 'none',
     },
-    tagline: { fontSize: '0.85rem', color: '#5a5a5a', lineHeight: 1.5, maxWidth: 200 },
-    copy:    { fontSize: '0.75rem', color: '#b0b0b0', marginTop: 4 },
+    tagline: { fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5, maxWidth: 200 },
+    copy:    { fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: 4 },
 
     col: { display: 'flex', flexDirection: 'column' as const, gap: 10 },
     colTitle: {
         fontSize: '0.7rem', fontWeight: 600,
         textTransform: 'uppercase' as const,
-        letterSpacing: '0.07em', color: '#9a9a9a',
+        letterSpacing: '0.07em', color: 'var(--text-tertiary)',
         marginBottom: 4,
     },
     link: {
-        fontSize: '0.875rem', color: '#5a5a5a',
+        fontSize: '0.875rem', color: 'var(--text-secondary)',
         textDecoration: 'none', transition: 'color 0.15s',
     },
 
-    bar: { borderTop: '1px solid #f5f5f5', background: '#fafafa' },
+    bar: { borderTop: '1px solid #f5f5f5', background: 'var(--bg)' },
     barInner: {
         maxWidth: 1160, margin: '0 auto',
         padding: '14px 32px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     },
-    barText: { fontSize: '0.78rem', color: '#b0b0b0' },
+    barText: { fontSize: '0.78rem', color: 'var(--text-tertiary)' },
     barLinks: { display: 'flex', alignItems: 'center', gap: 8 },
-    barLink: { fontSize: '0.78rem', color: '#b0b0b0', textDecoration: 'none' },
-    dot: { color: '#d6d6d6', fontSize: '0.78rem' },
+    barLink: { fontSize: '0.78rem', color: 'var(--text-tertiary)', textDecoration: 'none' },
+    dot: { color: 'var(--border-strong)', fontSize: '0.78rem' },
 };

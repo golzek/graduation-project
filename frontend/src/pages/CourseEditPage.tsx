@@ -126,8 +126,8 @@ export function CourseEditPage() {
             <div style={s.topBar}>
                 <div style={s.topInner}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <Link to="/teacher" style={{ color: '#9a9a9a', fontSize: '0.85rem' }}>← Панель</Link>
-                        <span style={{ color: '#d6d6d6' }}>/</span>
+                        <Link to="/teacher" style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>← Панель</Link>
+                        <span style={{ color: 'var(--border-strong)' }}>/</span>
                         <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>{course?.title}</span>
                         <span style={{
                             padding: '2px 10px', borderRadius: 99, fontSize: '0.7rem', fontWeight: 500,
@@ -211,15 +211,15 @@ export function CourseEditPage() {
                         <div style={s.card}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                                 <h3 style={s.cardTitle}>Програма курсу</h3>
-                                <span style={{ fontSize: '0.8rem', color: '#9a9a9a' }}>{totalLessons} уроків</span>
+                                <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>{totalLessons} уроків</span>
                             </div>
 
                             {course?.modules?.map(mod => (
                                 <div key={mod.id} style={s.modBlock}>
                                     <div style={s.modHead} onClick={() => setExpandedMod(e => e === mod.id ? null : mod.id)}>
-                                        <span style={{ fontSize: '0.75rem', color: '#9a9a9a', marginRight: 6 }}>{expandedMod === mod.id ? '▼' : '▶'}</span>
+                                        <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginRight: 6 }}>{expandedMod === mod.id ? '▼' : '▶'}</span>
                                         <span style={{ flex: 1, fontWeight: 600, fontSize: '0.9rem' }}>{mod.title}</span>
-                                        <span style={{ fontSize: '0.8rem', color: '#9a9a9a', marginRight: 10 }}>{mod.lessons.length} ур.</span>
+                                        <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', marginRight: 10 }}>{mod.lessons.length} ур.</span>
                                         <button onClick={e => { e.stopPropagation(); deleteModule(mod.id); }} style={s.btnDel} title="Видалити модуль">✕</button>
                                     </div>
 
@@ -230,13 +230,13 @@ export function CourseEditPage() {
                                                     <span style={s.lessonIcon}>{l.type === 'video' ? '▶' : l.type === 'text' ? '文' : '?'}</span>
                                                     <span style={{ flex: 1, fontSize: '0.85rem' }}>{l.title}</span>
                                                     {l.isFree && <span style={s.freeBadge}>free</span>}
-                                                    {l.durationSec > 0 && <span style={{ fontSize: '0.75rem', color: '#9a9a9a' }}>{Math.round(l.durationSec / 60)}хв</span>}
+                                                    {l.durationSec > 0 && <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>{Math.round(l.durationSec / 60)}хв</span>}
                                                     <button onClick={() => deleteLesson(l.id)} style={{ ...s.btnDel, marginLeft: 8 }} title="Видалити урок">✕</button>
                                                 </div>
                                             ))}
 
                                             <div style={s.addLessonBox}>
-                                                <p style={{ fontSize: '0.75rem', fontWeight: 600, color: '#5a5a5a', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
+                                                <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
                                                     + Новий урок
                                                 </p>
                                                 <input
@@ -281,13 +281,13 @@ export function CourseEditPage() {
                                                 )}
                                                 {(lessonForms[mod.id]?.type ?? 'video') === 'quiz' && (
                                                     <div style={{ marginBottom: 8 }}>
-                                                        <p style={{ fontSize: '0.72rem', color: '#9a9a9a', marginBottom: 8 }}>
+                                                        <p style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', marginBottom: 8 }}>
                                                             Питання квізу ({(quizQuestions[mod.id] ?? []).length})
                                                         </p>
                                                         {(quizQuestions[mod.id] ?? []).map((q, qi) => (
-                                                            <div key={qi} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 10, marginBottom: 8 }}>
+                                                            <div key={qi} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 8, padding: 10, marginBottom: 8 }}>
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                                                                    <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#9a9a9a', flexShrink: 0 }}>Q{qi + 1}</span>
+                                                                    <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-tertiary)', flexShrink: 0 }}>Q{qi + 1}</span>
                                                                     <input
                                                                         placeholder="Текст питання"
                                                                         value={q.question}
@@ -303,7 +303,7 @@ export function CourseEditPage() {
                                                                             const arr = (prev[mod.id] ?? []).filter((_, i) => i !== qi);
                                                                             return { ...prev, [mod.id]: arr };
                                                                         })}
-                                                                        style={{ background: 'none', border: 'none', color: '#d6d6d6', cursor: 'pointer', fontSize: '0.9rem', flexShrink: 0 }}
+                                                                        style={{ background: 'none', border: 'none', color: 'var(--border-strong)', cursor: 'pointer', fontSize: '0.9rem', flexShrink: 0 }}
                                                                     >✕</button>
                                                                 </div>
                                                                 {q.options.map((opt, oi) => (
@@ -331,8 +331,8 @@ export function CourseEditPage() {
                                                                             })}
                                                                             style={{
                                                                                 ...inp, marginBottom: 0, flex: 1,
-                                                                                borderColor: q.correctIndex === oi ? '#86efac' : '#ebebeb',
-                                                                                background: q.correctIndex === oi ? '#f0fdf4' : '#fff',
+                                                                                borderColor: q.correctIndex === oi ? '#86efac' : 'var(--border)',
+                                                                                background: q.correctIndex === oi ? '#f0fdf4' : 'var(--bg-elevated)',
                                                                             }}
                                                                         />
                                                                     </div>
@@ -344,7 +344,7 @@ export function CourseEditPage() {
                                                                 ...prev,
                                                                 [mod.id]: [...(prev[mod.id] ?? []), { ...EMPTY_QUESTION, options: ['', '', '', ''] }],
                                                             }))}
-                                                            style={{ ...inp, textAlign: 'center', cursor: 'pointer', color: '#5a5a5a', borderStyle: 'dashed', marginBottom: 0 }}
+                                                            style={{ ...inp, textAlign: 'center', cursor: 'pointer', color: 'var(--text-secondary)', borderStyle: 'dashed', marginBottom: 0 }}
                                                         >
                                                             + Додати питання
                                                         </button>
@@ -397,7 +397,7 @@ export function CourseEditPage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
     return (
         <div style={{ marginBottom: 12 }}>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: '#5a5a5a', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>
+            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>
                 {label}
             </label>
             {children}
@@ -407,31 +407,31 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 const inp: React.CSSProperties = {
     display: 'block', width: '100%', padding: '9px 12px',
-    border: '1.5px solid #ebebeb', borderRadius: 7,
+    border: '1.5px solid var(--border)', borderRadius: 7,
     fontSize: '0.875rem', boxSizing: 'border-box', outline: 'none',
-    background: '#fff', color: '#0a0a0a',
+    background: 'var(--bg-elevated)', color: 'var(--text)',
 };
 
 const s: Record<string, React.CSSProperties> = {
-    page:    { minHeight: '100vh', background: '#f5f5f5' },
-    center:  { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', color: '#9a9a9a' },
-    topBar:  { background: '#fff', borderBottom: '1px solid #ebebeb', padding: '12px 0', position: 'sticky', top: 0, zIndex: 10 },
+    page:    { minHeight: '100vh', background: 'var(--bg-subtle)' },
+    center:  { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', color: 'var(--text-tertiary)' },
+    topBar:  { background: 'var(--bg-elevated)', borderBottom: '1px solid var(--border)', padding: '12px 0', position: 'sticky', top: 0, zIndex: 10 },
     topInner:{ maxWidth: 1100, margin: '0 auto', padding: '0 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
     body:    { maxWidth: 1100, margin: '24px auto', padding: '0 24px 40px' },
     grid:    { display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 20 },
     col:     { display: 'flex', flexDirection: 'column', gap: 16 },
-    card:    { background: '#fff', border: '1.5px solid #ebebeb', borderRadius: 12, padding: 20 },
-    cardTitle: { fontSize: '0.9rem', fontWeight: 600, marginBottom: 16, color: '#0a0a0a' },
-    modBlock:{ border: '1px solid #ebebeb', borderRadius: 8, marginBottom: 8, overflow: 'hidden' },
-    modHead: { display: 'flex', alignItems: 'center', padding: '10px 14px', cursor: 'pointer', background: '#fafafa', gap: 4 },
-    lessonRow: { display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 6, marginBottom: 2, background: '#fff' },
-    lessonIcon: { fontSize: '0.65rem', width: 18, textAlign: 'center', flexShrink: 0, color: '#9a9a9a' },
+    card:    { background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 12, padding: 20 },
+    cardTitle: { fontSize: '0.9rem', fontWeight: 600, marginBottom: 16, color: 'var(--text)' },
+    modBlock:{ border: '1px solid var(--border)', borderRadius: 8, marginBottom: 8, overflow: 'hidden' },
+    modHead: { display: 'flex', alignItems: 'center', padding: '10px 14px', cursor: 'pointer', background: 'var(--bg)', gap: 4 },
+    lessonRow: { display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 6, marginBottom: 2, background: 'var(--bg-elevated)' },
+    lessonIcon: { fontSize: '0.65rem', width: 18, textAlign: 'center', flexShrink: 0, color: 'var(--text-tertiary)' },
     freeBadge: { fontSize: '0.65rem', padding: '1px 6px', borderRadius: 4, background: '#dcfce7', color: '#16a34a', fontWeight: 500 },
-    addLessonBox: { background: '#f9f9f9', border: '1px dashed #d6d6d6', borderRadius: 8, padding: 12, marginTop: 6 },
+    addLessonBox: { background: 'var(--bg)', border: '1px dashed #d6d6d6', borderRadius: 8, padding: 12, marginTop: 6 },
     addModBox: { display: 'flex', gap: 8, marginTop: 12 },
-    btnSave:   { padding: '8px 18px', background: '#0a0a0a', color: '#fff', border: 'none', borderRadius: 8, fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer' },
-    btnPublish:{ padding: '8px 18px', background: '#16a34a', color: '#fff', border: 'none', borderRadius: 8, fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer' },
-    btnSecondary: { padding: '8px 16px', background: '#f5f5f5', color: '#0a0a0a', border: '1px solid #ebebeb', borderRadius: 8, fontSize: '0.85rem', cursor: 'pointer' },
-    btnAdd:    { padding: '8px 14px', background: '#0a0a0a', color: '#fff', border: 'none', borderRadius: 7, fontSize: '0.82rem', cursor: 'pointer', whiteSpace: 'nowrap' },
-    btnDel:    { padding: '2px 6px', background: 'transparent', color: '#d6d6d6', border: 'none', borderRadius: 4, fontSize: '0.8rem', cursor: 'pointer', flexShrink: 0 },
+    btnSave:   { padding: '8px 18px', background: 'var(--accent)', color: 'var(--bg-elevated)', border: 'none', borderRadius: 8, fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer' },
+    btnPublish:{ padding: '8px 18px', background: '#16a34a', color: 'var(--bg-elevated)', border: 'none', borderRadius: 8, fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer' },
+    btnSecondary: { padding: '8px 16px', background: 'var(--bg-subtle)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 8, fontSize: '0.85rem', cursor: 'pointer' },
+    btnAdd:    { padding: '8px 14px', background: 'var(--accent)', color: 'var(--bg-elevated)', border: 'none', borderRadius: 7, fontSize: '0.82rem', cursor: 'pointer', whiteSpace: 'nowrap' },
+    btnDel:    { padding: '2px 6px', background: 'transparent', color: 'var(--border-strong)', border: 'none', borderRadius: 4, fontSize: '0.8rem', cursor: 'pointer', flexShrink: 0 },
 };

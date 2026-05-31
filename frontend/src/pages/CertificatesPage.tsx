@@ -33,7 +33,7 @@ export function MyCertificatesPage() {
         {certs.length === 0 ? (
             <div style={s.empty}>
               <p style={{ fontSize: 48, margin: 0 }}>🎓</p>
-              <p style={{ color: '#6b7280', marginTop: 12 }}>
+              <p style={{ color: 'var(--text-secondary)', marginTop: 12 }}>
                 Ще немає сертифікатів. Завершуй курси на 100%!
               </p>
               <Link to="/courses" style={s.btnLink}>Перейти до каталогу</Link>
@@ -119,10 +119,10 @@ export function VerifyCertPage() {
           {/* Header */}
           <div style={{ textAlign: 'center', marginBottom: 28 }}>
             <div style={{ fontSize: '2.5rem', marginBottom: 10 }}>🎓</div>
-            <h1 style={{ fontSize: '1.3rem', fontWeight: 700, margin: '0 0 6px', color: '#111827' }}>
+            <h1 style={{ fontSize: '1.3rem', fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>
               Перевірка сертифікату
             </h1>
-            <p style={{ fontSize: '0.85rem', color: '#6b7280', margin: 0 }}>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
               Введіть код верифікації щоб підтвердити автентичність сертифіката
             </p>
           </div>
@@ -136,9 +136,9 @@ export function VerifyCertPage() {
                 placeholder="Наприклад: A1B2C3D4E5F6..."
                 style={{
                   flex: 1, padding: '11px 14px', borderRadius: 8,
-                  border: '1.5px solid #e5e7eb', fontSize: '0.875rem',
+                  border: '1.5px solid var(--border)', fontSize: '0.875rem',
                   fontFamily: 'monospace', letterSpacing: '0.05em', outline: 'none',
-                  background: '#fafafa',
+                  background: 'var(--bg)',
                 }}
             />
             <button
@@ -147,7 +147,7 @@ export function VerifyCertPage() {
                 style={{
                   padding: '11px 20px', borderRadius: 8, border: 'none',
                   background: loading || !input.trim() ? '#d1d5db' : '#4f46e5',
-                  color: '#fff', fontWeight: 600, fontSize: '0.875rem',
+                  color: 'var(--bg-elevated)', fontWeight: 600, fontSize: '0.875rem',
                   cursor: loading || !input.trim() ? 'default' : 'pointer',
                   fontFamily: 'inherit', flexShrink: 0,
                 }}
@@ -156,7 +156,7 @@ export function VerifyCertPage() {
 
           {/* Result */}
           {loading && (
-              <div style={{ textAlign: 'center', padding: '24px 0', color: '#6b7280', fontSize: '0.875rem' }}>
+              <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
                 Перевірка...
               </div>
           )}
@@ -165,7 +165,7 @@ export function VerifyCertPage() {
               <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '16px 20px', textAlign: 'center' }}>
                 <div style={{ fontSize: '2rem', marginBottom: 8 }}>❌</div>
                 <p style={{ color: '#dc2626', fontWeight: 600, margin: '0 0 4px' }}>Сертифікат не знайдено</p>
-                <p style={{ color: '#9ca3af', fontSize: '0.8rem', margin: 0 }}>Перевірте правильність коду</p>
+                <p style={{ color: 'var(--text-tertiary)', fontSize: '0.8rem', margin: 0 }}>Перевірте правильність коду</p>
               </div>
           )}
 
@@ -173,7 +173,7 @@ export function VerifyCertPage() {
               <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, overflow: 'hidden' }}>
                 <div style={{ background: 'linear-gradient(135deg, #059669, #047857)', padding: '20px', textAlign: 'center' }}>
                   <div style={{ fontSize: '2.5rem', marginBottom: 6 }}>✅</div>
-                  <p style={{ color: '#fff', fontWeight: 700, fontSize: '1rem', margin: 0 }}>Сертифікат дійсний</p>
+                  <p style={{ color: 'var(--bg-elevated)', fontWeight: 700, fontSize: '1rem', margin: 0 }}>Сертифікат дійсний</p>
                 </div>
                 <div style={{ padding: '20px 24px' }}>
                   {[
@@ -183,8 +183,8 @@ export function VerifyCertPage() {
                     { label: 'Код',          value: result.verifyCode, mono: true },
                   ].map(row => (
                       <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #d1fae5' }}>
-                        <span style={{ fontSize: '0.82rem', color: '#6b7280' }}>{row.label}</span>
-                        <strong style={{ fontSize: '0.88rem', color: '#111827', fontFamily: row.mono ? 'monospace' : 'inherit', letterSpacing: row.mono ? '0.1em' : 'normal' }}>
+                        <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>{row.label}</span>
+                        <strong style={{ fontSize: '0.88rem', color: 'var(--text)', fontFamily: row.mono ? 'monospace' : 'inherit', letterSpacing: row.mono ? '0.1em' : 'normal' }}>
                           {row.value}
                         </strong>
                       </div>
@@ -192,7 +192,7 @@ export function VerifyCertPage() {
                   {result.pdfUrl && (
                       <a href={result.pdfUrl} target="_blank" rel="noreferrer" style={{
                         display: 'block', marginTop: 16, padding: '11px', textAlign: 'center',
-                        background: '#059669', color: '#fff', borderRadius: 8,
+                        background: '#059669', color: 'var(--bg-elevated)', borderRadius: 8,
                         textDecoration: 'none', fontWeight: 600, fontSize: '0.875rem',
                       }}>
                         Завантажити PDF
@@ -203,9 +203,9 @@ export function VerifyCertPage() {
           )}
 
           {!result && !error && !loading && (
-              <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: 20, marginTop: 4 }}>
-                <p style={{ fontSize: '0.75rem', color: '#9ca3af', textAlign: 'center', margin: 0, lineHeight: 1.6 }}>
-                  💡 Код верифікації вказаний на самому сертифікаті у форматі <code style={{ background: '#f3f4f6', padding: '1px 6px', borderRadius: 4 }}>XXXXXXXXXXXXXXXXXXXXXXXX</code>
+              <div style={{ borderTop: '1px solid var(--border)', paddingTop: 20, marginTop: 4 }}>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', textAlign: 'center', margin: 0, lineHeight: 1.6 }}>
+                  💡 Код верифікації вказаний на самому сертифікаті у форматі <code style={{ background: 'var(--bg-muted)', padding: '1px 6px', borderRadius: 4 }}>XXXXXXXXXXXXXXXXXXXXXXXX</code>
                 </p>
               </div>
           )}
@@ -216,40 +216,40 @@ export function VerifyCertPage() {
 
 const sv: Record<string, React.CSSProperties> = {
   page: {
-    minHeight: '100vh', background: '#f9fafb',
+    minHeight: '100vh', background: 'var(--bg)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     padding: '32px 16px',
   },
   card: {
-    background: '#fff', borderRadius: 20, padding: '40px 36px',
+    background: 'var(--bg-elevated)', borderRadius: 20, padding: '40px 36px',
     maxWidth: 500, width: '100%',
     boxShadow: '0 4px 24px rgba(0,0,0,0.08)', border: '1px solid #f3f4f6',
   },
 };
 
 const s: Record<string, React.CSSProperties> = {
-  page: { minHeight: '100vh', background: '#f9fafb', paddingBottom: 60 },
-  header: { background: '#1e1b4b', color: '#fff', padding: '48px 32px 32px', textAlign: 'center' },
+  page: { minHeight: '100vh', background: 'var(--bg)', paddingBottom: 60 },
+  header: { background: '#1e1b4b', color: 'var(--bg-elevated)', padding: '48px 32px 32px', textAlign: 'center' },
   title: { fontSize: 28, fontWeight: 700, margin: 0 },
   sub: { opacity: 0.75, marginTop: 8 },
-  centered: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', color: '#6b7280' },
+  centered: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', color: 'var(--text-secondary)' },
   empty: { textAlign: 'center', padding: '80px 32px' },
-  btnLink: { display: 'inline-block', marginTop: 20, padding: '12px 24px', background: '#4f46e5', color: '#fff', borderRadius: 10, textDecoration: 'none', fontWeight: 600 },
+  btnLink: { display: 'inline-block', marginTop: 20, padding: '12px 24px', background: '#4f46e5', color: 'var(--bg-elevated)', borderRadius: 10, textDecoration: 'none', fontWeight: 600 },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 24, maxWidth: 1100, margin: '40px auto', padding: '0 32px' },
-  card: { background: '#fff', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.08)' },
-  cardTop: { background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', padding: '24px', textAlign: 'center', color: '#fff' },
+  card: { background: 'var(--bg-elevated)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.08)' },
+  cardTop: { background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', padding: '24px', textAlign: 'center', color: 'var(--bg-elevated)' },
   cardTopLabel: { margin: '8px 0 0', fontWeight: 600, opacity: 0.9, fontSize: 14 },
   cardBody: { padding: 24 },
-  courseTitle: { fontSize: 16, fontWeight: 700, margin: '0 0 6px', color: '#111827' },
-  authorLine: { fontSize: 13, color: '#6b7280', margin: '0 0 4px' },
-  dateLine: { fontSize: 13, color: '#6b7280', margin: '0 0 16px' },
-  codeBlock: { background: '#f3f4f6', borderRadius: 8, padding: '10px 14px', marginBottom: 16, display: 'flex', flexDirection: 'column' as const, gap: 4 },
-  codeLabel: { fontSize: 11, color: '#9ca3af', textTransform: 'uppercase' as const, letterSpacing: 1 },
-  code: { fontFamily: 'monospace', fontSize: 13, color: '#374151', letterSpacing: 2 },
+  courseTitle: { fontSize: 16, fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' },
+  authorLine: { fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 4px' },
+  dateLine: { fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 16px' },
+  codeBlock: { background: 'var(--bg-muted)', borderRadius: 8, padding: '10px 14px', marginBottom: 16, display: 'flex', flexDirection: 'column' as const, gap: 4 },
+  codeLabel: { fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase' as const, letterSpacing: 1 },
+  code: { fontFamily: 'monospace', fontSize: 13, color: 'var(--text-secondary)', letterSpacing: 2 },
   actions: { display: 'flex', gap: 10 },
-  btnDownload: { flex: 1, padding: '10px', background: '#4f46e5', color: '#fff', borderRadius: 8, textDecoration: 'none', textAlign: 'center' as const, fontSize: 13, fontWeight: 600 },
-  btnVerify: { padding: '10px 16px', background: '#f3f4f6', color: '#374151', borderRadius: 8, textDecoration: 'none', fontSize: 13, fontWeight: 500 },
+  btnDownload: { flex: 1, padding: '10px', background: '#4f46e5', color: 'var(--bg-elevated)', borderRadius: 8, textDecoration: 'none', textAlign: 'center' as const, fontSize: 13, fontWeight: 600 },
+  btnVerify: { padding: '10px 16px', background: 'var(--bg-muted)', color: 'var(--text-secondary)', borderRadius: 8, textDecoration: 'none', fontSize: 13, fontWeight: 500 },
   verifyPage: { minHeight: '100vh', background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 32 },
-  verifyCard: { background: '#fff', borderRadius: 20, padding: '48px 40px', maxWidth: 480, width: '100%', boxShadow: '0 4px 24px rgba(0,0,0,0.08)' },
-  verifyRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #f3f4f6', fontSize: 15 },
+  verifyCard: { background: 'var(--bg-elevated)', borderRadius: 20, padding: '48px 40px', maxWidth: 480, width: '100%', boxShadow: '0 4px 24px rgba(0,0,0,0.08)' },
+  verifyRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid var(--border)', fontSize: 15 },
 };

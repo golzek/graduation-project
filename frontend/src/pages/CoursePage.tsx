@@ -67,8 +67,8 @@ export function CoursePage() {
                 <div style={s.headerInner}>
                     <div style={s.headerLeft}>
                         <p style={s.breadcrumb}>
-                            <a href="/courses" style={{ color: '#9a9a9a' }}>Каталог</a>
-                            {' / '}<span style={{ color: '#5a5a5a' }}>{course.category}</span>
+                            <a href="/courses" style={{ color: 'var(--text-tertiary)' }}>Каталог</a>
+                            {' / '}<span style={{ color: 'var(--text-secondary)' }}>{course.category}</span>
                         </p>
                         <h1 style={s.title}>{course.title}</h1>
                         <p style={s.desc}>{course.description}</p>
@@ -94,13 +94,13 @@ export function CoursePage() {
 
                         {progress && (
                             <div style={{ marginBottom: 16 }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#9a9a9a', marginBottom: 6 }}>
-                                    <span>Прогрес</span><strong style={{ color: '#0a0a0a' }}>{progress.percent}%</strong>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-tertiary)', marginBottom: 6 }}>
+                                    <span>Прогрес</span><strong style={{ color: 'var(--text)' }}>{progress.percent}%</strong>
                                 </div>
                                 <div style={s.progressTrack}>
                                     <div style={{ ...s.progressFill, width: `${progress.percent}%` }} />
                                 </div>
-                                <p style={{ fontSize: '0.75rem', color: '#9a9a9a', marginTop: 4 }}>
+                                <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: 4 }}>
                                     {progress.completedCount} / {progress.totalCount} уроків
                                 </p>
                             </div>
@@ -150,7 +150,7 @@ export function CoursePage() {
                             courseAuthorId={course?.author?.id}
                         />
                         : <div style={s.playerEmpty}>
-                            <p style={{ color: '#9a9a9a', fontSize: '0.9rem' }}>
+                            <p style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem' }}>
                                 {course.isEnrolled ? '← Вибери урок' : 'Запишись на курс для доступу до уроків'}
                             </p>
                         </div>
@@ -219,14 +219,14 @@ function ModuleBlock({ mod, isEnrolled, activeId, onSelect }: {
 const ms: Record<string, React.CSSProperties> = {
     block:       { marginBottom: 4 },
     modHeader:   { display: 'flex', alignItems: 'center', padding: '8px 0', cursor: 'pointer', gap: 8 },
-    modTitle:    { flex: 1, fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.04em', color: '#5a5a5a' },
-    modCount:    { fontSize: '0.75rem', color: '#9a9a9a' },
+    modTitle:    { flex: 1, fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.04em', color: 'var(--text-secondary)' },
+    modCount:    { fontSize: '0.75rem', color: 'var(--text-tertiary)' },
     lesson:      { display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 6, cursor: 'pointer', transition: 'background 0.1s' },
-    lessonActive:{ background: '#0a0a0a', color: '#fafafa' },
+    lessonActive:{ background: 'var(--accent)', color: 'var(--bg)' },
     lessonLocked:{ opacity: 0.4, cursor: 'default' },
     icon:        { fontSize: '0.65rem', width: 16, textAlign: 'center' as const, flexShrink: 0 },
     lessonTitle: { flex: 1, fontSize: '0.85rem', lineHeight: 1.4 },
-    dur:         { fontSize: '0.7rem', color: '#9a9a9a', flexShrink: 0 },
+    dur:         { fontSize: '0.7rem', color: 'var(--text-tertiary)', flexShrink: 0 },
 };
 
 interface QuizQuestion { question: string; options: string[]; correctIndex: number; }
@@ -247,7 +247,7 @@ function QuizPlayer({ lesson, isEnrolled, onDone, completed, courseAuthorId }: {
         return (
             <div style={ps.box}>
                 <h2 style={ps.title}>{lesson.title}</h2>
-                <p style={{ color: '#9a9a9a', fontSize: '0.9rem' }}>Квіз не має питань.</p>
+                <p style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem' }}>Квіз не має питань.</p>
                 {isEnrolled && !completed && (
                     <button style={ps.btnMark} onClick={onDone}>Позначити як завершений</button>
                 )}
@@ -270,14 +270,14 @@ function QuizPlayer({ lesson, isEnrolled, onDone, completed, courseAuthorId }: {
         <div style={ps.box}>
             <h2 style={ps.title}>{lesson.title}</h2>
             {!isEnrolled && (
-                <div style={{ padding: '12px 16px', background: '#fafafa', border: '1px solid #ebebeb', borderRadius: 8, color: '#9a9a9a', fontSize: '0.85rem', marginBottom: 20 }}>
+                <div style={{ padding: '12px 16px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text-tertiary)', fontSize: '0.85rem', marginBottom: 20 }}>
                     Запишіться на курс щоб пройти квіз
                 </div>
             )}
             <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 20 }}>
                 {questions.map((q, qi) => (
-                    <div key={qi} style={{ background: '#fafafa', border: '1.5px solid #ebebeb', borderRadius: 10, padding: '16px 18px' }}>
-                        <p style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 12, color: '#0a0a0a' }}>
+                    <div key={qi} style={{ background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 10, padding: '16px 18px' }}>
+                        <p style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 12, color: 'var(--text)' }}>
                             {qi + 1}. {q.question}
                         </p>
                         <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 8 }}>
@@ -293,9 +293,9 @@ function QuizPlayer({ lesson, isEnrolled, onDone, completed, courseAuthorId }: {
                                         style={{
                                             textAlign: 'left' as const, padding: '10px 14px',
                                             borderRadius: 8, cursor: submitted || !isEnrolled ? 'default' : 'pointer',
-                                            border: `1.5px solid ${isCorrect ? '#86efac' : isWrong ? '#fca5a5' : selected ? '#0a0a0a' : '#ebebeb'}`,
-                                            background: isCorrect ? '#f0fdf4' : isWrong ? '#fff5f5' : selected ? '#f5f5f5' : '#fff',
-                                            fontSize: '0.875rem', color: '#0a0a0a',
+                                            border: `1.5px solid ${isCorrect ? '#86efac' : isWrong ? '#fca5a5' : selected ? 'var(--accent)' : 'var(--border)'}`,
+                                            background: isCorrect ? '#f0fdf4' : isWrong ? '#fff5f5' : selected ? 'var(--bg-subtle)' : 'var(--bg-elevated)',
+                                            fontSize: '0.875rem', color: 'var(--text)',
                                             fontFamily: 'inherit',
                                         }}
                                     >
@@ -316,7 +316,7 @@ function QuizPlayer({ lesson, isEnrolled, onDone, completed, courseAuthorId }: {
                     <p style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: 4 }}>
                         {score === questions.length ? '🎉 Відмінно!' : score >= questions.length / 2 ? '👍 Непогано!' : '😔 Спробуй ще'}
                     </p>
-                    <p style={{ color: '#5a5a5a', fontSize: '0.875rem' }}>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
                         {score} / {questions.length} правильних відповідей
                     </p>
                     {completed && <p style={{ marginTop: 8, fontSize: '0.8rem', color: '#16a34a' }}>✓ Урок завершено</p>}
@@ -328,8 +328,8 @@ function QuizPlayer({ lesson, isEnrolled, onDone, completed, courseAuthorId }: {
                         disabled={!allAnswered}
                         style={{
                             marginTop: 20, width: '100%', padding: '11px',
-                            background: allAnswered ? '#0a0a0a' : '#e5e7eb',
-                            color: allAnswered ? '#fafafa' : '#9a9a9a',
+                            background: allAnswered ? 'var(--accent)' : 'var(--border)',
+                            color: allAnswered ? 'var(--bg)' : 'var(--text-tertiary)',
                             border: 'none', borderRadius: 8, fontSize: '0.9rem',
                             fontWeight: 600, cursor: allAnswered ? 'pointer' : 'default',
                             fontFamily: 'inherit',
@@ -379,7 +379,7 @@ function LessonPlayer({ lesson, isEnrolled, onProgressSaved, courseAuthorId }: {
             <h2 style={ps.title}>{lesson.title}</h2>
             {lesson.type === 'video' && lesson.contentUrl && (
                 <video ref={videoRef} controls onTimeUpdate={handleTime}
-                       style={{ width: '100%', borderRadius: 8, background: '#0a0a0a', marginBottom: 20 }}>
+                       style={{ width: '100%', borderRadius: 8, background: 'var(--accent)', marginBottom: 20 }}>
                     <source src={lesson.contentUrl} />
                 </video>
             )}
@@ -404,14 +404,14 @@ function LessonPlayer({ lesson, isEnrolled, onProgressSaved, courseAuthorId }: {
 const ps: Record<string, React.CSSProperties> = {
     box:  { padding: 0 },
     title: { fontSize: '1.1rem', fontWeight: 600, marginBottom: 20, letterSpacing: '-0.01em' },
-    textContent: { fontSize: '0.9rem', lineHeight: 1.8, color: '#2a2a2a', marginBottom: 20 },
+    textContent: { fontSize: '0.9rem', lineHeight: 1.8, color: 'var(--text-muted)', marginBottom: 20 },
     btnMark: {
-        padding: '8px 20px', borderRadius: 6, border: '1.5px solid #ebebeb',
+        padding: '8px 20px', borderRadius: 6, border: '1.5px solid var(--border)',
         background: 'transparent', fontSize: '0.85rem', cursor: 'pointer',
     },
     btnDone: {
-        padding: '8px 20px', borderRadius: 6, border: '1.5px solid #0a0a0a',
-        background: '#0a0a0a', color: '#fafafa', fontSize: '0.85rem', cursor: 'default',
+        padding: '8px 20px', borderRadius: 6, border: '1.5px solid var(--accent)',
+        background: 'var(--accent)', color: 'var(--accent-inv)', fontSize: '0.85rem', cursor: 'default',
     },
 };
 
@@ -437,8 +437,8 @@ function ReviewForm({ courseId, onSubmitted }: { courseId: string; onSubmitted: 
     };
 
     return (
-        <div style={{ marginTop: 20, borderTop: '1px solid #f0f0f0', paddingTop: 18, textAlign: 'left' }}>
-            <p style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0a0a0a', marginBottom: 10 }}>
+        <div style={{ marginTop: 20, borderTop: '1px solid var(--border)', paddingTop: 18, textAlign: 'left' }}>
+            <p style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text)', marginBottom: 10 }}>
                 Залишити відгук про курс
             </p>
             <div style={{ display: 'flex', gap: 6, marginBottom: 12, justifyContent: 'center' }}>
@@ -464,7 +464,7 @@ function ReviewForm({ courseId, onSubmitted }: { courseId: string; onSubmitted: 
                 rows={3}
                 style={{
                     width: '100%', boxSizing: 'border-box' as const,
-                    padding: '9px 12px', border: '1.5px solid #ebebeb',
+                    padding: '9px 12px', border: '1.5px solid var(--border)',
                     borderRadius: 8, fontSize: '0.82rem', fontFamily: 'inherit',
                     resize: 'vertical' as const, outline: 'none', marginBottom: 8,
                 }}
@@ -475,8 +475,8 @@ function ReviewForm({ courseId, onSubmitted }: { courseId: string; onSubmitted: 
                 disabled={submitting}
                 style={{
                     width: '100%', padding: '10px', borderRadius: 8,
-                    background: submitting ? '#9a9a9a' : '#0a0a0a',
-                    color: '#fff', border: 'none', fontSize: '0.85rem',
+                    background: submitting ? 'var(--text-tertiary)' : 'var(--text)',
+                    color: 'var(--bg-elevated)', border: 'none', fontSize: '0.85rem',
                     fontWeight: 500, cursor: submitting ? 'default' : 'pointer',
                     fontFamily: 'inherit',
                 }}
@@ -486,46 +486,46 @@ function ReviewForm({ courseId, onSubmitted }: { courseId: string; onSubmitted: 
 }
 
 const s: Record<string, React.CSSProperties> = {
-    page:    { minHeight: '100vh', background: '#fafafa' },
-    centered:{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', color: '#9a9a9a' },
-    header:  { borderBottom: '1px solid #ebebeb', padding: '40px 0 32px', background: '#fff' },
+    page:    { minHeight: '100vh', background: 'var(--bg)' },
+    centered:{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', color: 'var(--text-tertiary)' },
+    header:  { borderBottom: '1px solid var(--border)', padding: '40px 0 32px', background: 'var(--bg-elevated)' },
     headerInner: { maxWidth: 1160, margin: '0 auto', padding: '0 32px', display: 'flex', gap: 40, alignItems: 'flex-start' },
     headerLeft: { flex: 1 },
-    breadcrumb: { fontSize: '0.8rem', color: '#9a9a9a', marginBottom: 12 },
+    breadcrumb: { fontSize: '0.8rem', color: 'var(--text-tertiary)', marginBottom: 12 },
     title:   { fontSize: '1.6rem', fontWeight: 600, letterSpacing: '-0.03em', marginBottom: 10 },
-    desc:    { color: '#5a5a5a', fontSize: '0.9rem', lineHeight: 1.6, marginBottom: 16, maxWidth: 560 },
-    meta:    { display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.85rem', color: '#5a5a5a', flexWrap: 'wrap' as const },
-    dot:     { color: '#d6d6d6' },
+    desc:    { color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.6, marginBottom: 16, maxWidth: 560 },
+    meta:    { display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.85rem', color: 'var(--text-secondary)', flexWrap: 'wrap' as const },
+    dot:     { color: 'var(--border-strong)' },
     levelBadge: {
         fontSize: '0.7rem', fontWeight: 500, padding: '2px 8px',
-        borderRadius: 99, border: '1px solid #ebebeb', color: '#5a5a5a',
+        borderRadius: 99, border: '1px solid var(--border)', color: 'var(--text-secondary)',
         textTransform: 'uppercase' as const, letterSpacing: '0.04em',
     },
     card: {
         width: 280, flexShrink: 0,
-        border: '1.5px solid #ebebeb', borderRadius: 12,
-        padding: 24, background: '#fff',
+        border: '1.5px solid var(--border)', borderRadius: 12,
+        padding: 24, background: 'var(--bg-elevated)',
     },
     cardPrice: { fontSize: '1.6rem', fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 20 },
     btnPrimary: {
-        width: '100%', padding: '11px', background: '#0a0a0a', color: '#fafafa',
+        width: '100%', padding: '11px', background: 'var(--accent)', color: 'var(--accent-inv)',
         border: 'none', borderRadius: 8, fontSize: '0.9rem', fontWeight: 500, cursor: 'pointer',
     },
     btnOutline: {
-        width: '100%', padding: '11px', background: 'transparent', color: '#0a0a0a',
-        border: '1.5px solid #ebebeb', borderRadius: 8, fontSize: '0.9rem', cursor: 'pointer',
+        width: '100%', padding: '11px', background: 'transparent', color: 'var(--text)',
+        border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.9rem', cursor: 'pointer',
     },
-    progressTrack: { height: 4, background: '#f5f5f5', borderRadius: 99, overflow: 'hidden' },
-    progressFill:  { height: '100%', background: '#0a0a0a', borderRadius: 99, transition: 'width 0.5s' },
+    progressTrack: { height: 4, background: 'var(--bg-subtle)', borderRadius: 99, overflow: 'hidden' },
+    progressFill:  { height: '100%', background: 'var(--accent)', borderRadius: 99, transition: 'width 0.5s' },
     body:    { maxWidth: 1160, margin: '32px auto', padding: '0 32px', display: 'flex', gap: 32 },
     sidebar: { width: 280, flexShrink: 0 },
     sideTitle: {
         fontSize: '0.7rem', fontWeight: 500, textTransform: 'uppercase' as const,
-        letterSpacing: '0.07em', color: '#9a9a9a', marginBottom: 12,
+        letterSpacing: '0.07em', color: 'var(--text-tertiary)', marginBottom: 12,
     },
     player: { flex: 1 },
     playerEmpty: {
-        border: '1.5px solid #ebebeb', borderRadius: 12,
+        border: '1.5px solid var(--border)', borderRadius: 12,
         height: 320, display: 'flex', alignItems: 'center', justifyContent: 'center',
     },
 };
@@ -536,25 +536,25 @@ const modal: Record<string, React.CSSProperties> = {
         display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
     },
     box: {
-        background: '#fff', borderRadius: 16, padding: '48px 40px', maxWidth: 440, width: '90%',
+        background: 'var(--bg-elevated)', borderRadius: 16, padding: '48px 40px', maxWidth: 440, width: '90%',
         textAlign: 'center', position: 'relative', boxShadow: '0 24px 64px rgba(0,0,0,0.18)',
     },
     emoji:      { fontSize: '3rem', marginBottom: 12 },
     title:      { fontSize: '1.4rem', fontWeight: 700, marginBottom: 8, letterSpacing: '-0.02em' },
-    sub:        { color: '#5a5a5a', fontSize: '0.9rem', lineHeight: 1.5, marginBottom: 28 },
+    sub:        { color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5, marginBottom: 28 },
     btnPrimary: {
-        display: 'block', width: '100%', padding: '12px', background: '#0a0a0a', color: '#fafafa',
+        display: 'block', width: '100%', padding: '12px', background: 'var(--accent)', color: 'var(--accent-inv)',
         borderRadius: 8, fontSize: '0.9rem', fontWeight: 500, textDecoration: 'none',
         marginBottom: 10, boxSizing: 'border-box' as const,
     },
     btnOutline: {
-        display: 'block', width: '100%', padding: '12px', background: 'transparent', color: '#0a0a0a',
-        border: '1.5px solid #ebebeb', borderRadius: 8, fontSize: '0.9rem', textDecoration: 'none',
+        display: 'block', width: '100%', padding: '12px', background: 'transparent', color: 'var(--text)',
+        border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.9rem', textDecoration: 'none',
         marginBottom: 20, boxSizing: 'border-box' as const,
     },
-    code:  { fontSize: '0.75rem', color: '#9a9a9a' },
+    code:  { fontSize: '0.75rem', color: 'var(--text-tertiary)' },
     close: {
         position: 'absolute', top: 16, right: 16, background: 'none', border: 'none',
-        fontSize: '1.1rem', cursor: 'pointer', color: '#9a9a9a',
+        fontSize: '1.1rem', cursor: 'pointer', color: 'var(--text-tertiary)',
     },
 };

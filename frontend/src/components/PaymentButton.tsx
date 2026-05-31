@@ -97,7 +97,7 @@ export function PaymentButton({ courseId, price, title, onSuccess }: PaymentButt
               {promoState === 'valid' ? (
                   <div style={{ display:'flex', alignItems:'center', gap:8, padding:'8px 12px', background:'#f0fdf4', borderRadius:8, border:'1px solid #bbf7d0' }}>
                     <span style={{ fontSize:13, color:'#16a34a', flex:1 }}>🏷 {promoMsg}</span>
-                    <button onClick={clearPromo} style={{ background:'none', border:'none', cursor:'pointer', color:'#9ca3af', fontSize:16, lineHeight:1, padding:0 }}>×</button>
+                    <button onClick={clearPromo} style={{ background:'none', border:'none', cursor:'pointer', color: 'var(--text-tertiary)', fontSize:16, lineHeight:1, padding:0 }}>×</button>
                   </div>
               ) : (
                   <div style={{ display:'flex', gap:6, width:'100%' }}>
@@ -106,12 +106,12 @@ export function PaymentButton({ courseId, price, title, onSuccess }: PaymentButt
                         value={promoInput}
                         onChange={e => { setPromoInput(e.target.value); setPromoState('idle'); setPromoMsg(''); }}
                         onKeyDown={e => e.key==='Enter' && checkPromo()}
-                        style={{ flex:1, minWidth:0, padding:'9px 8px', border:'1.5px solid', borderColor: promoState==='invalid' ? '#fca5a5' : '#e5e7eb', borderRadius:8, fontSize:13, outline:'none', background:'#fff', fontFamily:'inherit' }}
+                        style={{ flex:1, minWidth:0, padding:'9px 8px', border:'1.5px solid', borderColor: promoState==='invalid' ? '#fca5a5' : 'var(--border)', borderRadius:8, fontSize:13, outline:'none', background: 'var(--bg-elevated)', fontFamily:'inherit' }}
                     />
                     <button
                         onClick={checkPromo}
                         disabled={promoState==='checking' || !promoInput.trim()}
-                        style={{ padding:'9px 10px', borderRadius:8, border:'1.5px solid #9ca3af', background:'#f9fafb', fontSize:12, cursor:'pointer', fontFamily:'inherit', color:'#374151', whiteSpace:'nowrap', flexShrink:0 }}
+                        style={{ padding:'9px 10px', borderRadius:8, border:'1.5px solid #9ca3af', background: 'var(--bg)', fontSize:12, cursor:'pointer', fontFamily:'inherit', color: 'var(--text-secondary)', whiteSpace:'nowrap', flexShrink:0 }}
                     >{promoState==='checking' ? '...' : 'Застосувати'}</button>
                   </div>
               )}
@@ -121,7 +121,7 @@ export function PaymentButton({ courseId, price, title, onSuccess }: PaymentButt
 
         {promoState==='valid' && discountPct && (
             <div style={{ display:'flex', justifyContent:'space-between', marginBottom:10, fontSize:13 }}>
-              <span style={{ color:'#6b7280', textDecoration:'line-through' }}>{price} ₴</span>
+              <span style={{ color: 'var(--text-secondary)', textDecoration:'line-through' }}>{price} ₴</span>
               <span style={{ color:'#16a34a', fontWeight:600 }}>→ {displayPrice} ₴ (−{discountPct}%)</span>
             </div>
         )}
@@ -129,7 +129,7 @@ export function PaymentButton({ courseId, price, title, onSuccess }: PaymentButt
         <button
             onClick={handlePay}
             disabled={loading}
-            style={{ width:'100%', padding:'14px', background: loading ? '#9ca3af' : '#4f46e5', color:'#fff', border:'none', borderRadius:10, fontSize:15, fontWeight:600, cursor: loading ? 'default' : 'pointer', transition:'background 0.15s' }}
+            style={{ width:'100%', padding:'14px', background: loading ? 'var(--text-tertiary)' : '#4f46e5', color:'var(--bg-elevated)', border:'none', borderRadius:10, fontSize:15, fontWeight:600, cursor: loading ? 'default' : 'pointer', transition:'background 0.15s' }}
         >
           {loading ? 'Обробка...' : price===0 ? 'Записатись безкоштовно' : `Оплатити ${displayPrice} ₴`}
         </button>
@@ -137,7 +137,7 @@ export function PaymentButton({ courseId, price, title, onSuccess }: PaymentButt
         {price > 0 && (
             <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginTop:12 }}>
               <img src="https://cdn.wayforpay.com/icons/wfp-logo.png" alt="WayForPay" style={{ height:20 }} onError={e => (e.currentTarget.style.display='none')} />
-              <span style={{ fontSize:11, color:'#9ca3af' }}>Безпечна оплата через WayForPay</span>
+              <span style={{ fontSize:11, color: 'var(--text-tertiary)' }}>Безпечна оплата через WayForPay</span>
             </div>
         )}
       </div>

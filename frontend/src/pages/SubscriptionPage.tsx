@@ -94,12 +94,12 @@ export function SubscriptionPage() {
 
     const planLabel: Record<string, string> = { monthly: 'Місячна', annual: 'Річна' };
     const statusLabel: Record<string, string> = { active: 'Активна', cancelled: 'Скасована', expired: 'Закінчилась' };
-    const statusColor: Record<string, string> = { active: '#16a34a', cancelled: '#d97706', expired: '#9ca3af' };
+    const statusColor: Record<string, string> = { active: '#16a34a', cancelled: '#d97706', expired: 'var(--text-tertiary)' };
 
     if (loading) {
         return (
             <div style={s.page}>
-                <div style={s.centered}><p style={{ color: '#9a9a9a' }}>Завантаження...</p></div>
+                <div style={s.centered}><p style={{ color: 'var(--text-tertiary)' }}>Завантаження...</p></div>
             </div>
         );
     }
@@ -248,7 +248,7 @@ export function SubscriptionPage() {
                             {history.map(h => (
                                 <div key={h.id} style={s.historyRow}>
                                     <span>{planLabel[h.plan] ?? h.plan}</span>
-                                    <span style={{ color: statusColor[h.status] ?? '#9ca3af', fontWeight: 500, fontSize: '0.8rem' }}>
+                                    <span style={{ color: statusColor[h.status] ?? 'var(--text-tertiary)', fontWeight: 500, fontSize: '0.8rem' }}>
                     {statusLabel[h.status] ?? h.status}
                   </span>
                                     <span>{Number(h.paidPrice).toLocaleString('uk-UA')} ₴</span>
@@ -284,12 +284,12 @@ export function SubscriptionPage() {
 }
 
 const s: Record<string, React.CSSProperties> = {
-    page:    { minHeight: '100vh', background: '#fafafa' },
+    page:    { minHeight: '100vh', background: 'var(--bg)' },
     centered: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' },
-    header:  { borderBottom: '1px solid #ebebeb', background: '#fff', padding: '36px 0 32px' },
+    header:  { borderBottom: '1px solid var(--border)', background: 'var(--bg-elevated)', padding: '36px 0 32px' },
     headerInner: { maxWidth: 1000, margin: '0 auto', padding: '0 32px', textAlign: 'center' as const },
     title:   { fontSize: '1.8rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 8 },
-    sub:     { fontSize: '1rem', color: '#9a9a9a' },
+    sub:     { fontSize: '1rem', color: 'var(--text-tertiary)' },
     body:    { maxWidth: 1000, margin: '40px auto', padding: '0 32px' },
     errorBanner: {
         background: '#fef2f2', border: '1.5px solid #fecaca', borderRadius: 10,
@@ -306,7 +306,7 @@ const s: Record<string, React.CSSProperties> = {
     activeMeta:  { fontSize: '0.8rem', color: '#16a34a', marginTop: 3, opacity: 0.8 },
     cancelBtn: {
         padding: '7px 16px', borderRadius: 8,
-        border: '1.5px solid #fca5a5', background: '#fff',
+        border: '1.5px solid #fca5a5', background: 'var(--bg-elevated)',
         color: '#dc2626', fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'inherit',
         flexShrink: 0,
     },
@@ -315,7 +315,7 @@ const s: Record<string, React.CSSProperties> = {
         gap: 20, marginBottom: 48,
     },
     planCard: {
-        background: '#fff', border: '1.5px solid #ebebeb',
+        background: 'var(--bg-elevated)', border: '1.5px solid var(--border)',
         borderRadius: 16, padding: '28px 24px',
         position: 'relative' as const,
     },
@@ -330,50 +330,50 @@ const s: Record<string, React.CSSProperties> = {
     popularBadge: {
         position: 'absolute' as const, top: -12, left: '50%',
         transform: 'translateX(-50%)',
-        background: '#0a0a0a', color: '#fff',
+        background: 'var(--accent)', color: 'var(--bg-elevated)',
         fontSize: '0.7rem', fontWeight: 700,
         padding: '3px 12px', borderRadius: 99,
         letterSpacing: '0.05em',
         whiteSpace: 'nowrap' as const,
     },
-    planLabel:    { fontSize: '0.75rem', fontWeight: 600, color: '#9a9a9a', textTransform: 'uppercase' as const, letterSpacing: '0.07em', marginBottom: 12 },
+    planLabel:    { fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase' as const, letterSpacing: '0.07em', marginBottom: 12 },
     planPriceRow: { display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 4 },
     planPrice:    { fontSize: '2rem', fontWeight: 700, letterSpacing: '-0.04em' },
-    planPriceSub: { fontSize: '0.875rem', color: '#9a9a9a' },
-    planPerMonth: { fontSize: '0.8rem', color: '#6b7280', marginBottom: 12 },
+    planPriceSub: { fontSize: '0.875rem', color: 'var(--text-tertiary)' },
+    planPerMonth: { fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: 12 },
     discountTag:  { color: '#16a34a', fontWeight: 700 },
-    planDesc:     { fontSize: '0.875rem', color: '#5a5a5a', marginBottom: 20, lineHeight: 1.5 },
+    planDesc:     { fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: 20, lineHeight: 1.5 },
     featureList:  { listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column' as const, gap: 8 },
-    featureItem:  { fontSize: '0.875rem', color: '#374151' },
+    featureItem:  { fontSize: '0.875rem', color: 'var(--text-secondary)' },
     buyBtn: {
         width: '100%', padding: '12px',
-        background: '#f5f5f5', color: '#0a0a0a',
+        background: 'var(--bg-subtle)', color: 'var(--text)',
         border: 'none', borderRadius: 10,
         fontSize: '0.9rem', fontWeight: 600,
         cursor: 'pointer', fontFamily: 'inherit',
         transition: 'background 0.15s',
     },
-    buyBtnFeatured: { background: '#0a0a0a', color: '#fafafa' },
+    buyBtnFeatured: { background: 'var(--accent)', color: 'var(--bg)' },
     buyBtnDisabled: { background: '#f0fdf4', color: '#16a34a', cursor: 'default' },
-    liqpayNote: { textAlign: 'center' as const, fontSize: '0.72rem', color: '#9a9a9a', marginTop: 12 },
+    liqpayNote: { textAlign: 'center' as const, fontSize: '0.72rem', color: 'var(--text-tertiary)', marginTop: 12 },
     faq: { marginBottom: 48 },
     faqTitle: { fontSize: '1rem', fontWeight: 600, marginBottom: 16, letterSpacing: '-0.02em' },
     faqItem: {
-        borderBottom: '1px solid #f0f0f0', paddingBottom: 16, marginBottom: 16,
+        borderBottom: '1px solid var(--border)', paddingBottom: 16, marginBottom: 16,
     },
     faqQ: { fontSize: '0.9rem', fontWeight: 600, marginBottom: 6 },
-    faqA: { fontSize: '0.875rem', color: '#5a5a5a', lineHeight: 1.6 },
+    faqA: { fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.6 },
     historySection: { marginBottom: 48 },
-    historyTable: { border: '1.5px solid #ebebeb', borderRadius: 12, overflow: 'hidden' },
+    historyTable: { border: '1.5px solid var(--border)', borderRadius: 12, overflow: 'hidden' },
     historyHeader: {
         display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr',
-        padding: '10px 16px', background: '#fafafa',
-        fontSize: '0.75rem', fontWeight: 600, color: '#9a9a9a',
+        padding: '10px 16px', background: 'var(--bg)',
+        fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)',
         textTransform: 'uppercase' as const, letterSpacing: '0.05em',
     },
     historyRow: {
         display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr',
-        padding: '12px 16px', borderTop: '1px solid #f0f0f0',
+        padding: '12px 16px', borderTop: '1px solid var(--border)',
         fontSize: '0.875rem', alignItems: 'center',
     },
 };
@@ -385,20 +385,20 @@ const modal: Record<string, React.CSSProperties> = {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
     },
     box: {
-        background: '#fff', borderRadius: 14, padding: '28px 28px 22px',
+        background: 'var(--bg-elevated)', borderRadius: 14, padding: '28px 28px 22px',
         width: 360, boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
     },
-    title: { fontSize: '1rem', fontWeight: 600, color: '#0a0a0a', marginBottom: 8 },
-    sub:   { fontSize: '0.875rem', color: '#5a5a5a', lineHeight: 1.6, marginBottom: 22 },
+    title: { fontSize: '1rem', fontWeight: 600, color: 'var(--text)', marginBottom: 8 },
+    sub:   { fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 22 },
     btns:  { display: 'flex', gap: 10 },
     btnCancel: {
         flex: 1, padding: '9px', borderRadius: 8,
-        border: '1.5px solid #ebebeb', background: 'transparent',
-        fontSize: '0.875rem', cursor: 'pointer', color: '#5a5a5a', fontFamily: 'inherit',
+        border: '1.5px solid var(--border)', background: 'transparent',
+        fontSize: '0.875rem', cursor: 'pointer', color: 'var(--text-secondary)', fontFamily: 'inherit',
     },
     btnConfirm: {
         flex: 1, padding: '9px', borderRadius: 8,
         border: 'none', background: '#dc2626',
-        fontSize: '0.875rem', cursor: 'pointer', color: '#fff', fontWeight: 500, fontFamily: 'inherit',
+        fontSize: '0.875rem', cursor: 'pointer', color: 'var(--bg-elevated)', fontWeight: 500, fontFamily: 'inherit',
     },
 };

@@ -57,7 +57,7 @@ export function CourseAnalyticsPage() {
         <div style={s.page}>
             <div style={{ textAlign: 'center', padding: '80px 32px' }}>
                 <p style={{ fontSize: '2rem', marginBottom: 12 }}>😕</p>
-                <p style={{ color: '#6b7280', marginBottom: 20 }}>{error || 'Курс не знайдено'}</p>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: 20 }}>{error || 'Курс не знайдено'}</p>
                 <button onClick={() => navigate('/teacher')} style={s.btnBack}>← Назад до дашборду</button>
             </div>
         </div>
@@ -108,7 +108,7 @@ export function CourseAnalyticsPage() {
               {stats.avgProgressPercent}%
             </span>
                     </div>
-                    <p style={{ fontSize: '0.78rem', color: '#9ca3af', marginTop: 8 }}>
+                    <p style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', marginTop: 8 }}>
                         Відсоток студентів, які в середньому пройшли уроки курсу
                     </p>
                 </div>
@@ -124,7 +124,7 @@ export function CourseAnalyticsPage() {
                                     const h = Math.max((d.count / maxEnrolls) * 90, d.count > 0 ? 6 : 0);
                                     return (
                                         <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-                                            {d.count > 0 && <span style={{ fontSize: '0.6rem', color: '#9ca3af' }}>{d.count}</span>}
+                                            {d.count > 0 && <span style={{ fontSize: '0.6rem', color: 'var(--text-tertiary)' }}>{d.count}</span>}
                                             <div
                                                 title={`${fmtDate(d.date)}: ${d.count}`}
                                                 style={{
@@ -134,7 +134,7 @@ export function CourseAnalyticsPage() {
                                                 }}
                                             />
                                             {(i === 0 || i === stats.enrollsByDay.length - 1 || i === Math.floor(stats.enrollsByDay.length / 2)) && (
-                                                <span style={{ fontSize: '0.58rem', color: '#c0c0c0', whiteSpace: 'nowrap' }}>{fmtDate(d.date)}</span>
+                                                <span style={{ fontSize: '0.58rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>{fmtDate(d.date)}</span>
                                             )}
                                         </div>
                                     );
@@ -155,15 +155,15 @@ export function CourseAnalyticsPage() {
                                         <div key={i}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 5 }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-                                                    <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#c0c0c0', flexShrink: 0 }}>#{i + 1}</span>
+                                                    <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-tertiary)', flexShrink: 0 }}>#{i + 1}</span>
                                                     <span style={{ fontSize: '0.82rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.title}</span>
                                                 </div>
                                                 <div style={{ display: 'flex', gap: 12, flexShrink: 0, marginLeft: 12 }}>
                                                     <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#4f46e5' }}>{l.views} переглядів</span>
-                                                    <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>{formatTime(l.avgWatchedSec)} сер.</span>
+                                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>{formatTime(l.avgWatchedSec)} сер.</span>
                                                 </div>
                                             </div>
-                                            <div style={{ height: 4, background: '#f0f0f0', borderRadius: 99, overflow: 'hidden' }}>
+                                            <div style={{ height: 4, background: 'var(--bg-muted)', borderRadius: 99, overflow: 'hidden' }}>
                                                 <div style={{ height: '100%', width: `${pct}%`, background: '#4f46e5', borderRadius: 99, transition: 'width 0.4s' }} />
                                             </div>
                                         </div>
@@ -174,7 +174,7 @@ export function CourseAnalyticsPage() {
                     </div>
                 </div>
 
-                <div style={{ ...s.card, background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)', border: 'none', color: '#fff' }}>
+                <div style={{ ...s.card, background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)', border: 'none', color: 'var(--bg-elevated)' }}>
                     <p style={{ ...s.cardTitle, color: 'rgba(255,255,255,0.6)' }}>Загальний підсумок</p>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }}>
                         {[
@@ -183,7 +183,7 @@ export function CourseAnalyticsPage() {
                             { label: 'Записів за 30 днів', value: stats.enrollsByDay.reduce((s, d) => s + d.count, 0) },
                         ].map(item => (
                             <div key={item.label}>
-                                <p style={{ margin: '0 0 4px', fontSize: '1.5rem', fontWeight: 700, color: '#fff' }}>{item.value}</p>
+                                <p style={{ margin: '0 0 4px', fontSize: '1.5rem', fontWeight: 700, color: 'var(--bg-elevated)' }}>{item.value}</p>
                                 <p style={{ margin: 0, fontSize: '0.78rem', color: 'rgba(255,255,255,0.55)' }}>{item.label}</p>
                             </div>
                         ))}
@@ -196,34 +196,34 @@ export function CourseAnalyticsPage() {
 }
 
 const s: Record<string, React.CSSProperties> = {
-    page:        { minHeight: '100vh', background: '#f9fafb' },
+    page:        { minHeight: '100vh', background: 'var(--bg)' },
     container:   { maxWidth: 1100, margin: '0 auto', padding: '32px 32px 60px' },
     header:      { display: 'flex', alignItems: 'center', gap: 20, marginBottom: 28 },
-    breadcrumb:  { fontSize: '0.72rem', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 4px' },
-    title:       { fontSize: '1.4rem', fontWeight: 700, margin: 0, color: '#111827', letterSpacing: '-0.02em' },
+    breadcrumb:  { fontSize: '0.72rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 4px' },
+    title:       { fontSize: '1.4rem', fontWeight: 700, margin: 0, color: 'var(--text)', letterSpacing: '-0.02em' },
     btnBack: {
-        padding: '8px 16px', borderRadius: 8, border: '1.5px solid #e5e7eb',
-        background: '#fff', color: '#374151', fontSize: '0.85rem',
+        padding: '8px 16px', borderRadius: 8, border: '1.5px solid var(--border)',
+        background: 'var(--bg-elevated)', color: 'var(--text-secondary)', fontSize: '0.85rem',
         cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0, textDecoration: 'none',
         display: 'inline-flex', alignItems: 'center',
     },
     btnEdit: {
         marginLeft: 'auto', padding: '9px 20px', borderRadius: 8,
-        background: '#4f46e5', color: '#fff', fontSize: '0.85rem',
+        background: '#4f46e5', color: 'var(--bg-elevated)', fontSize: '0.85rem',
         fontWeight: 600, textDecoration: 'none', flexShrink: 0,
         display: 'inline-flex', alignItems: 'center',
     },
     metricsRow:   { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 20 },
-    metricCard:   { background: '#fff', borderRadius: 14, padding: '20px 22px', display: 'flex', alignItems: 'center', gap: 16, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #f3f4f6' },
+    metricCard:   { background: 'var(--bg-elevated)', borderRadius: 14, padding: '20px 22px', display: 'flex', alignItems: 'center', gap: 16, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #f3f4f6' },
     metricIcon:   { width: 46, height: 46, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 },
-    metricValue:  { margin: 0, fontSize: '1.4rem', fontWeight: 700, color: '#111827' },
-    metricLabel:  { margin: '2px 0 0', fontSize: '0.78rem', color: '#6b7280' },
+    metricValue:  { margin: 0, fontSize: '1.4rem', fontWeight: 700, color: 'var(--text)' },
+    metricLabel:  { margin: '2px 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)' },
     twoCol:       { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 },
-    card:         { background: '#fff', borderRadius: 14, padding: '22px 24px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #f3f4f6', marginBottom: 20 },
-    cardTitle:    { fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#9ca3af', margin: '0 0 14px' },
-    progressTrack:{ flex: 1, height: 12, background: '#f3f4f6', borderRadius: 99, overflow: 'hidden' },
+    card:         { background: 'var(--bg-elevated)', borderRadius: 14, padding: '22px 24px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #f3f4f6', marginBottom: 20 },
+    cardTitle:    { fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-tertiary)', margin: '0 0 14px' },
+    progressTrack:{ flex: 1, height: 12, background: 'var(--bg-muted)', borderRadius: 99, overflow: 'hidden' },
     progressFill: { height: '100%', background: 'linear-gradient(90deg, #7c3aed, #4f46e5)', borderRadius: 99, transition: 'width 0.6s ease' },
-    empty:        { color: '#9ca3af', fontSize: '0.875rem', fontStyle: 'italic', textAlign: 'center', padding: '24px 0' },
-    skeletonHeader: { height: 60, background: '#f0f0f0', borderRadius: 10, marginBottom: 28, animation: 'pulse 1.5s ease-in-out infinite' },
-    skeletonCard:   { height: 100, background: '#f0f0f0', borderRadius: 14, animation: 'pulse 1.5s ease-in-out infinite' },
+    empty:        { color: 'var(--text-tertiary)', fontSize: '0.875rem', fontStyle: 'italic', textAlign: 'center', padding: '24px 0' },
+    skeletonHeader: { height: 60, background: 'var(--bg-muted)', borderRadius: 10, marginBottom: 28, animation: 'pulse 1.5s ease-in-out infinite' },
+    skeletonCard:   { height: 100, background: 'var(--bg-muted)', borderRadius: 14, animation: 'pulse 1.5s ease-in-out infinite' },
 };

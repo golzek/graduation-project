@@ -343,7 +343,7 @@ export class AdminService {
 
     const ratingRows = await this.courseRepo
         .createQueryBuilder('c')
-        .leftJoin('reviews', 'r', 'r."courseId" = c.id')
+        .leftJoin('reviews', 'r', 'r."course_id" = c.id')
         .select('c."author_id"', 'teacherId')
         .addSelect('AVG(r.rating)', 'avgRating')
         .addSelect('COUNT(r.id)', 'reviewCount')

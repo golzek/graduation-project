@@ -25,10 +25,10 @@ const icons: Record<ToastType, string> = {
 };
 
 const colors: Record<ToastType, { bg: string; border: string; icon: string; iconBg: string }> = {
-    success: { bg: '#fff',     border: '#d1fae5', icon: '#065f46', iconBg: '#d1fae5' },
-    error:   { bg: '#fff',     border: '#fee2e2', icon: '#991b1b', iconBg: '#fee2e2' },
-    info:    { bg: '#fff',     border: '#dbeafe', icon: '#1e40af', iconBg: '#dbeafe' },
-    warning: { bg: '#fff',     border: '#fef3c7', icon: '#92400e', iconBg: '#fef3c7' },
+    success: { bg: 'var(--bg-elevated)',     border: '#d1fae5', icon: '#065f46', iconBg: '#d1fae5' },
+    error:   { bg: 'var(--bg-elevated)',     border: '#fee2e2', icon: '#991b1b', iconBg: '#fee2e2' },
+    info:    { bg: 'var(--bg-elevated)',     border: '#dbeafe', icon: '#1e40af', iconBg: '#dbeafe' },
+    warning: { bg: 'var(--bg-elevated)',     border: '#fef3c7', icon: '#92400e', iconBg: '#fef3c7' },
 };
 
 function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) => void }) {
@@ -66,14 +66,14 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
             }}>
                 {icons[toast.type]}
             </div>
-            <p style={{ flex: 1, fontSize: '0.875rem', color: '#1a1a1a', lineHeight: 1.4 }}>
+            <p style={{ flex: 1, fontSize: '0.875rem', color: 'var(--text)', lineHeight: 1.4 }}>
                 {toast.message}
             </p>
             <button
                 onClick={() => { setVisible(false); setTimeout(() => onRemove(toast.id), 300); }}
                 style={{
                     background: 'none', border: 'none', cursor: 'pointer',
-                    color: '#9a9a9a', fontSize: '0.9rem', padding: '0 2px', lineHeight: 1,
+                    color: 'var(--text-tertiary)', fontSize: '0.9rem', padding: '0 2px', lineHeight: 1,
                     flexShrink: 0,
                 }}
             >✕</button>

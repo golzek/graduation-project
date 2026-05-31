@@ -32,7 +32,7 @@ export function CourseCreatePage() {
                 <h2 style={{ fontSize: '1.5rem', fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 6 }}>
                     Створити курс
                 </h2>
-                <p style={{ color: '#9a9a9a', fontSize: '0.9rem' }}>
+                <p style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem' }}>
                     Після створення ви зможете додати модулі та уроки
                 </p>
             </div>
@@ -100,8 +100,8 @@ export function CourseCreatePage() {
                 disabled={loading}
                 style={{
                     width: '100%', padding: '13px',
-                    background: loading ? '#d1d5db' : '#0a0a0a',
-                    color: '#fff', border: 'none', borderRadius: 10,
+                    background: loading ? '#d1d5db' : 'var(--text)',
+                    color: 'var(--bg-elevated)', border: 'none', borderRadius: 10,
                     fontSize: '0.95rem', fontWeight: 500, cursor: loading ? 'not-allowed' : 'pointer',
                 }}
             >
@@ -113,12 +113,12 @@ export function CourseCreatePage() {
 
 const lbl: React.CSSProperties = {
     display: 'block', marginBottom: 6,
-    fontSize: '0.78rem', fontWeight: 500, color: '#5a5a5a',
+    fontSize: '0.78rem', fontWeight: 500, color: 'var(--text-secondary)',
     textTransform: 'uppercase', letterSpacing: '0.05em',
 };
 const inp: React.CSSProperties = {
     display: 'block', width: '100%', padding: '10px 14px',
-    border: '1.5px solid #ebebeb', borderRadius: 8,
+    border: '1.5px solid var(--border)', borderRadius: 8,
     fontSize: '0.9rem', boxSizing: 'border-box', outline: 'none',
-    background: '#fff', color: '#0a0a0a',
+    background: 'var(--bg-elevated)', color: 'var(--text)',
 };

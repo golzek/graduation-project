@@ -9,8 +9,8 @@ interface Invited {
 
 const s: Record<string, React.CSSProperties> = {
     card: {
-        background: '#fff',
-        border: '1.5px solid #ebebeb',
+        background: 'var(--bg-elevated)',
+        border: '1.5px solid var(--border)',
         borderRadius: 12,
         padding: '24px 28px',
         marginTop: 24,
@@ -24,12 +24,12 @@ const s: Record<string, React.CSSProperties> = {
     title: {
         fontSize: '1rem',
         fontWeight: 600,
-        color: '#0a0a0a',
+        color: 'var(--text)',
         margin: 0,
     },
     badge: {
-        background: '#0a0a0a',
-        color: '#fafafa',
+        background: 'var(--accent)',
+        color: 'var(--accent-inv)',
         borderRadius: 20,
         padding: '2px 10px',
         fontSize: '0.75rem',
@@ -39,7 +39,7 @@ const s: Record<string, React.CSSProperties> = {
         display: 'flex',
         alignItems: 'center',
         gap: 8,
-        background: '#f5f5f5',
+        background: 'var(--bg-subtle)',
         borderRadius: 8,
         padding: '10px 14px',
         marginBottom: 16,
@@ -47,15 +47,15 @@ const s: Record<string, React.CSSProperties> = {
     linkText: {
         flex: 1,
         fontSize: '0.82rem',
-        color: '#555',
+        color: 'var(--text-secondary)',
         wordBreak: 'break-all' as const,
         fontFamily: 'monospace',
     },
     copyBtn: {
         flexShrink: 0,
         padding: '6px 14px',
-        background: '#0a0a0a',
-        color: '#fafafa',
+        background: 'var(--accent)',
+        color: 'var(--accent-inv)',
         border: 'none',
         borderRadius: 6,
         fontSize: '0.8rem',
@@ -75,17 +75,17 @@ const s: Record<string, React.CSSProperties> = {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '8px 0',
-        borderBottom: '1px solid #f0f0f0',
+        borderBottom: '1px solid var(--border)',
         fontSize: '0.85rem',
-        color: '#333',
+        color: 'var(--text)',
     },
     date: {
         fontSize: '0.75rem',
-        color: '#aaa',
+        color: 'var(--text-tertiary)',
     },
     empty: {
         fontSize: '0.85rem',
-        color: '#aaa',
+        color: 'var(--text-tertiary)',
         textAlign: 'center' as const,
         padding: '16px 0',
     },
@@ -132,7 +132,7 @@ export function ReferralPanel() {
                 )}
             </div>
 
-            <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: 12, marginTop: 0 }}>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)', marginBottom: 12, marginTop: 0 }}>
                 Поділись посиланням з друзями — коли вони зареєструються, ти побачиш їх тут.
             </p>
 

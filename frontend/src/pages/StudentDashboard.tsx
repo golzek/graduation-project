@@ -152,9 +152,9 @@ export function StudentDashboard() {
                                                 <p style={s.courseMeta}>{e.course.author?.name} · {e.course.category}</p>
                                                 {prog && (
                                                     <div style={{ marginTop: 8 }}>
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: '#9a9a9a', marginBottom: 4 }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--text-tertiary)', marginBottom: 4 }}>
                                                             <span>{prog.completedCount}/{prog.totalCount} уроків</span>
-                                                            <span style={{ fontWeight: 500, color: '#0a0a0a' }}>{prog.percent}%</span>
+                                                            <span style={{ fontWeight: 500, color: 'var(--text)' }}>{prog.percent}%</span>
                                                         </div>
                                                         <div style={s.progressTrack}>
                                                             <div style={{ ...s.progressFill, width: `${prog.percent}%` }} />
@@ -229,67 +229,67 @@ function MetricCard({ label, value }: { label: string; value: string | number })
 }
 
 const s: Record<string, React.CSSProperties> = {
-    page:    { minHeight: '100vh', background: '#fafafa' },
-    loading: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', color: '#9a9a9a' },
-    header:  { borderBottom: '1px solid #ebebeb', background: '#fff', padding: '28px 0' },
+    page:    { minHeight: '100vh', background: 'var(--bg)' },
+    loading: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', color: 'var(--text-tertiary)' },
+    header:  { borderBottom: '1px solid var(--border)', background: 'var(--bg-elevated)', padding: '28px 0' },
     headerInner: { maxWidth: 1160, margin: '0 auto', padding: '0 32px', display: 'flex', alignItems: 'center', gap: 16 },
     avatar: {
         width: 44, height: 44, borderRadius: '50%',
-        background: '#0a0a0a', color: '#fafafa',
+        background: 'var(--accent)', color: 'var(--accent-inv)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: '1rem', fontWeight: 600, flexShrink: 0,
     },
     greeting:    { fontSize: '1.2rem', fontWeight: 600, letterSpacing: '-0.02em' },
-    greetingSub: { fontSize: '0.85rem', color: '#9a9a9a', marginTop: 2 },
+    greetingSub: { fontSize: '0.85rem', color: 'var(--text-tertiary)', marginTop: 2 },
     body:        { maxWidth: 1160, margin: '28px auto', padding: '0 32px' },
     metricsRow:  { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 },
-    metricCard:  { background: '#fff', border: '1.5px solid #ebebeb', borderRadius: 10, padding: '16px 18px' },
+    metricCard:  { background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 10, padding: '16px 18px' },
     metricValue: { fontSize: '1.6rem', fontWeight: 600, letterSpacing: '-0.03em', marginBottom: 2 },
-    metricLabel: { fontSize: '0.75rem', color: '#9a9a9a', textTransform: 'uppercase' as const, letterSpacing: '0.05em' },
+    metricLabel: { fontSize: '0.75rem', color: 'var(--text-tertiary)', textTransform: 'uppercase' as const, letterSpacing: '0.05em' },
     twoCol:      { display: 'grid', gridTemplateColumns: '1fr 380px', gap: 16, alignItems: 'start' },
-    section:     { background: '#fff', border: '1.5px solid #ebebeb', borderRadius: 12, padding: '18px 20px' },
+    section:     { background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 12, padding: '18px 20px' },
     sectionHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
-    sectionTitle:{ fontSize: '0.75rem', fontWeight: 500, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: '#9a9a9a' },
-    sectionLink: { fontSize: '0.8rem', color: '#0a0a0a' },
+    sectionTitle:{ fontSize: '0.75rem', fontWeight: 500, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: 'var(--text-tertiary)' },
+    sectionLink: { fontSize: '0.8rem', color: 'var(--text)' },
     courseList:  { display: 'flex', flexDirection: 'column' as const, gap: 0 },
     courseRow: {
         display: 'flex', alignItems: 'center', gap: 14,
-        padding: '12px 0', borderBottom: '1px solid #f5f5f5',
+        padding: '12px 0', borderBottom: '1px solid var(--border)',
         textDecoration: 'none', color: 'inherit',
         transition: 'opacity 0.1s',
     },
     courseThumb: {
         width: 38, height: 38, borderRadius: 8,
-        background: '#f5f5f5', color: '#9a9a9a',
+        background: 'var(--bg-subtle)', color: 'var(--text-tertiary)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: '1.1rem', fontWeight: 600, flexShrink: 0,
     },
     courseInfo:  { flex: 1, minWidth: 0 },
     courseTitle: { fontSize: '0.875rem', fontWeight: 500, marginBottom: 2, whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' },
-    courseMeta:  { fontSize: '0.75rem', color: '#9a9a9a' },
-    progressTrack: { height: 3, background: '#f5f5f5', borderRadius: 99, overflow: 'hidden' },
-    progressFill:  { height: '100%', background: '#0a0a0a', borderRadius: 99, transition: 'width 0.5s' },
+    courseMeta:  { fontSize: '0.75rem', color: 'var(--text-tertiary)' },
+    progressTrack: { height: 3, background: 'var(--bg-subtle)', borderRadius: 99, overflow: 'hidden' },
+    progressFill:  { height: '100%', background: 'var(--accent)', borderRadius: 99, transition: 'width 0.5s' },
     completedBadge: {
         width: 20, height: 20, borderRadius: '50%',
-        background: '#0a0a0a', color: '#fafafa',
+        background: 'var(--accent)', color: 'var(--accent-inv)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: '0.6rem', flexShrink: 0,
     },
     activityRow: {
         display: 'flex', alignItems: 'center', gap: 12,
-        padding: '10px 0', borderBottom: '1px solid #f5f5f5',
+        padding: '10px 0', borderBottom: '1px solid var(--border)',
         textDecoration: 'none', color: 'inherit',
     },
-    activityDot:   { width: 6, height: 6, borderRadius: '50%', background: '#0a0a0a', flexShrink: 0 },
+    activityDot:   { width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 },
     activityTitle: { fontSize: '0.85rem', fontWeight: 500, marginBottom: 2 },
-    activitySub:   { fontSize: '0.75rem', color: '#9a9a9a' },
-    certRow:       { display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid #f5f5f5' },
+    activitySub:   { fontSize: '0.75rem', color: 'var(--text-tertiary)' },
+    certRow:       { display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid var(--border)' },
     certIcon:      { fontSize: '1.2rem', flexShrink: 0 },
-    empty:         { textAlign: 'center' as const, padding: '32px 0', color: '#9a9a9a', fontSize: '0.875rem' },
-    emptyText:     { color: '#9a9a9a', fontSize: '0.8rem', padding: '8px 0' },
+    empty:         { textAlign: 'center' as const, padding: '32px 0', color: 'var(--text-tertiary)', fontSize: '0.875rem' },
+    emptyText:     { color: 'var(--text-tertiary)', fontSize: '0.8rem', padding: '8px 0' },
     btnPrimary: {
         display: 'inline-block', padding: '8px 18px',
-        background: '#0a0a0a', color: '#fafafa',
+        background: 'var(--accent)', color: 'var(--accent-inv)',
         borderRadius: 7, fontSize: '0.85rem', textDecoration: 'none',
     },
 };

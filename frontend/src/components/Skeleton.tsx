@@ -28,8 +28,8 @@ if (typeof document !== 'undefined' && !document.getElementById('skeleton-style'
 
 export function StudentDashboardSkeleton() {
     return (
-        <div style={{ minHeight: '100vh', background: '#fafafa' }}>
-            <div style={{ borderBottom: '1px solid #ebebeb', background: '#fff', padding: '28px 0' }}>
+        <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+            <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg-elevated)', padding: '28px 0' }}>
                 <div style={{ maxWidth: 1160, margin: '0 auto', padding: '0 32px', display: 'flex', alignItems: 'center', gap: 16 }}>
                     <Skeleton width={44} height={44} borderRadius="50%" />
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -42,7 +42,7 @@ export function StudentDashboardSkeleton() {
             <div style={{ maxWidth: 1160, margin: '28px auto', padding: '0 32px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
                     {[0,1,2,3].map(i => (
-                        <div key={i} style={{ background: '#fff', border: '1.5px solid #ebebeb', borderRadius: 10, padding: '16px 18px' }}>
+                        <div key={i} style={{ background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 10, padding: '16px 18px' }}>
                             <Skeleton width={60} height={32} style={{ marginBottom: 8 }} />
                             <Skeleton width={100} height={12} />
                         </div>
@@ -50,10 +50,10 @@ export function StudentDashboardSkeleton() {
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 16 }}>
-                    <div style={{ background: '#fff', border: '1.5px solid #ebebeb', borderRadius: 12, padding: '18px 20px' }}>
+                    <div style={{ background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 12, padding: '18px 20px' }}>
                         <Skeleton width={80} height={12} style={{ marginBottom: 16 }} />
                         {[0,1,2].map(i => (
-                            <div key={i} style={{ display: 'flex', gap: 14, padding: '12px 0', borderBottom: '1px solid #f5f5f5' }}>
+                            <div key={i} style={{ display: 'flex', gap: 14, padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
                                 <Skeleton width={38} height={38} borderRadius={8} />
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
                                     <Skeleton height={14} width="70%" />
@@ -64,10 +64,10 @@ export function StudentDashboardSkeleton() {
                         ))}
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                        <div style={{ background: '#fff', border: '1.5px solid #ebebeb', borderRadius: 12, padding: '18px 20px' }}>
+                        <div style={{ background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 12, padding: '18px 20px' }}>
                             <Skeleton width={100} height={12} style={{ marginBottom: 14 }} />
                             {[0,1,2].map(i => (
-                                <div key={i} style={{ display: 'flex', gap: 12, padding: '10px 0', borderBottom: '1px solid #f5f5f5' }}>
+                                <div key={i} style={{ display: 'flex', gap: 12, padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
                                     <Skeleton width={6} height={6} borderRadius="50%" style={{ marginTop: 5 }} />
                                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 5 }}>
                                         <Skeleton height={13} width="80%" />
@@ -76,10 +76,10 @@ export function StudentDashboardSkeleton() {
                                 </div>
                             ))}
                         </div>
-                        <div style={{ background: '#fff', border: '1.5px solid #ebebeb', borderRadius: 12, padding: '18px 20px' }}>
+                        <div style={{ background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 12, padding: '18px 20px' }}>
                             <Skeleton width={90} height={12} style={{ marginBottom: 14 }} />
                             {[0,1].map(i => (
-                                <div key={i} style={{ display: 'flex', gap: 12, padding: '10px 0', borderBottom: '1px solid #f5f5f5' }}>
+                                <div key={i} style={{ display: 'flex', gap: 12, padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
                                     <Skeleton width={22} height={22} borderRadius={4} />
                                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 5 }}>
                                         <Skeleton height={13} width="75%" />
@@ -97,8 +97,8 @@ export function StudentDashboardSkeleton() {
 
 export function TeacherDashboardSkeleton() {
     return (
-        <div style={{ minHeight: '100vh', background: '#fafafa' }}>
-            <div style={{ borderBottom: '1px solid #ebebeb', background: '#fff', padding: '28px 0' }}>
+        <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+            <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg-elevated)', padding: '28px 0' }}>
                 <div style={{ maxWidth: 1160, margin: '0 auto', padding: '0 32px', display: 'flex', alignItems: 'center', gap: 16 }}>
                     <Skeleton width={44} height={44} borderRadius="50%" />
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -111,14 +111,14 @@ export function TeacherDashboardSkeleton() {
             <div style={{ maxWidth: 1160, margin: '28px auto', padding: '0 32px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
                     {[0,1,2,3].map(i => (
-                        <div key={i} style={{ background: '#fff', border: '1.5px solid #ebebeb', borderRadius: 10, padding: '16px 18px' }}>
+                        <div key={i} style={{ background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 10, padding: '16px 18px' }}>
                             <Skeleton width={70} height={32} style={{ marginBottom: 8 }} />
                             <Skeleton width={110} height={12} />
                         </div>
                     ))}
                 </div>
 
-                <div style={{ background: '#fff', border: '1.5px solid #ebebeb', borderRadius: 12, padding: '18px 20px', marginBottom: 16 }}>
+                <div style={{ background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 12, padding: '18px 20px', marginBottom: 16 }}>
                     <Skeleton width={120} height={12} style={{ marginBottom: 16 }} />
                     <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
                         {[0,1,2].map(i => <Skeleton key={i} width={140} height={36} borderRadius={8} />)}

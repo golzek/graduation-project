@@ -317,49 +317,49 @@ function AnswerItem({
 }
 
 const s: Record<string, React.CSSProperties> = {
-    wrap: { marginTop: 40, paddingTop: 32, borderTop: '1px solid #ebebeb' },
+    wrap: { marginTop: 40, paddingTop: 32, borderTop: '1px solid var(--border)' },
 
     sectionLabel: {
         fontSize: '0.7rem', fontWeight: 500,
         textTransform: 'uppercase' as const, letterSpacing: '0.07em',
-        color: '#9a9a9a', marginBottom: 20,
+        color: 'var(--text-tertiary)', marginBottom: 20,
     },
 
     instructorBanner: {
         padding: '10px 14px', marginBottom: 20,
-        background: '#f5f3ff', border: '1px solid #ddd6fe',
+        background: 'var(--bg-muted)', border: '1px solid #ddd6fe',
         borderRadius: 8, fontSize: '0.83rem', color: '#5b21b6',
         fontWeight: 500,
     },
 
     privacyNote: {
         padding: '8px 14px', marginBottom: 16,
-        background: '#f0f9ff', border: '1px solid #bae6fd',
+        background: 'var(--bg-muted)', border: '1px solid #bae6fd',
         borderRadius: 8, fontSize: '0.8rem', color: '#0369a1',
     },
 
     form: {
         marginBottom: 28,
-        border: '1.5px solid #ebebeb', borderRadius: 10,
-        padding: '14px 16px', background: '#fff',
+        border: '1.5px solid var(--border)', borderRadius: 10,
+        padding: '14px 16px', background: 'var(--bg-elevated)',
     },
     textarea: {
         width: '100%', border: 'none', outline: 'none',
         resize: 'vertical' as const, fontSize: '0.875rem',
-        lineHeight: 1.6, color: '#0a0a0a', background: 'transparent',
+        lineHeight: 1.6, color: 'var(--text)', background: 'transparent',
         fontFamily: 'inherit', minHeight: 64,
         boxSizing: 'border-box' as const,
     },
 
     lockedNote: {
         padding: '12px 16px', marginBottom: 24,
-        background: '#fafafa', border: '1px solid #ebebeb',
-        borderRadius: 8, fontSize: '0.85rem', color: '#9a9a9a',
+        background: 'var(--bg)', border: '1px solid var(--border)',
+        borderRadius: 8, fontSize: '0.85rem', color: 'var(--text-tertiary)',
     },
 
     empty: {
         padding: '28px 0', textAlign: 'center' as const,
-        fontSize: '0.875rem', color: '#9a9a9a',
+        fontSize: '0.875rem', color: 'var(--text-tertiary)',
     },
 
     qRow: {
@@ -375,68 +375,68 @@ const s: Record<string, React.CSSProperties> = {
 
     avatar: {
         width: 32, height: 32, borderRadius: '50%',
-        background: '#ebebeb', display: 'flex', alignItems: 'center',
+        background: 'var(--border)', display: 'flex', alignItems: 'center',
         justifyContent: 'center', fontSize: '0.75rem', fontWeight: 600,
-        color: '#5a5a5a', flexShrink: 0,
+        color: 'var(--text-secondary)', flexShrink: 0,
     },
     avatarInstructor: {
         width: 32, height: 32, borderRadius: '50%',
-        background: '#0a0a0a', display: 'flex', alignItems: 'center',
+        background: 'var(--accent)', display: 'flex', alignItems: 'center',
         justifyContent: 'center', fontSize: '0.75rem', fontWeight: 600,
-        color: '#fafafa', flexShrink: 0,
+        color: 'var(--accent-inv)', flexShrink: 0,
     },
 
     qMeta: {
         display: 'flex', alignItems: 'center', gap: 8,
         marginBottom: 4, flexWrap: 'wrap' as const,
     },
-    qAuthor:       { fontSize: '0.8rem', fontWeight: 600, color: '#0a0a0a' },
-    instructorName: { fontSize: '0.8rem', fontWeight: 600, color: '#0a0a0a' },
-    qTime:         { fontSize: '0.75rem', color: '#9a9a9a' },
+    qAuthor:       { fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)' },
+    instructorName: { fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)' },
+    qTime:         { fontSize: '0.75rem', color: 'var(--text-tertiary)' },
 
     badge: {
         fontSize: '0.65rem', fontWeight: 500,
         padding: '1px 7px', borderRadius: 99,
-        background: '#0a0a0a', color: '#fafafa',
+        background: 'var(--accent)', color: 'var(--accent-inv)',
         letterSpacing: '0.03em',
     },
 
-    qBody: { fontSize: '0.875rem', lineHeight: 1.6, color: '#2a2a2a', margin: '0 0 8px 0' },
+    qBody: { fontSize: '0.875rem', lineHeight: 1.6, color: 'var(--text-muted)', margin: '0 0 8px 0' },
 
     toggleBtn: {
         background: 'none', border: 'none', padding: 0,
-        fontSize: '0.78rem', color: '#9a9a9a',
+        fontSize: '0.78rem', color: 'var(--text-tertiary)',
         cursor: 'pointer', fontFamily: 'inherit',
     },
     delBtn: {
         background: 'none', border: 'none', padding: '0 4px',
-        fontSize: '0.7rem', color: '#d6d6d6',
+        fontSize: '0.7rem', color: 'var(--border-strong)',
         cursor: 'pointer', marginLeft: 'auto', lineHeight: 1,
     },
 
     btnPrimary: {
-        padding: '8px 20px', background: '#0a0a0a', color: '#fafafa',
+        padding: '8px 20px', background: 'var(--accent)', color: 'var(--accent-inv)',
         border: 'none', borderRadius: 7, fontSize: '0.85rem',
         fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
     },
     btnDisabled: {
-        padding: '8px 20px', background: '#e5e7eb', color: '#9a9a9a',
+        padding: '8px 20px', background: 'var(--border)', color: 'var(--text-tertiary)',
         border: 'none', borderRadius: 7, fontSize: '0.85rem',
         fontWeight: 500, cursor: 'default', fontFamily: 'inherit',
     },
     btnSmall: {
-        padding: '6px 14px', background: '#0a0a0a', color: '#fafafa',
+        padding: '6px 14px', background: 'var(--accent)', color: 'var(--accent-inv)',
         border: 'none', borderRadius: 6, fontSize: '0.8rem',
         fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
     },
     btnSmallDisabled: {
-        padding: '6px 14px', background: '#e5e7eb', color: '#9a9a9a',
+        padding: '6px 14px', background: 'var(--border)', color: 'var(--text-tertiary)',
         border: 'none', borderRadius: 6, fontSize: '0.8rem',
         cursor: 'default', fontFamily: 'inherit',
     },
     btnSmallGhost: {
-        padding: '6px 14px', background: 'transparent', color: '#5a5a5a',
-        border: '1px solid #ebebeb', borderRadius: 6, fontSize: '0.8rem',
+        padding: '6px 14px', background: 'transparent', color: 'var(--text-secondary)',
+        border: '1px solid var(--border)', borderRadius: 6, fontSize: '0.8rem',
         cursor: 'pointer', fontFamily: 'inherit',
     },
     err: { fontSize: '0.78rem', color: '#dc2626', margin: '4px 0 0' },

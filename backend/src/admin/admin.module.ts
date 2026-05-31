@@ -3,13 +3,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../users/user.entity';
 import { Course, Enrollment, Lesson, Progress } from '../courses/course.entity';
 import { Certificate } from '../certificates/certificate.entity';
+import { Review } from '../reviews/review.entity';
 import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { NotificationModule } from '../notifications/notification.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Course, Enrollment, Lesson, Progress, Certificate]),
+    TypeOrmModule.forFeature([User, Course, Enrollment, Lesson, Progress, Certificate, Review]),
     NotificationModule,
   ],
   controllers: [AdminController],

@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { apiFetch, useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 import { Skeleton } from '../components/Skeleton';
+import { NotificationBell } from '../components/NotificationBell';
+import { useTheme } from '../context/ThemeContext';
 
 type Tab = 'stats' | 'users' | 'courses' | 'teachers' | 'reviews' | 'promos' | 'payouts' | 'audit';
 
@@ -97,6 +99,7 @@ interface PendingReview {
 
 export function AdminPanel() {
   const [tab, setTab] = useState<Tab>('stats');
+  const { theme, toggle } = useTheme();
 
   const tabs: { key: Tab; label: string }[] = [
     { key: 'stats',    label: 'Статистика' },
@@ -128,6 +131,17 @@ export function AdminPanel() {
                     {t.label}
                   </button>
               ))}
+            </div>
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <NotificationBell />
+              <button
+                  onClick={toggle}
+                  style={s.themeBtn}
+                  aria-label="Змінити тему"
+                  title={theme === 'dark' ? 'Світла тема' : 'Темна тема'}
+              >
+                {theme === 'dark' ? '☀️' : '🌙'}
+              </button>
             </div>
           </div>
         </div>
@@ -194,7 +208,7 @@ function StatsTab() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <input type="date" className="input" style={{ padding: '4px 10px', fontSize: '0.8rem' }}
                      value={customFrom} onChange={e => setFrom(e.target.value)} />
-              <span style={{ fontSize: '0.75rem', color: '#9a9a9a' }}>—</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>—</span>
               <input type="date" className="input" style={{ padding: '4px 10px', fontSize: '0.8rem' }}
                      value={customTo} onChange={e => setTo(e.target.value)} />
               <button style={s.applyBtn} onClick={handleCustomApply}>Застосувати</button>
@@ -272,7 +286,7 @@ function StatsTab() {
                     <div key={role} style={{ marginBottom: 14 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: 5 }}>
                         <span style={{ fontWeight: 500 }}>{roleLabel[role] ?? role}</span>
-                        <span style={{ color: '#9a9a9a' }}>{Number(count)} ({pct}%)</span>
+                        <span style={{ color: 'var(--text-tertiary)' }}>{Number(count)} ({pct}%)</span>
                       </div>
                       <div style={s.track}>
                         <div style={{ ...s.fill, width: `${pct}%` }} />
@@ -287,7 +301,7 @@ function StatsTab() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 0 }}>
               <p style={s.cardTitle}>Реєстрації та дохід</p>
               {stats.dateFrom && (
-                  <span style={{ fontSize: '0.65rem', color: '#b0b0b0', fontWeight: 400 }}>
+                  <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', fontWeight: 400 }}>
                   {new Date(stats.dateFrom).toLocaleDateString('uk-UA')} — {stats.dateTo ? new Date(stats.dateTo).toLocaleDateString('uk-UA') : 'сьогодні'}
                 </span>
               )}
@@ -314,17 +328,17 @@ function CompletionRing({ pct }: { pct: number }) {
   return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 2 }}>
         <svg width={54} height={54} style={{ flexShrink: 0 }}>
-          <circle cx={27} cy={27} r={r} fill="none" stroke="#f0f0f0" strokeWidth={4} />
+          <circle cx={27} cy={27} r={r} fill="none" stroke="var(--border-strong)" strokeWidth={4} />
           <circle
               cx={27} cy={27} r={r} fill="none"
-              stroke="#0a0a0a" strokeWidth={4}
+              stroke="var(--accent)" strokeWidth={4}
               strokeDasharray={circ}
               strokeDashoffset={offset}
               strokeLinecap="round"
               transform="rotate(-90 27 27)"
               style={{ transition: 'stroke-dashoffset 0.6s ease' }}
           />
-          <text x={27} y={32} textAnchor="middle" fontSize={11} fontWeight={700} fill="#0a0a0a">{pct}%</text>
+          <text x={27} y={32} textAnchor="middle" fontSize={11} fontWeight={700} fill="var(--text)">{pct}%</text>
         </svg>
       </div>
   );
@@ -434,7 +448,7 @@ function UsersTab() {
                       <div style={s.miniAvatar}>{u.name?.[0]?.toUpperCase()}</div>
                       <div>
                         <p style={{ fontSize: '0.875rem', fontWeight: 500, marginBottom: 1 }}>{u.name}</p>
-                        <p style={{ fontSize: '0.75rem', color: '#9a9a9a' }}>{u.email}</p>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>{u.email}</p>
                       </div>
                     </div>
                   </td>
@@ -459,7 +473,7 @@ function UsersTab() {
                   </span>
                   </td>
                   <td style={s.td}>
-                  <span style={{ fontSize: '0.8rem', color: '#9a9a9a' }}>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>
                     {new Date(u.createdAt).toLocaleDateString('uk-UA')}
                   </span>
                   </td>
@@ -511,7 +525,7 @@ function CourseDetailModal({ courseId, onClose }: { courseId: string; onClose: (
   const levelLabel: Record<string, string> = { beginner: 'Початковий', intermediate: 'Середній', advanced: 'Просунутий' };
   const statusLabel: Record<string, string> = { draft: 'Чернетка', published: 'Опублікований', archived: 'Архів', pending: 'На перевірці' };
   const statusBadgeStyle: Record<string, React.CSSProperties> = {
-    draft:     { background: '#f5f5f5', color: '#5a5a5a' },
+    draft:     { background: 'var(--bg-subtle)', color: 'var(--text-secondary)' },
     published: { background: '#f0fdf4', color: '#16a34a' },
     archived:  { background: '#fef2f2', color: '#dc2626' },
     pending:   { background: '#fffbeb', color: '#d97706' },
@@ -540,17 +554,17 @@ function CourseDetailModal({ courseId, onClose }: { courseId: string; onClose: (
           }}
       >
         <div style={{
-          background: '#fff', borderRadius: 16, width: '100%', maxWidth: 780,
+          background: 'var(--bg-elevated)', borderRadius: 16, width: '100%', maxWidth: 780,
           maxHeight: '88vh', display: 'flex', flexDirection: 'column',
           boxShadow: '0 24px 60px rgba(0,0,0,0.18)',
           overflow: 'hidden',
         }}>
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '18px 24px', borderBottom: '1px solid #ebebeb', flexShrink: 0,
+            padding: '18px 24px', borderBottom: '1px solid var(--border)', flexShrink: 0,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.07em', color: '#9a9a9a', textTransform: 'uppercase' }}>
+              <span style={{ fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.07em', color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>
                 Перегляд курсу
               </span>
               {course && (
@@ -563,8 +577,8 @@ function CourseDetailModal({ courseId, onClose }: { courseId: string; onClose: (
                 onClick={onClose}
                 style={{
                   width: 32, height: 32, borderRadius: '50%',
-                  border: '1.5px solid #ebebeb', background: 'transparent',
-                  cursor: 'pointer', fontSize: '1rem', color: '#5a5a5a',
+                  border: '1.5px solid var(--border)', background: 'transparent',
+                  cursor: 'pointer', fontSize: '1rem', color: 'var(--text-secondary)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontFamily: 'inherit',
                 }}
@@ -589,31 +603,31 @@ function CourseDetailModal({ courseId, onClose }: { courseId: string; onClose: (
                     {course.thumbnailUrl ? (
                         <img
                             src={course.thumbnailUrl} alt={course.title}
-                            style={{ width: 120, height: 80, objectFit: 'cover', borderRadius: 10, flexShrink: 0, border: '1px solid #ebebeb' }}
+                            style={{ width: 120, height: 80, objectFit: 'cover', borderRadius: 10, flexShrink: 0, border: '1px solid var(--border)' }}
                         />
                     ) : (
                         <div style={{
                           width: 120, height: 80, borderRadius: 10, flexShrink: 0,
-                          background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: '2rem', color: '#c0c0c0', border: '1px solid #ebebeb',
+                          background: 'var(--bg-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '2rem', color: 'var(--text-tertiary)', border: '1px solid var(--border)',
                         }}>
                           📚
                         </div>
                     )}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <h2 style={{ fontSize: '1.15rem', fontWeight: 700, margin: '0 0 6px', letterSpacing: '-0.02em', color: '#0a0a0a' }}>
+                      <h2 style={{ fontSize: '1.15rem', fontWeight: 700, margin: '0 0 6px', letterSpacing: '-0.02em', color: 'var(--text)' }}>
                         {course.title}
                       </h2>
                       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const, alignItems: 'center' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <div style={s.miniAvatar}>{course.author?.name?.[0]?.toUpperCase()}</div>
                           <div>
-                            <p style={{ fontSize: '0.8rem', fontWeight: 500, margin: 0, color: '#0a0a0a' }}>{course.author?.name}</p>
-                            <p style={{ fontSize: '0.72rem', color: '#9a9a9a', margin: 0 }}>{course.author?.email}</p>
+                            <p style={{ fontSize: '0.8rem', fontWeight: 500, margin: 0, color: 'var(--text)' }}>{course.author?.name}</p>
+                            <p style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', margin: 0 }}>{course.author?.email}</p>
                           </div>
                         </div>
                         {course.rating != null && (
-                            <span style={{ fontSize: '0.8rem', color: '#5a5a5a', marginLeft: 8 }}>⭐ {Number(course.rating).toFixed(1)}</span>
+                            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginLeft: 8 }}>⭐ {Number(course.rating).toFixed(1)}</span>
                         )}
                       </div>
                     </div>
@@ -626,45 +640,45 @@ function CourseDetailModal({ courseId, onClose }: { courseId: string; onClose: (
                       { label: 'Уроків', value: String(totalLessons) },
                       { label: 'Тривалість', value: totalDuration > 0 ? formatDuration(totalDuration) : '—' },
                     ].map(m => (
-                        <div key={m.label} style={{ background: '#fafafa', border: '1px solid #ebebeb', borderRadius: 10, padding: '12px 14px' }}>
-                          <p style={{ fontSize: '0.65rem', color: '#9a9a9a', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 4px' }}>{m.label}</p>
-                          <p style={{ fontSize: '0.9rem', fontWeight: 600, margin: 0, color: '#0a0a0a' }}>{m.value}</p>
+                        <div key={m.label} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 10, padding: '12px 14px' }}>
+                          <p style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 4px' }}>{m.label}</p>
+                          <p style={{ fontSize: '0.9rem', fontWeight: 600, margin: 0, color: 'var(--text)' }}>{m.value}</p>
                         </div>
                     ))}
                   </div>
 
                   <div style={{ display: 'flex', gap: 16, marginBottom: 18, flexWrap: 'wrap' as const }}>
                     {course.category && (
-                        <span style={{ fontSize: '0.78rem', background: '#f0f0f0', borderRadius: 6, padding: '3px 10px', color: '#5a5a5a' }}>
+                        <span style={{ fontSize: '0.78rem', background: 'var(--bg-muted)', borderRadius: 6, padding: '3px 10px', color: 'var(--text-secondary)' }}>
                           🏷 {course.category}
                         </span>
                     )}
-                    <span style={{ fontSize: '0.78rem', background: '#f0f0f0', borderRadius: 6, padding: '3px 10px', color: '#5a5a5a' }}>
+                    <span style={{ fontSize: '0.78rem', background: 'var(--bg-muted)', borderRadius: 6, padding: '3px 10px', color: 'var(--text-secondary)' }}>
                       📅 Створено {new Date(course.createdAt).toLocaleDateString('uk-UA')}
                     </span>
-                    <span style={{ fontSize: '0.78rem', background: '#f0f0f0', borderRadius: 6, padding: '3px 10px', color: '#5a5a5a' }}>
+                    <span style={{ fontSize: '0.78rem', background: 'var(--bg-muted)', borderRadius: 6, padding: '3px 10px', color: 'var(--text-secondary)' }}>
                       🔄 Оновлено {new Date(course.updatedAt).toLocaleDateString('uk-UA')}
                     </span>
                   </div>
 
                   <div style={{ marginBottom: 24 }}>
-                    <p style={{ fontSize: '0.65rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#9a9a9a', marginBottom: 8 }}>Опис</p>
+                    <p style={{ fontSize: '0.65rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-tertiary)', marginBottom: 8 }}>Опис</p>
                     <p style={{
-                      fontSize: '0.875rem', color: '#2a2a2a', lineHeight: 1.7,
-                      background: '#fafafa', border: '1px solid #ebebeb',
+                      fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: 1.7,
+                      background: 'var(--bg)', border: '1px solid var(--border)',
                       borderRadius: 10, padding: '14px 16px', margin: 0,
                       whiteSpace: 'pre-wrap' as const,
                     }}>
-                      {course.description || <span style={{ color: '#9a9a9a', fontStyle: 'italic' }}>Опис відсутній</span>}
+                      {course.description || <span style={{ color: 'var(--text-tertiary)', fontStyle: 'italic' }}>Опис відсутній</span>}
                     </p>
                   </div>
 
                   <div>
-                    <p style={{ fontSize: '0.65rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#9a9a9a', marginBottom: 12 }}>
+                    <p style={{ fontSize: '0.65rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-tertiary)', marginBottom: 12 }}>
                       Програма курсу ({course.modules?.length ?? 0} {(course.modules?.length ?? 0) === 1 ? 'модуль' : 'модулі(ів)'})
                     </p>
                     {!course.modules?.length ? (
-                        <p style={{ color: '#9a9a9a', fontSize: '0.875rem', fontStyle: 'italic' }}>Модулі ще не додані</p>
+                        <p style={{ color: 'var(--text-tertiary)', fontSize: '0.875rem', fontStyle: 'italic' }}>Модулі ще не додані</p>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                           {course.modules.map((mod, mi) => (
@@ -693,35 +707,35 @@ function ModuleAccordion({
   const totalSec = mod.lessons?.reduce((s, l) => s + (l.durationSec ?? 0), 0) ?? 0;
 
   return (
-      <div style={{ border: '1.5px solid #ebebeb', borderRadius: 10, overflow: 'hidden' }}>
+      <div style={{ border: '1.5px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
         <button
             onClick={() => setOpen(o => !o)}
             style={{
               width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '12px 16px', background: '#fafafa', border: 'none', cursor: 'pointer',
+              padding: '12px 16px', background: 'var(--bg)', border: 'none', cursor: 'pointer',
               fontFamily: 'inherit', textAlign: 'left' as const,
             }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{
               width: 22, height: 22, borderRadius: '50%',
-              background: '#0a0a0a', color: '#fff',
+              background: 'var(--accent)', color: 'var(--bg-elevated)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '0.65rem', fontWeight: 700, flexShrink: 0,
             }}>{index + 1}</span>
-            <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#0a0a0a' }}>{mod.title}</span>
+            <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text)' }}>{mod.title}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-            <span style={{ fontSize: '0.75rem', color: '#9a9a9a' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
               {mod.lessons?.length ?? 0} уроків{totalSec > 0 ? ` · ${formatDuration(totalSec)}` : ''}
             </span>
-            <span style={{ fontSize: '0.75rem', color: '#9a9a9a' }}>{open ? '▲' : '▼'}</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>{open ? '▲' : '▼'}</span>
           </div>
         </button>
         {open && (
-            <div style={{ borderTop: '1px solid #ebebeb' }}>
+            <div style={{ borderTop: '1px solid var(--border)' }}>
               {!mod.lessons?.length ? (
-                  <p style={{ padding: '12px 16px', fontSize: '0.8rem', color: '#9a9a9a', fontStyle: 'italic' }}>Уроків немає</p>
+                  <p style={{ padding: '12px 16px', fontSize: '0.8rem', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>Уроків немає</p>
               ) : (
                   mod.lessons.map((lesson, li) => (
                       <div
@@ -730,26 +744,26 @@ function ModuleAccordion({
                             display: 'flex', alignItems: 'center', gap: 12,
                             padding: '10px 16px',
                             borderBottom: li < mod.lessons.length - 1 ? '1px solid #f5f5f5' : 'none',
-                            background: '#fff',
+                            background: 'var(--bg-elevated)',
                           }}
                       >
-                        <span style={{ fontSize: '0.72rem', color: '#c0c0c0', width: 20, flexShrink: 0, textAlign: 'right' as const }}>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', width: 20, flexShrink: 0, textAlign: 'right' as const }}>
                           {li + 1}
                         </span>
                         <span style={{
                           fontSize: '0.7rem', padding: '2px 7px', borderRadius: 5,
-                          background: '#f0f0f0', color: '#5a5a5a', flexShrink: 0,
+                          background: 'var(--bg-muted)', color: 'var(--text-secondary)', flexShrink: 0,
                         }}>
                           {lessonTypeLabel[lesson.type] ?? lesson.type}
                         </span>
-                        <span style={{ fontSize: '0.85rem', color: '#0a0a0a', flex: 1 }}>{lesson.title}</span>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text)', flex: 1 }}>{lesson.title}</span>
                         {lesson.isFree && (
                             <span style={{ fontSize: '0.68rem', background: '#f0fdf4', color: '#16a34a', padding: '2px 7px', borderRadius: 5, flexShrink: 0 }}>
                               Безкоштовно
                             </span>
                         )}
                         {lesson.durationSec > 0 && (
-                            <span style={{ fontSize: '0.75rem', color: '#9a9a9a', flexShrink: 0 }}>{formatDuration(lesson.durationSec)}</span>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', flexShrink: 0 }}>{formatDuration(lesson.durationSec)}</span>
                         )}
                       </div>
                   ))
@@ -806,7 +820,7 @@ function CoursesTab() {
   };
 
   const statusStyle: Record<string, React.CSSProperties> = {
-    draft:     { ...s.badge, background: '#f5f5f5', color: '#5a5a5a' },
+    draft:     { ...s.badge, background: 'var(--bg-subtle)', color: 'var(--text-secondary)' },
     published: { ...s.badge, ...s.badgeGreen },
     archived:  { ...s.badge, ...s.badgeRed },
   };
@@ -868,7 +882,7 @@ function CoursesTab() {
                   </td>
                   <td style={s.td}>
                     <p style={{ fontSize: '0.85rem', marginBottom: 1 }}>{c.author.name}</p>
-                    <p style={{ fontSize: '0.72rem', color: '#9a9a9a' }}>{c.author.email}</p>
+                    <p style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>{c.author.email}</p>
                   </td>
                   <td style={s.td}>
                     <select
@@ -887,7 +901,7 @@ function CoursesTab() {
                   </span>
                   </td>
                   <td style={s.td}>
-                  <span style={{ fontSize: '0.8rem', color: '#9a9a9a' }}>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>
                     {new Date(c.createdAt).toLocaleDateString('uk-UA')}
                   </span>
                   </td>
@@ -995,7 +1009,7 @@ function ReviewsTab() {
         ) : reviews.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '80px 0' }}>
               <p style={{ fontSize: '2rem', marginBottom: 12 }}>{filter === 'pending' ? '✓' : '💬'}</p>
-              <p style={{ color: '#9a9a9a', fontSize: '0.9rem' }}>
+              <p style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem' }}>
                 {filter === 'pending' ? 'Всі відгуки перевірено' : 'Відгуків ще немає'}
               </p>
             </div>
@@ -1006,7 +1020,7 @@ function ReviewsTab() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                       <div>
                         <p style={{ fontSize: '0.875rem', fontWeight: 600 }}>{r.user.name}</p>
-                        <p style={{ fontSize: '0.75rem', color: '#9a9a9a' }}>{r.user.email}</p>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>{r.user.email}</p>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <span style={{ color: '#f59e0b', letterSpacing: 1, fontSize: '0.9rem' }}>
@@ -1018,20 +1032,20 @@ function ReviewsTab() {
                         }}>
                           {r.isApproved ? 'Схвалено' : 'Очікує'}
                         </span>
-                        <span style={{ fontSize: '0.75rem', color: '#9a9a9a' }}>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
                           {new Date(r.createdAt).toLocaleDateString('uk-UA')}
                         </span>
                       </div>
                     </div>
 
-                    <p style={{ fontSize: '0.8rem', color: '#9a9a9a', marginBottom: 8 }}>
-                      Курс: <span style={{ color: '#0a0a0a', fontWeight: 500 }}>{r.course.title}</span>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', marginBottom: 8 }}>
+                      Курс: <span style={{ color: 'var(--text)', fontWeight: 500 }}>{r.course.title}</span>
                     </p>
 
                     {r.body && (
                         <p style={{
-                          fontSize: '0.875rem', color: '#2a2a2a', lineHeight: 1.6,
-                          padding: '10px 14px', background: '#f5f5f5',
+                          fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: 1.6,
+                          padding: '10px 14px', background: 'var(--bg-subtle)',
                           borderRadius: 8, marginBottom: 14,
                         }}>
                           {r.body}
@@ -1137,19 +1151,19 @@ function PromosTab() {
                 <tr key={p.id}>
                   <td style={s.td}>
                     <p style={{ fontWeight: 600, fontFamily: 'monospace', letterSpacing: '0.04em', fontSize: '0.9rem', marginBottom: 2 }}>{p.code}</p>
-                    <p style={{ fontSize: '0.75rem', color: '#9a9a9a' }}>{p.course.title}</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>{p.course.title}</p>
                   </td>
                   <td style={s.td}>
                     <p style={{ fontSize: '0.83rem', marginBottom: 1 }}>{p.teacher.name}</p>
-                    <p style={{ fontSize: '0.72rem', color: '#9a9a9a' }}>{p.teacher.email}</p>
+                    <p style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>{p.teacher.email}</p>
                   </td>
                   <td style={s.td}>
-                    <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0a0a0a' }}>−{p.discountPercent}%</span>
+                    <span style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)' }}>−{p.discountPercent}%</span>
                   </td>
                   <td style={s.td}>
                     <p style={{ fontSize: '0.8rem' }}>{p.usedCount} / {p.usageLimit ?? '∞'}</p>
                     {p.expiresAt && (
-                        <p style={{ fontSize: '0.7rem', color: '#9a9a9a' }}>
+                        <p style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>
                           до {new Date(p.expiresAt).toLocaleDateString('uk-UA')}
                         </p>
                     )}
@@ -1157,7 +1171,7 @@ function PromosTab() {
                   <td style={s.td}>
                     <span style={statusBadge[p.status]}>{statusLabel[p.status]}</span>
                     {p.adminComment && (
-                        <p style={{ fontSize: '0.68rem', color: '#9a9a9a', marginTop: 4, maxWidth: 140 }}>{p.adminComment}</p>
+                        <p style={{ fontSize: '0.68rem', color: 'var(--text-tertiary)', marginTop: 4, maxWidth: 140 }}>{p.adminComment}</p>
                     )}
                   </td>
                   <td style={s.td}>
@@ -1175,7 +1189,7 @@ function PromosTab() {
                           </div>
                         </div>
                     ) : (
-                        <span style={{ fontSize: '0.75rem', color: '#9a9a9a' }}>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
                       {new Date(p.createdAt).toLocaleDateString('uk-UA')}
                     </span>
                     )}
@@ -1296,31 +1310,31 @@ function PayoutsTab() {
                           <div style={s.miniAvatar}>{p.teacher.name?.[0]?.toUpperCase()}</div>
                           <div>
                             <p style={{ fontSize: '0.875rem', fontWeight: 500, marginBottom: 1 }}>{p.teacher.name}</p>
-                            <p style={{ fontSize: '0.72rem', color: '#9a9a9a' }}>{p.teacher.email}</p>
+                            <p style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>{p.teacher.email}</p>
                           </div>
                         </div>
-                    ) : <span style={{ color: '#9a9a9a' }}>—</span>}
+                    ) : <span style={{ color: 'var(--text-tertiary)' }}>—</span>}
                   </td>
                   <td style={s.td}>
                     <span style={{ fontSize: '1rem', fontWeight: 700 }}>{p.amount.toLocaleString('uk-UA')} ₴</span>
                   </td>
                   <td style={s.td}>
-                    <span style={{ fontSize: '0.78rem', color: '#5a5a5a', wordBreak: 'break-all' as const, maxWidth: 200, display: 'block' }}>
+                    <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', wordBreak: 'break-all' as const, maxWidth: 200, display: 'block' }}>
                       {p.paymentDetails}
                     </span>
                   </td>
                   <td style={s.td}>
-                    <span style={{ fontSize: '0.8rem', color: '#9a9a9a' }}>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>
                       {new Date(p.createdAt).toLocaleDateString('uk-UA')}
                     </span>
                   </td>
                   <td style={s.td}>
                     <span style={statusBadge[p.status]}>{statusLabel[p.status]}</span>
                     {p.adminComment && (
-                        <p style={{ fontSize: '0.68rem', color: '#9a9a9a', marginTop: 4, maxWidth: 140 }}>{p.adminComment}</p>
+                        <p style={{ fontSize: '0.68rem', color: 'var(--text-tertiary)', marginTop: 4, maxWidth: 140 }}>{p.adminComment}</p>
                     )}
                     {p.processedAt && (
-                        <p style={{ fontSize: '0.65rem', color: '#c0c0c0', marginTop: 2 }}>
+                        <p style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', marginTop: 2 }}>
                           {new Date(p.processedAt).toLocaleDateString('uk-UA')}
                         </p>
                     )}
@@ -1347,7 +1361,7 @@ function PayoutsTab() {
                           </div>
                         </div>
                     ) : (
-                        <span style={{ fontSize: '0.75rem', color: '#9a9a9a' }}>Оброблено</span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>Оброблено</span>
                     )}
                   </td>
                 </tr>
@@ -1388,7 +1402,7 @@ function DualBarChart({
         : date.toLocaleDateString('uk-UA', { day: 'numeric', month: 'numeric' });
   };
 
-  if (data.length === 0) return <p style={{ color: '#9a9a9a', fontSize: '0.8rem', marginTop: 14 }}>Немає даних за цей період</p>;
+  if (data.length === 0) return <p style={{ color: 'var(--text-tertiary)', fontSize: '0.8rem', marginTop: 14 }}>Немає даних за цей період</p>;
 
   const few = data.length <= 4;
 
@@ -1396,12 +1410,12 @@ function DualBarChart({
       <div>
         <div style={{ display: 'flex', gap: 12, marginTop: 10, marginBottom: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-            <div style={{ width: 10, height: 10, borderRadius: 2, background: '#0a0a0a' }} />
-            <span style={{ fontSize: '0.65rem', color: '#9a9a9a' }}>Реєстрації</span>
+            <div style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--accent)' }} />
+            <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>Реєстрації</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
             <div style={{ width: 10, height: 10, borderRadius: 2, background: '#d1d5db' }} />
-            <span style={{ fontSize: '0.65rem', color: '#9a9a9a' }}>Дохід (₴)</span>
+            <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>Дохід (₴)</span>
           </div>
         </div>
         <div style={{
@@ -1418,15 +1432,15 @@ function DualBarChart({
                 <div key={i} style={colStyle}>
                   <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, width: '100%', justifyContent: 'center' }}>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-                      {d.count > 0 && <span style={{ fontSize: '0.55rem', color: '#9a9a9a' }}>{d.count}</span>}
-                      <div style={{ width: '100%', height: `${countH}px`, background: '#0a0a0a', borderRadius: '2px 2px 0 0', opacity: 0.9 }} />
+                      {d.count > 0 && <span style={{ fontSize: '0.55rem', color: 'var(--text-tertiary)' }}>{d.count}</span>}
+                      <div style={{ width: '100%', height: `${countH}px`, background: 'var(--accent)', borderRadius: '2px 2px 0 0', opacity: 0.9 }} />
                     </div>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-                      {d.revenue > 0 && <span style={{ fontSize: '0.55rem', color: '#9a9a9a' }}>{d.revenue >= 1000 ? `${(d.revenue/1000).toFixed(1)}k` : d.revenue}</span>}
+                      {d.revenue > 0 && <span style={{ fontSize: '0.55rem', color: 'var(--text-tertiary)' }}>{d.revenue >= 1000 ? `${(d.revenue/1000).toFixed(1)}k` : d.revenue}</span>}
                       <div style={{ width: '100%', height: `${revH}px`, background: '#d1d5db', borderRadius: '2px 2px 0 0' }} />
                     </div>
                   </div>
-                  <span style={{ fontSize: '0.52rem', color: '#b0b0b0', whiteSpace: 'nowrap' }}>{fmtDate(d.date)}</span>
+                  <span style={{ fontSize: '0.52rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>{fmtDate(d.date)}</span>
                 </div>
             );
           })}
@@ -1489,12 +1503,12 @@ function AuditTab() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && load(1)}
-              style={{ padding: '7px 12px', border: '1.5px solid #ebebeb', borderRadius: 8, fontSize: '0.85rem', fontFamily: 'inherit', minWidth: 240 }}
+              style={{ padding: '7px 12px', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.85rem', fontFamily: 'inherit', minWidth: 240 }}
           />
           <select
               value={actionF}
               onChange={e => setActionF(e.target.value)}
-              style={{ padding: '7px 10px', border: '1.5px solid #ebebeb', borderRadius: 8, fontSize: '0.85rem', fontFamily: 'inherit' }}
+              style={{ padding: '7px 10px', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.85rem', fontFamily: 'inherit' }}
           >
             <option value="">Всі дії</option>
             {['CREATE','UPDATE','DELETE','LOGIN','LOGOUT','BAN','UNBAN'].map(a => (
@@ -1507,25 +1521,25 @@ function AuditTab() {
           </label>
           <button
               onClick={() => load(1)}
-              style={{ padding: '7px 18px', background: '#0a0a0a', color: '#fff', border: 'none', borderRadius: 8, fontSize: '0.85rem', cursor: 'pointer', fontFamily: 'inherit' }}
+              style={{ padding: '7px 18px', background: 'var(--accent)', color: 'var(--bg-elevated)', border: 'none', borderRadius: 8, fontSize: '0.85rem', cursor: 'pointer', fontFamily: 'inherit' }}
           >Фільтрувати</button>
-          <span style={{ fontSize: '0.8rem', color: '#9a9a9a', marginLeft: 'auto' }}>
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', marginLeft: 'auto' }}>
           Всього: {total} записів
         </span>
         </div>
 
         {loading ? (
-            <p style={{ color: '#9a9a9a', fontSize: '0.875rem' }}>Завантаження...</p>
+            <p style={{ color: 'var(--text-tertiary)', fontSize: '0.875rem' }}>Завантаження...</p>
         ) : items.length === 0 ? (
-            <p style={{ color: '#9a9a9a', fontSize: '0.875rem' }}>Записів не знайдено</p>
+            <p style={{ color: 'var(--text-tertiary)', fontSize: '0.875rem' }}>Записів не знайдено</p>
         ) : (
             <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 4 }}>
               {items.map(log => (
                   <div
                       key={log.id}
                       style={{
-                        background: log.isError ? '#fff5f5' : '#fff',
-                        border: `1.5px solid ${log.isError ? '#fecaca' : '#ebebeb'}`,
+                        background: log.isError ? '#fff5f5' : 'var(--bg-elevated)',
+                        border: `1.5px solid ${log.isError ? '#fecaca' : 'var(--border)'}`,
                         borderRadius: 10, overflow: 'hidden',
                       }}
                   >
@@ -1540,7 +1554,7 @@ function AuditTab() {
                   flexShrink: 0,
                 }}>{log.action}</span>
 
-                      <span style={{ fontSize: '0.8rem', color: '#6b7280', flexShrink: 0, minWidth: 80 }}>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', flexShrink: 0, minWidth: 80 }}>
                   {log.method} <span style={{ color: log.isError ? '#dc2626' : (log.statusCode ?? 0) < 300 ? '#16a34a' : '#d97706', fontWeight: 600 }}>{log.statusCode ?? '—'}</span>
                 </span>
 
@@ -1548,36 +1562,36 @@ function AuditTab() {
                   {log.path}
                 </span>
 
-                      <span style={{ fontSize: '0.8rem', color: '#5a5a5a', flexShrink: 0 }}>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', flexShrink: 0 }}>
                   {log.actorEmail ?? '—'}
                 </span>
 
-                      <span style={{ fontSize: '0.75rem', color: '#9a9a9a', flexShrink: 0, minWidth: 130, textAlign: 'right' as const }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', flexShrink: 0, minWidth: 130, textAlign: 'right' as const }}>
                   {new Date(log.createdAt).toLocaleString('uk-UA')}
                 </span>
 
-                      <span style={{ fontSize: '0.75rem', color: '#9a9a9a' }}>{expanded === log.id ? '▲' : '▼'}</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>{expanded === log.id ? '▲' : '▼'}</span>
                     </div>
 
                     {expanded === log.id && (
-                        <div style={{ padding: '0 14px 12px', borderTop: '1px solid #f3f4f6' }}>
+                        <div style={{ padding: '0 14px 12px', borderTop: '1px solid var(--border)' }}>
                           <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '4px 16px', fontSize: '0.8rem', marginTop: 8 }}>
-                            <span style={{ color: '#9a9a9a' }}>Entity</span>
+                            <span style={{ color: 'var(--text-tertiary)' }}>Entity</span>
                             <span>{log.entity}{log.entityId ? ` / ${log.entityId}` : ''}</span>
-                            <span style={{ color: '#9a9a9a' }}>Role</span>
+                            <span style={{ color: 'var(--text-tertiary)' }}>Role</span>
                             <span>{log.actorRole ?? '—'}</span>
                             {log.payload && (
                                 <>
-                                  <span style={{ color: '#9a9a9a' }}>Payload</span>
-                                  <pre style={{ margin: 0, fontSize: '0.75rem', color: '#374151', whiteSpace: 'pre-wrap' as const }}>
+                                  <span style={{ color: 'var(--text-tertiary)' }}>Payload</span>
+                                  <pre style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-secondary)', whiteSpace: 'pre-wrap' as const }}>
                           {JSON.stringify(log.payload, null, 2)}
                         </pre>
                                 </>
                             )}
                             {log.response && (
                                 <>
-                                  <span style={{ color: '#9a9a9a' }}>Response</span>
-                                  <pre style={{ margin: 0, fontSize: '0.75rem', color: '#374151', whiteSpace: 'pre-wrap' as const }}>
+                                  <span style={{ color: 'var(--text-tertiary)' }}>Response</span>
+                                  <pre style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-secondary)', whiteSpace: 'pre-wrap' as const }}>
                           {JSON.stringify(log.response, null, 2)}
                         </pre>
                                 </>
@@ -1598,9 +1612,9 @@ function AuditTab() {
                       onClick={() => load(p)}
                       style={{
                         width: 34, height: 34, borderRadius: 8,
-                        border: `1.5px solid ${p === page ? '#0a0a0a' : '#ebebeb'}`,
-                        background: p === page ? '#0a0a0a' : '#fff',
-                        color: p === page ? '#fff' : '#0a0a0a',
+                        border: `1.5px solid ${p === page ? 'var(--accent)' : 'var(--border)'}`,
+                        background: p === page ? 'var(--accent)' : 'var(--bg-elevated)',
+                        color: p === page ? 'var(--accent-inv)' : 'var(--text)',
                         fontSize: '0.82rem', cursor: 'pointer', fontFamily: 'inherit',
                       }}
                   >{p}</button>
@@ -1634,7 +1648,7 @@ function TopCoursesTable({ courses }: { courses: { courseId: string; title: stri
         </div>
 
         {sorted.length === 0 ? (
-            <p style={{ color: '#9a9a9a', fontSize: '0.85rem', textAlign: 'center', padding: '20px 0' }}>Немає даних</p>
+            <p style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem', textAlign: 'center', padding: '20px 0' }}>Немає даних</p>
         ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {sorted.map((c, i) => {
@@ -1645,14 +1659,14 @@ function TopCoursesTable({ courses }: { courses: { courseId: string; title: stri
                     <div key={c.courseId}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 5 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-                          <span style={{ fontSize: '0.65rem', fontWeight: 600, color: '#b0b0b0', width: 16, flexShrink: 0 }}>#{i + 1}</span>
+                          <span style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-tertiary)', width: 16, flexShrink: 0 }}>#{i + 1}</span>
                           <span style={{ fontSize: '0.82rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</span>
                         </div>
                         <div style={{ display: 'flex', gap: 12, flexShrink: 0, marginLeft: 12 }}>
-                          <span style={{ fontSize: '0.75rem', color: isRev ? '#0a0a0a' : '#9a9a9a', fontWeight: isRev ? 600 : 400 }}>
+                          <span style={{ fontSize: '0.75rem', color: isRev ? 'var(--text)' : 'var(--text-tertiary)', fontWeight: isRev ? 600 : 400 }}>
                             {c.revenue.toLocaleString('uk-UA')} ₴
                           </span>
-                          <span style={{ fontSize: '0.75rem', color: !isRev ? '#0a0a0a' : '#9a9a9a', fontWeight: !isRev ? 600 : 400 }}>
+                          <span style={{ fontSize: '0.75rem', color: !isRev ? 'var(--text)' : 'var(--text-tertiary)', fontWeight: !isRev ? 600 : 400 }}>
                             {c.enrollments} зап.
                           </span>
                         </div>
@@ -1671,13 +1685,13 @@ function TopCoursesTable({ courses }: { courses: { courseId: string; title: stri
 
 
 const s: Record<string, React.CSSProperties> = {
-  page:   { minHeight: '100vh', background: '#fafafa' },
+  page:   { minHeight: '100vh', background: 'var(--bg)' },
 
   header: {
     position: 'sticky', top: 0, zIndex: 100,
-    background: 'rgba(250,250,250,0.92)',
+    background: 'rgba(var(--bg-rgb),0.92)',
     backdropFilter: 'blur(12px)',
-    borderBottom: '1px solid #ebebeb',
+    borderBottom: '1px solid var(--border)',
   },
   headerInner: {
     maxWidth: 1160, margin: '0 auto',
@@ -1685,78 +1699,87 @@ const s: Record<string, React.CSSProperties> = {
     display: 'flex', alignItems: 'center', gap: 24,
   },
   backLink: {
-    fontSize: '0.8rem', color: '#9a9a9a',
+    fontSize: '0.8rem', color: 'var(--text-tertiary)',
     whiteSpace: 'nowrap', flexShrink: 0,
   },
   headerTitle: {
     display: 'flex', alignItems: 'center', gap: 8,
     fontSize: '0.95rem', fontWeight: 600,
-    letterSpacing: '-0.02em', color: '#0a0a0a',
+    letterSpacing: '-0.02em', color: 'var(--text)',
     flexShrink: 0, marginRight: 8,
   },
   headerDot: {
     width: 7, height: 7, borderRadius: '50%',
-    background: '#0a0a0a', flexShrink: 0,
+    background: 'var(--accent)', flexShrink: 0,
   },
   tabsRow: { display: 'flex', gap: 2 },
   tabBtn: {
     padding: '5px 14px', borderRadius: 6,
     border: 'none', background: 'transparent',
-    fontSize: '0.875rem', color: '#5a5a5a', cursor: 'pointer',
+    fontSize: '0.875rem', color: 'var(--text-secondary)', cursor: 'pointer',
   },
-  tabBtnActive: { color: '#0a0a0a', fontWeight: 500, background: '#f0f0f0' },
+  tabBtnActive: { color: 'var(--text)', fontWeight: 500, background: 'var(--bg-muted)' },
+  themeBtn: {
+    width: 32, height: 32,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    background: 'var(--bg-elevated)',
+    border: '1.5px solid var(--border)',
+    borderRadius: 8, cursor: 'pointer', fontSize: '0.9rem',
+    transition: 'border-color 0.2s, background 0.2s',
+    flexShrink: 0,
+  },
 
   body: { maxWidth: 1160, margin: '28px auto', padding: '0 32px' },
 
   pageTitle: {
     fontSize: '0.7rem', fontWeight: 500,
     textTransform: 'uppercase' as const, letterSpacing: '0.07em',
-    color: '#9a9a9a', marginBottom: 18,
+    color: 'var(--text-tertiary)', marginBottom: 18,
   },
 
   metricsRow: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 20 },
 
-  card: { background: '#fff', border: '1.5px solid #ebebeb', borderRadius: 12, padding: '18px 20px' },
+  card: { background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 12, padding: '18px 20px' },
   cardTitle: {
     fontSize: '0.7rem', fontWeight: 500,
     textTransform: 'uppercase' as const, letterSpacing: '0.07em',
-    color: '#9a9a9a', marginBottom: 16,
+    color: 'var(--text-tertiary)', marginBottom: 16,
   },
 
   metricValue: { fontSize: '1.6rem', fontWeight: 600, letterSpacing: '-0.03em', marginBottom: 2 },
-  metricLabel: { fontSize: '0.75rem', color: '#5a5a5a', fontWeight: 500 },
-  metricSub:   { fontSize: '0.72rem', color: '#9a9a9a', marginTop: 3 },
+  metricLabel: { fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500 },
+  metricSub:   { fontSize: '0.72rem', color: 'var(--text-tertiary)', marginTop: 3 },
 
   twoCol: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 },
 
-  track: { height: 3, background: '#f0f0f0', borderRadius: 99, overflow: 'hidden' },
-  fill:  { height: '100%', background: '#0a0a0a', borderRadius: 99, transition: 'width 0.4s' },
+  track: { height: 3, background: 'var(--bg-muted)', borderRadius: 99, overflow: 'hidden' },
+  fill:  { height: '100%', background: 'var(--accent)', borderRadius: 99, transition: 'width 0.4s' },
 
   filterRow: { display: 'flex', gap: 10, marginBottom: 16 },
 
-  tableWrap: { background: '#fff', border: '1.5px solid #ebebeb', borderRadius: 12, overflow: 'hidden' },
+  tableWrap: { background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 12, overflow: 'hidden' },
   table:     { width: '100%', borderCollapse: 'collapse' as const },
   th: {
     padding: '11px 16px', textAlign: 'left' as const,
     fontSize: '0.65rem', fontWeight: 500,
-    color: '#9a9a9a', background: '#fafafa',
-    borderBottom: '1px solid #ebebeb',
+    color: 'var(--text-tertiary)', background: 'var(--bg)',
+    borderBottom: '1px solid var(--border)',
     textTransform: 'uppercase' as const, letterSpacing: '0.06em',
   },
   td: {
-    padding: '12px 16px', borderBottom: '1px solid #f5f5f5',
-    fontSize: '0.875rem', color: '#0a0a0a', verticalAlign: 'middle' as const,
+    padding: '12px 16px', borderBottom: '1px solid var(--border)',
+    fontSize: '0.875rem', color: 'var(--text)', verticalAlign: 'middle' as const,
   },
 
   miniAvatar: {
     width: 30, height: 30, borderRadius: '50%',
-    background: '#0a0a0a', color: '#fafafa',
+    background: 'var(--accent)', color: 'var(--accent-inv)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     fontSize: '0.7rem', fontWeight: 600, flexShrink: 0,
   },
   courseThumb: {
     width: 30, height: 30, borderRadius: 6,
-    background: '#f0f0f0', color: '#5a5a5a',
+    background: 'var(--bg-muted)', color: 'var(--text-secondary)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     fontSize: '0.9rem', fontWeight: 600, flexShrink: 0,
   },
@@ -1767,49 +1790,49 @@ const s: Record<string, React.CSSProperties> = {
 
   inlineSelect: {
     padding: '4px 8px', borderRadius: 6,
-    border: '1.5px solid #ebebeb', background: '#fff',
+    border: '1.5px solid var(--border)', background: 'var(--bg-elevated)',
     fontSize: '0.8rem', cursor: 'pointer', outline: 'none',
-    fontFamily: 'inherit', color: '#0a0a0a',
+    fontFamily: 'inherit', color: 'var(--text)',
   },
 
 
   actionBtn: {
     padding: '5px 10px', borderRadius: 6,
-    border: '1.5px solid #ebebeb', background: 'transparent',
-    fontSize: '0.78rem', cursor: 'pointer', color: '#5a5a5a',
+    border: '1.5px solid var(--border)', background: 'transparent',
+    fontSize: '0.78rem', cursor: 'pointer', color: 'var(--text-secondary)',
     fontFamily: 'inherit',
   },
   actionBtnDanger: { color: '#dc2626', borderColor: '#fecaca' },
 
   btnApprove: {
     padding: '7px 18px', borderRadius: 7,
-    border: '1.5px solid #ebebeb', background: '#0a0a0a',
-    color: '#fafafa', fontSize: '0.8rem', fontWeight: 500,
+    border: '1.5px solid var(--border)', background: 'var(--accent)',
+    color: 'var(--accent-inv)', fontSize: '0.8rem', fontWeight: 500,
     cursor: 'pointer', fontFamily: 'inherit',
   },
   btnReject: {
     padding: '7px 18px', borderRadius: 7,
-    border: '1.5px solid #ebebeb', background: 'transparent',
-    color: '#5a5a5a', fontSize: '0.8rem',
+    border: '1.5px solid var(--border)', background: 'transparent',
+    color: 'var(--text-secondary)', fontSize: '0.8rem',
     cursor: 'pointer', fontFamily: 'inherit',
   },
 
-  emptyText: { textAlign: 'center' as const, padding: '28px', color: '#9a9a9a', fontSize: '0.875rem' },
+  emptyText: { textAlign: 'center' as const, padding: '28px', color: 'var(--text-tertiary)', fontSize: '0.875rem' },
 
   periodBtn: {
     padding: '5px 14px', borderRadius: 6,
-    border: '1.5px solid #ebebeb', background: 'transparent',
-    fontSize: '0.8rem', color: '#5a5a5a', cursor: 'pointer',
+    border: '1.5px solid var(--border)', background: 'transparent',
+    fontSize: '0.8rem', color: 'var(--text-secondary)', cursor: 'pointer',
     fontFamily: 'inherit',
   },
   periodBtnActive: {
-    background: '#0a0a0a', color: '#fafafa',
-    borderColor: '#0a0a0a', fontWeight: 500,
+    background: 'var(--accent)', color: 'var(--accent-inv)',
+    borderColor: 'var(--accent)', fontWeight: 500,
   },
   applyBtn: {
     padding: '5px 14px', borderRadius: 6,
-    border: '1.5px solid #0a0a0a', background: '#0a0a0a',
-    color: '#fafafa', fontSize: '0.8rem', cursor: 'pointer',
+    border: '1.5px solid var(--accent)', background: 'var(--accent)',
+    color: 'var(--accent-inv)', fontSize: '0.8rem', cursor: 'pointer',
     fontFamily: 'inherit', fontWeight: 500,
   },
 };
@@ -1855,9 +1878,9 @@ function TeachersTab() {
             { label: 'Загальний дохід',   value: `${totalRevenue.toLocaleString('uk-UA')} ₴` },
             { label: 'Загальних записів', value: totalEnroll.toLocaleString('uk-UA') },
           ].map(c => (
-              <div key={c.label} style={{ background: '#fff', borderRadius: 12, padding: '18px 20px', border: '1px solid #e8e8e8' }}>
+              <div key={c.label} style={{ background: 'var(--bg-elevated)', borderRadius: 12, padding: '18px 20px', border: '1px solid var(--border)' }}>
                 <p style={{ fontSize: '1.6rem', fontWeight: 700, margin: 0 }}>{c.value}</p>
-                <p style={{ fontSize: '0.78rem', color: '#9a9a9a', margin: '4px 0 0' }}>{c.label}</p>
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', margin: '4px 0 0' }}>{c.label}</p>
               </div>
           ))}
         </div>
@@ -1867,51 +1890,51 @@ function TeachersTab() {
               placeholder="Пошук за ім'ям або email..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{ padding: '8px 12px', border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: '0.85rem', outline: 'none', width: 240 }}
+              style={{ padding: '8px 12px', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.85rem', outline: 'none', width: 240 }}
           />
           <div style={{ display: 'flex', gap: 6 }}>
             {sortButtons.map(b => (
                 <button key={b.key} onClick={() => setSortBy(b.key)}
                         style={{ padding: '6px 12px', borderRadius: 8, border: '1.5px solid', fontSize: '0.78rem', cursor: 'pointer',
-                          borderColor: sortBy === b.key ? '#0a0a0a' : '#e5e7eb',
-                          background:  sortBy === b.key ? '#0a0a0a' : '#fff',
-                          color:       sortBy === b.key ? '#fff' : '#374151',
+                          borderColor: sortBy === b.key ? 'var(--accent)' : 'var(--border)',
+                          background:  sortBy === b.key ? 'var(--accent)' : 'var(--bg-elevated)',
+                          color:       sortBy === b.key ? 'var(--accent-inv)' : 'var(--text-secondary)',
                         }}>{b.label}</button>
             ))}
           </div>
         </div>
 
         {loading ? (
-            <p style={{ color: '#9a9a9a', padding: 24 }}>Завантаження...</p>
+            <p style={{ color: 'var(--text-tertiary)', padding: 24 }}>Завантаження...</p>
         ) : sorted.length === 0 ? (
-            <p style={{ color: '#9a9a9a', padding: 24 }}>Викладачів не знайдено</p>
+            <p style={{ color: 'var(--text-tertiary)', padding: 24 }}>Викладачів не знайдено</p>
         ) : (
-            <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e8e8e8', overflow: 'hidden' }}>
+            <div style={{ background: 'var(--bg-elevated)', borderRadius: 12, border: '1px solid var(--border)', overflow: 'hidden' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' as const }}>
                 <thead>
-                <tr style={{ background: '#fafafa', borderBottom: '1px solid #e8e8e8' }}>
+                <tr style={{ background: 'var(--bg)', borderBottom: '1px solid var(--border)' }}>
                   {['#', 'Викладач', 'Дохід', 'Записів', 'Курси', 'Опубл.', 'Сертиф.', 'Рейтинг'].map(h => (
-                      <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: '0.75rem', color: '#9a9a9a', fontWeight: 600, whiteSpace: 'nowrap' as const }}>{h}</th>
+                      <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 600, whiteSpace: 'nowrap' as const }}>{h}</th>
                   ))}
                 </tr>
                 </thead>
                 <tbody>
                 {sorted.map((t, i) => (
-                    <tr key={t.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                      <td style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#9a9a9a', width: 32 }}>#{i + 1}</td>
+                    <tr key={t.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td style={{ padding: '12px 14px', fontSize: '0.8rem', color: 'var(--text-tertiary)', width: 32 }}>#{i + 1}</td>
                       <td style={{ padding: '12px 14px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: 700, flexShrink: 0 }}>
+                          <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--bg-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: 700, flexShrink: 0 }}>
                             {t.name?.[0]?.toUpperCase()}
                           </div>
                           <div>
                             <p style={{ fontSize: '0.875rem', fontWeight: 500, margin: 0 }}>{t.name}</p>
-                            <p style={{ fontSize: '0.72rem', color: '#9a9a9a', margin: 0 }}>{t.email}</p>
+                            <p style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', margin: 0 }}>{t.email}</p>
                           </div>
                         </div>
                       </td>
                       <td style={{ padding: '12px 14px', fontWeight: 700, fontSize: '0.9rem', whiteSpace: 'nowrap' as const }}>
-                        {t.revenue > 0 ? `${t.revenue.toLocaleString('uk-UA')} ₴` : <span style={{ color: '#9a9a9a' }}>—</span>}
+                        {t.revenue > 0 ? `${t.revenue.toLocaleString('uk-UA')} ₴` : <span style={{ color: 'var(--text-tertiary)' }}>—</span>}
                       </td>
                       <td style={{ padding: '12px 14px', fontSize: '0.875rem' }}>{t.enrollments}</td>
                       <td style={{ padding: '12px 14px', fontSize: '0.875rem' }}>{t.totalCourses}</td>
@@ -1924,9 +1947,9 @@ function TeachersTab() {
                         {t.avgRating > 0 ? (
                             <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.875rem' }}>
                         ⭐ {t.avgRating.toFixed(1)}
-                              <span style={{ color: '#9a9a9a', fontSize: '0.72rem' }}>({t.reviewCount})</span>
+                              <span style={{ color: 'var(--text-tertiary)', fontSize: '0.72rem' }}>({t.reviewCount})</span>
                       </span>
-                        ) : <span style={{ color: '#9a9a9a' }}>—</span>}
+                        ) : <span style={{ color: 'var(--text-tertiary)' }}>—</span>}
                       </td>
                     </tr>
                 ))}

@@ -69,8 +69,8 @@ export function PaymentResultPage() {
   }, [courseId, status, isSubscription]);
 
   return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9fafb' }}>
-        <div style={{ background: '#fff', borderRadius: 20, padding: '48px 40px', maxWidth: 440, width: '100%', textAlign: 'center', boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
+        <div style={{ background: 'var(--bg-elevated)', borderRadius: 20, padding: '48px 40px', maxWidth: 440, width: '100%', textAlign: 'center', boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
 
           {state === 'success' && (
               <>
@@ -78,14 +78,14 @@ export function PaymentResultPage() {
                 <h2 style={{ fontSize: 22, fontWeight: 700, color: '#065f46', marginBottom: 8 }}>
                   Оплата успішна!
                 </h2>
-                <p style={{ color: '#6b7280', marginBottom: 28 }}>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: 28 }}>
                   {isSubscription
                       ? 'Підписка активована! Тепер у тебе є доступ до всіх курсів.'
                       : 'Ти записаний на курс. Можеш одразу починати навчання.'}
                 </p>
                 <Link
                     to={isSubscription ? '/subscription' : (courseId ? `/courses/${courseId}` : '/courses')}
-                    style={{ display: 'block', padding: '14px', background: '#4f46e5', color: '#fff', borderRadius: 10, textDecoration: 'none', fontWeight: 600, fontSize: 15 }}
+                    style={{ display: 'block', padding: '14px', background: '#4f46e5', color: 'var(--bg-elevated)', borderRadius: 10, textDecoration: 'none', fontWeight: 600, fontSize: 15 }}
                 >
                   {isSubscription ? 'Моя підписка →' : 'Перейти до курсу →'}
                 </Link>
@@ -98,12 +98,12 @@ export function PaymentResultPage() {
                 <h2 style={{ fontSize: 22, fontWeight: 700, color: '#991b1b', marginBottom: 8 }}>
                   Оплата не вдалась
                 </h2>
-                <p style={{ color: '#6b7280', marginBottom: 28 }}>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: 28 }}>
                   Спробуй ще раз або використай інший спосіб оплати.
                 </p>
                 <Link
                     to={courseId ? `/courses/${courseId}` : '/courses'}
-                    style={{ display: 'block', padding: '14px', background: '#4f46e5', color: '#fff', borderRadius: 10, textDecoration: 'none', fontWeight: 600, fontSize: 15 }}
+                    style={{ display: 'block', padding: '14px', background: '#4f46e5', color: 'var(--bg-elevated)', borderRadius: 10, textDecoration: 'none', fontWeight: 600, fontSize: 15 }}
                 >
                   Повернутись до курсу
                 </Link>
@@ -116,10 +116,10 @@ export function PaymentResultPage() {
                 <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>
                   Перевіряємо оплату...
                 </h2>
-                <p style={{ color: '#6b7280', marginBottom: 8 }}>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: 8 }}>
                   Зачекай кілька секунд, підтверджуємо платіж
                 </p>
-                <div style={{ height: 4, background: '#e5e7eb', borderRadius: 2, overflow: 'hidden', margin: '16px 0' }}>
+                <div style={{ height: 4, background: 'var(--border)', borderRadius: 2, overflow: 'hidden', margin: '16px 0' }}>
                   <div style={{
                     height: '100%',
                     background: '#4f46e5',
@@ -128,7 +128,7 @@ export function PaymentResultPage() {
                     transition: 'width 0.5s ease',
                   }} />
                 </div>
-                <p style={{ fontSize: 12, color: '#9ca3af' }}>
+                <p style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>
                   Спроба {attempts} з {MAX_ATTEMPTS}
                 </p>
               </>

@@ -156,9 +156,9 @@ export function CatalogPage() {
               <p style={s.filterLabel}>Максимальна ціна</p>
               <div style={s.priceDisplay}>
                 {maxPrice >= MAX_PRICE ? (
-                    <span style={{ color: '#9a9a9a', fontSize: '0.8rem' }}>Будь-яка</span>
+                    <span style={s.priceAny}>Будь-яка</span>
                 ) : (
-                    <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>до {maxPrice.toLocaleString()} ₴</span>
+                    <span style={s.priceValue}>до {maxPrice.toLocaleString()} ₴</span>
                 )}
               </div>
               <input type="range" min={0} max={MAX_PRICE} step={100} value={maxPrice}
@@ -176,13 +176,13 @@ export function CatalogPage() {
                 {[1,2,3,4,5].map(star => (
                     <button key={star}
                             onClick={() => { setMinRating(minRating === star ? 0 : star); setPage(1); }}
-                            style={{ ...s.starBtn, color: star <= minRating ? '#f59e0b' : '#e5e7eb' }}>
+                            style={{ ...s.starBtn, color: star <= minRating ? '#f59e0b' : 'var(--border-strong)' }}>
                       ★
                     </button>
                 ))}
               </div>
               {minRating > 0 && (
-                  <p style={{ fontSize: '0.72rem', color: '#6b7280', marginTop: 4 }}>від {minRating}★</p>
+                  <p style={s.ratingHint}>від {minRating}★</p>
               )}
             </div>
           </aside>
@@ -210,7 +210,7 @@ export function CatalogPage() {
                   <div style={s.empty}>
                     <div style={{ fontSize: '3rem', marginBottom: 16 }}>🔍</div>
                     <p style={{ fontWeight: 600, fontSize: '1rem', marginBottom: 8 }}>Нічого не знайдено</p>
-                    <p style={{ color: '#9a9a9a', fontSize: '0.875rem', marginBottom: 20 }}>
+                    <p style={s.emptyHint}>
                       Спробуйте змінити фільтри або пошуковий запит
                     </p>
                     {hasActiveFilters && (
@@ -251,7 +251,7 @@ export function CatalogPage() {
                         acc.push(p); return acc;
                       }, [])
                       .map((p, i) => p === '...'
-                          ? <span key={`dots-${i}`} style={{ padding: '0 4px', color: '#9a9a9a' }}>…</span>
+                          ? <span key={`dots-${i}`} style={s.pageDots}>…</span>
                           : <button key={p} style={{ ...s.pageBtn, ...(p === page ? s.pageBtnActive : {}) }}
                                     onClick={() => setPage(p as number)}>{p}</button>
                       )}
@@ -267,11 +267,11 @@ export function CatalogPage() {
 
 function SkeletonCard() {
   return (
-      <div style={{ background: '#fff', border: '1.5px solid #f0f0f0', borderRadius: 14, overflow: 'hidden' }}>
-        <div style={{ aspectRatio: '16/9', background: 'linear-gradient(90deg, #f0f0f0 25%, #fafafa 50%, #f0f0f0 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.4s infinite' }} />
+      <div style={{ background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
+        <div style={{ aspectRatio: '16/9', background: 'var(--bg-muted)', }} />
         <div style={{ padding: '14px 16px' }}>
           {[80, 60, 100, 50].map((w, i) => (
-              <div key={i} style={{ height: i === 2 ? 14 : 10, width: `${w}%`, background: '#f0f0f0', borderRadius: 4, marginBottom: 8 }} />
+              <div key={i} style={{ height: i === 2 ? 14 : 10, width: `${w}%`, background: 'var(--bg-muted)', borderRadius: 4, marginBottom: 8 }} />
           ))}
         </div>
       </div>
@@ -292,9 +292,9 @@ function CourseCard({ course, progress, lessonsCount, isAuthenticated }: {
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
           style={{
-            background: '#fff', borderRadius: 14, overflow: 'hidden',
-            border: `1.5px solid ${hovered ? '#d0d0d0' : '#ebebeb'}`,
-            boxShadow: hovered ? '0 8px 32px rgba(0,0,0,0.10)' : '0 1px 4px rgba(0,0,0,0.04)',
+            background: 'var(--bg-elevated)', borderRadius: 14, overflow: 'hidden',
+            border: `1.5px solid ${hovered ? 'var(--border-strong)' : 'var(--border)'}`,
+            boxShadow: hovered ? 'var(--shadow-md)' : 'var(--shadow-sm)',
             transition: 'box-shadow 0.2s, border-color 0.2s, transform 0.15s',
             transform: hovered ? 'translateY(-3px)' : 'none',
             display: 'flex', flexDirection: 'column' as const,
@@ -325,7 +325,7 @@ function CourseCard({ course, progress, lessonsCount, isAuthenticated }: {
                 }}>
                   <div style={{
                     background: isDone ? '#16a34a' : 'rgba(255,255,255,0.95)',
-                    color: isDone ? '#fff' : '#0a0a0a',
+                    color: isDone ? 'var(--accent-inv)' : 'var(--text)',
                     borderRadius: 99, padding: '6px 16px',
                     fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.02em',
                   }}>
@@ -339,7 +339,7 @@ function CourseCard({ course, progress, lessonsCount, isAuthenticated }: {
               background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(4px)',
               borderRadius: 6, padding: '2px 8px',
               fontSize: '0.65rem', fontWeight: 700,
-              color: lvlColor[course.level] ?? '#5a5a5a',
+              color: lvlColor[course.level] ?? 'var(--text-secondary)',
               textTransform: 'uppercase' as const, letterSpacing: '0.06em',
             }}>
               {lvl[course.level]}
@@ -348,7 +348,7 @@ function CourseCard({ course, progress, lessonsCount, isAuthenticated }: {
             {Number(course.price) === 0 && !isEnrolled && (
                 <div style={{
                   position: 'absolute' as const, top: 8, right: 8,
-                  background: '#16a34a', color: '#fff',
+                  background: '#16a34a', color: 'var(--bg-elevated)',
                   borderRadius: 6, padding: '2px 8px',
                   fontSize: '0.65rem', fontWeight: 700,
                   letterSpacing: '0.04em',
@@ -358,19 +358,19 @@ function CourseCard({ course, progress, lessonsCount, isAuthenticated }: {
 
           <div style={{ padding: '14px 16px 10px', flex: 1 }}>
             {course.category && (
-                <span style={{ fontSize: '0.7rem', color: '#9a9a9a', textTransform: 'uppercase' as const, letterSpacing: '0.05em' }}>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', textTransform: 'uppercase' as const, letterSpacing: '0.05em' }}>
               {course.category}
             </span>
             )}
             <h3 style={{
               fontSize: '0.92rem', fontWeight: 700,
               margin: '4px 0 6px', lineHeight: 1.35,
-              letterSpacing: '-0.01em', color: '#0a0a0a',
+              letterSpacing: '-0.01em', color: 'var(--text)',
               display: '-webkit-box', WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical' as const, overflow: 'hidden',
             }}>{course.title}</h3>
             <p style={{
-              fontSize: '0.78rem', color: '#9a9a9a', lineHeight: 1.5,
+              fontSize: '0.78rem', color: 'var(--text-tertiary)', lineHeight: 1.5,
               display: '-webkit-box', WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical' as const, overflow: 'hidden',
               marginBottom: 8,
@@ -380,7 +380,7 @@ function CourseCard({ course, progress, lessonsCount, isAuthenticated }: {
 
             {isEnrolled && progress !== undefined && (
                 <div style={{ marginTop: 8 }}>
-                  <div style={{ height: 3, background: '#f0f0f0', borderRadius: 99, overflow: 'hidden' }}>
+                  <div style={{ height: 3, background: 'var(--bg-muted)', borderRadius: 99, overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: `${progress}%`, background: isDone ? '#16a34a' : '#3b82f6', borderRadius: 99, transition: 'width 0.4s' }} />
                   </div>
                 </div>
@@ -390,11 +390,11 @@ function CourseCard({ course, progress, lessonsCount, isAuthenticated }: {
 
         <div style={{ padding: '0 16px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-          <span style={{ fontSize: '0.72rem', color: '#9a9a9a' }}>
+          <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>
             {course.author?.name}
           </span>
             {lessonsCount > 0 && (
-                <span style={{ fontSize: '0.7rem', color: '#c0c0c0', marginLeft: 8 }}>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', marginLeft: 8 }}>
               · {lessonsCount} урок{lessonsCount === 1 ? '' : lessonsCount < 5 ? 'и' : 'ів'}
             </span>
             )}
@@ -404,7 +404,7 @@ function CourseCard({ course, progress, lessonsCount, isAuthenticated }: {
                 <WishlistButton courseId={course.id} variant="icon" />
             )}
             {!isEnrolled && (
-                <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#0a0a0a' }}>
+                <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text)' }}>
               {Number(course.price) === 0 ? 'Безкоштовно' : `${Number(course.price).toLocaleString()} ₴`}
             </span>
             )}
@@ -436,16 +436,16 @@ function CourseListRow({ course, progress, lessonsCount, isAuthenticated }: {
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', gap: 6, marginBottom: 4, alignItems: 'center' }}>
-            <span style={{ fontSize: '0.65rem', fontWeight: 600, color: '#5a5a5a', textTransform: 'uppercase' as const, letterSpacing: '0.05em', border: '1px solid #ebebeb', borderRadius: 4, padding: '1px 6px' }}>{lvl[course.level]}</span>
-            {course.category && <span style={{ fontSize: '0.65rem', color: '#9a9a9a' }}>{course.category}</span>}
+            <span style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase' as const, letterSpacing: '0.05em', border: '1px solid var(--border)', borderRadius: 4, padding: '1px 6px' }}>{lvl[course.level]}</span>
+            {course.category && <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>{course.category}</span>}
           </div>
-          <h3 style={{ fontSize: '0.92rem', fontWeight: 700, marginBottom: 4, color: '#0a0a0a', letterSpacing: '-0.01em' }}>{course.title}</h3>
-          <p style={{ fontSize: '0.78rem', color: '#9a9a9a', lineHeight: 1.4, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{course.description}</p>
+          <h3 style={{ fontSize: '0.92rem', fontWeight: 700, marginBottom: 4, color: 'var(--text)', letterSpacing: '-0.01em' }}>{course.title}</h3>
+          <p style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', lineHeight: 1.4, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{course.description}</p>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column' as const, alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
           <StarRating value={course.rating} />
-          <span style={{ fontSize: '0.72rem', color: '#9a9a9a' }}>{lessonsCount} урок{lessonsCount < 5 ? 'и' : 'ів'}</span>
-          <span style={{ fontWeight: 700, fontSize: '0.9rem', color: isEnrolled ? '#16a34a' : '#0a0a0a' }}>
+          <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>{lessonsCount} урок{lessonsCount < 5 ? 'и' : 'ів'}</span>
+          <span style={{ fontWeight: 700, fontSize: '0.9rem', color: isEnrolled ? '#16a34a' : 'var(--text)' }}>
           {isEnrolled ? '✓ Записаний' : Number(course.price) === 0 ? 'Безкоштовно' : `${Number(course.price).toLocaleString()} ₴`}
         </span>
         </div>
@@ -461,97 +461,103 @@ function StarRating({ value }: { value: number | null }) {
         {[1,2,3,4,5].map(star => (
             <span key={star} style={{
               fontSize: '0.72rem',
-              color: star <= Math.floor(rounded) ? '#f59e0b' : star - 0.5 <= rounded ? '#fbbf24' : '#e5e7eb',
+              color: star <= Math.floor(rounded) ? '#f59e0b' : star - 0.5 <= rounded ? '#fbbf24' : 'var(--border-strong)',
             }}>★</span>
         ))}
-        <span style={{ fontSize: '0.68rem', color: '#9a9a9a', marginLeft: 3 }}>{Number(value).toFixed(1)}</span>
+        <span style={{ fontSize: '0.68rem', color: 'var(--text-tertiary)', marginLeft: 3 }}>{Number(value).toFixed(1)}</span>
       </div>
   );
 }
 
 const s: Record<string, any> = {
-  page:   { minHeight: '100vh', background: '#f7f7f7' },
-  hero:   { background: '#fff', borderBottom: '1px solid #ebebeb', padding: '40px 0 28px' },
+  page:   { minHeight: '100vh', background: 'var(--bg-subtle)' },
+  hero:   { background: 'var(--bg-elevated)', borderBottom: '1px solid var(--border)', padding: '40px 0 28px' },
   heroInner: { maxWidth: 1200, margin: '0 auto', padding: '0 32px', display: 'flex', flexDirection: 'column' as const, gap: 16 },
   heroText: {},
-  heroTitle: { fontSize: '1.7rem', fontWeight: 800, letterSpacing: '-0.04em', color: '#0a0a0a', marginBottom: 4 },
-  heroSub:   { color: '#9a9a9a', fontSize: '0.875rem' },
+  heroTitle: { fontSize: '1.7rem', fontWeight: 800, letterSpacing: '-0.04em', color: 'var(--text)', marginBottom: 4 },
+  heroSub:   { color: 'var(--text-tertiary)', fontSize: '0.875rem' },
   searchWrap: { position: 'relative' as const, maxWidth: 520, display: 'flex', alignItems: 'center' },
-  searchIcon: { position: 'absolute' as const, left: 14, fontSize: '0.85rem', pointerEvents: 'none' as const, color: '#9a9a9a' },
-  searchClear: { position: 'absolute' as const, right: 12, background: 'none', border: 'none', color: '#9a9a9a', cursor: 'pointer', fontSize: '0.8rem', padding: 4 },
+  searchIcon: { position: 'absolute' as const, left: 14, fontSize: '0.85rem', pointerEvents: 'none' as const, color: 'var(--text-tertiary)' },
+  searchClear: { position: 'absolute' as const, right: 12, background: 'none', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', fontSize: '0.8rem', padding: 4 },
   search: {
     width: '100%', padding: '11px 36px 11px 38px',
-    border: '1.5px solid #e5e7eb', borderRadius: 10,
-    fontSize: '0.9rem', outline: 'none', background: '#fafafa',
+    border: '1.5px solid var(--border)', borderRadius: 10,
+    fontSize: '0.9rem', outline: 'none',
+    background: 'var(--bg)', color: 'var(--text)',
     boxSizing: 'border-box' as const,
     transition: 'border-color 0.15s',
   },
 
   body:  { maxWidth: 1200, margin: '28px auto', padding: '0 32px', display: 'flex', gap: 28, alignItems: 'flex-start' },
-  aside: { width: 210, flexShrink: 0, background: '#fff', border: '1.5px solid #ebebeb', borderRadius: 14, padding: '18px 16px', position: 'sticky' as const, top: 80 },
+  aside: { width: 210, flexShrink: 0, background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 14, padding: '18px 16px', position: 'sticky' as const, top: 80 },
   asideHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  asideTitle: { fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: '#0a0a0a' },
+  asideTitle: { fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: 'var(--text)' },
   resetBtn: { background: 'none', border: 'none', fontSize: '0.75rem', color: '#dc2626', cursor: 'pointer', padding: 0, fontFamily: 'inherit' },
 
   filterGroup: { marginBottom: 22 },
-  filterLabel: { fontSize: '0.68rem', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: '#9a9a9a', marginBottom: 8 },
+  filterLabel: { fontSize: '0.68rem', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: 'var(--text-tertiary)', marginBottom: 8 },
   filterList: { display: 'flex', flexWrap: 'wrap' as const, gap: 4 },
   filterChip: {
-    padding: '4px 10px', borderRadius: 99, border: '1.5px solid #ebebeb',
-    background: '#fff', fontSize: '0.75rem', color: '#5a5a5a', cursor: 'pointer',
+    padding: '4px 10px', borderRadius: 99, border: '1.5px solid var(--border)',
+    background: 'var(--bg-elevated)', fontSize: '0.75rem', color: 'var(--text-secondary)', cursor: 'pointer',
     transition: 'all 0.12s', fontFamily: 'inherit',
   },
-  filterChipActive: { background: '#0a0a0a', color: '#fff', borderColor: '#0a0a0a' },
+  filterChipActive: { background: 'var(--accent)', color: 'var(--accent-inv)', borderColor: 'var(--accent)' },
 
   filterRow: {
     display: 'flex', alignItems: 'center', gap: 8,
     padding: '6px 8px', borderRadius: 8, border: 'none',
-    background: 'transparent', fontSize: '0.85rem', color: '#5a5a5a',
+    background: 'transparent', fontSize: '0.85rem', color: 'var(--text-secondary)',
     cursor: 'pointer', width: '100%', textAlign: 'left' as const,
     marginBottom: 2, transition: 'background 0.12s', fontFamily: 'inherit',
   },
-  filterRowActive: { background: '#f5f5f5', color: '#0a0a0a', fontWeight: 600 },
+  filterRowActive: { background: 'var(--bg-muted)', color: 'var(--text)', fontWeight: 600 },
   filterDot: (active: boolean) => ({
     width: 8, height: 8, borderRadius: '50%',
-    background: active ? '#0a0a0a' : '#d6d6d6', flexShrink: 0, transition: 'background 0.12s',
+    background: active ? 'var(--accent)' : 'var(--border-strong)', flexShrink: 0, transition: 'background 0.12s',
   }),
 
   priceDisplay: { marginBottom: 8 },
-  range: { width: '100%', accentColor: '#0a0a0a', cursor: 'pointer', margin: '4px 0' },
-  rangeLabel: { fontSize: '0.65rem', color: '#c0c0c0' },
+  priceAny: { color: 'var(--text-tertiary)', fontSize: '0.8rem' },
+  priceValue: { fontWeight: 600, fontSize: '0.9rem', color: 'var(--text)' },
+  range: { width: '100%', accentColor: 'var(--accent)', cursor: 'pointer', margin: '4px 0' },
+  rangeLabel: { fontSize: '0.65rem', color: 'var(--text-tertiary)' },
 
+  ratingHint: { fontSize: '0.72rem', color: 'var(--text-tertiary)', marginTop: 4 },
   starBtn: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', padding: '2px 1px', lineHeight: 1, transition: 'transform 0.1s' },
 
   main: { flex: 1, minWidth: 0 },
   toolbar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  toolbarCount: { fontSize: '0.82rem', color: '#9a9a9a' },
-  sortSelect: { padding: '7px 10px', border: '1.5px solid #ebebeb', borderRadius: 8, fontSize: '0.82rem', background: '#fff', cursor: 'pointer', outline: 'none', color: '#0a0a0a', fontFamily: 'inherit' },
-  viewToggle: { display: 'flex', border: '1.5px solid #ebebeb', borderRadius: 8, overflow: 'hidden' },
-  viewBtn: { padding: '6px 10px', background: '#fff', border: 'none', cursor: 'pointer', fontSize: '1rem', color: '#9a9a9a', transition: 'background 0.1s' },
-  viewBtnActive: { background: '#0a0a0a', color: '#fff' },
+  toolbarCount: { fontSize: '0.82rem', color: 'var(--text-tertiary)' },
+  sortSelect: { padding: '7px 10px', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.82rem', background: 'var(--bg-elevated)', cursor: 'pointer', outline: 'none', color: 'var(--text)', fontFamily: 'inherit' },
+  viewToggle: { display: 'flex', border: '1.5px solid var(--border)', borderRadius: 8, overflow: 'hidden' },
+  viewBtn: { padding: '6px 10px', background: 'var(--bg-elevated)', border: 'none', cursor: 'pointer', fontSize: '1rem', color: 'var(--text-tertiary)', transition: 'background 0.1s' },
+  viewBtnActive: { background: 'var(--accent)', color: 'var(--accent-inv)' },
 
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 },
   listLayout: { display: 'flex', flexDirection: 'column' as const, gap: 10 },
   listRow: {
     display: 'flex', alignItems: 'center', gap: 16,
-    background: '#fff', border: '1.5px solid #ebebeb', borderRadius: 12,
+    background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 12,
     padding: '12px 16px', textDecoration: 'none', color: 'inherit',
     transition: 'border-color 0.15s, box-shadow 0.15s',
   },
 
-  empty: { textAlign: 'center' as const, padding: '80px 20px', color: '#0a0a0a' },
+  empty: { textAlign: 'center' as const, padding: '80px 20px', color: 'var(--text)' },
+  emptyHint: { color: 'var(--text-tertiary)', fontSize: '0.875rem', marginBottom: 20 },
   emptyResetBtn: {
-    padding: '9px 22px', background: '#0a0a0a', color: '#fff',
+    padding: '9px 22px', background: 'var(--accent)', color: 'var(--accent-inv)',
     border: 'none', borderRadius: 8, fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'inherit',
   },
 
   pagination: { display: 'flex', gap: 6, justifyContent: 'center', marginTop: 32, alignItems: 'center' },
+  pageDots: { padding: '0 4px', color: 'var(--text-tertiary)' },
   pageBtn: {
     width: 36, height: 36, borderRadius: 8,
-    border: '1.5px solid #ebebeb', background: '#fff',
-    fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'inherit',
+    border: '1.5px solid var(--border)', background: 'var(--bg-elevated)',
+    fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--text)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     transition: 'all 0.12s',
   },
-  pageBtnActive: { background: '#0a0a0a', color: '#fafafa', borderColor: '#0a0a0a' },
+  pageBtnActive: { background: 'var(--accent)', color: 'var(--accent-inv)', borderColor: 'var(--accent)' },
 };

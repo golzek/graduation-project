@@ -25,16 +25,16 @@ const s: Record<string, React.CSSProperties> = {
     wrap:  { display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 },
     row:   { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 },
     card:  {
-        background: '#fff', border: '1.5px solid #ebebeb',
+        background: 'var(--bg-elevated)', border: '1.5px solid var(--border)',
         borderRadius: 12, padding: '18px 20px',
     },
     label: {
         fontSize: '0.72rem', fontWeight: 500,
         textTransform: 'uppercase' as const, letterSpacing: '0.07em',
-        color: '#9a9a9a', marginBottom: 10,
+        color: 'var(--text-tertiary)', marginBottom: 10,
     },
     big:   { fontSize: '2rem', fontWeight: 600, letterSpacing: '-0.04em', lineHeight: 1 },
-    sub:   { fontSize: '0.75rem', color: '#9a9a9a', marginTop: 4 },
+    sub:   { fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: 4 },
     flame: { fontSize: '1.4rem', marginRight: 6 },
     streakRow: { display: 'flex', alignItems: 'center' },
 };
@@ -73,7 +73,7 @@ export function LearningStats() {
     const maxCalSec = Math.max(...calDays.map(d => d.sec), 1);
 
     const cellColor = (sec: number) => {
-        if (sec === 0) return '#f0f0f0';
+        if (sec === 0) return 'var(--bg-muted)';
         const t = sec / maxCalSec;
         if (t < 0.25) return '#c8e6c9';
         if (t < 0.5)  return '#66bb6a';
@@ -133,12 +133,12 @@ export function LearningStats() {
                                         title={fmtTime(w.seconds)}
                                         style={{
                                             width: '100%', height: h,
-                                            background: '#0a0a0a', borderRadius: 3,
+                                            background: 'var(--accent)', borderRadius: 3,
                                             opacity: i === weeklySeconds.length - 1 ? 1 : 0.45,
                                             transition: 'height 0.4s',
                                         }}
                                     />
-                                    <span style={{ fontSize: '0.65rem', color: '#9a9a9a', whiteSpace: 'nowrap' }}>{label}</span>
+                                    <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>{label}</span>
                                 </div>
                             );
                         })}
@@ -162,11 +162,11 @@ export function LearningStats() {
                     ))}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 8 }}>
-                    <span style={{ fontSize: '0.65rem', color: '#9a9a9a' }}>менше</span>
-                    {['#f0f0f0','#c8e6c9','#66bb6a','#2e7d32','#1b5e20'].map(c => (
+                    <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>менше</span>
+                    {['var(--bg-muted)','#c8e6c9','#66bb6a','#2e7d32','#1b5e20'].map(c => (
                         <div key={c} style={{ width: 10, height: 10, borderRadius: 2, background: c }} />
                     ))}
-                    <span style={{ fontSize: '0.65rem', color: '#9a9a9a' }}>більше</span>
+                    <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>більше</span>
                 </div>
             </div>
         </div>

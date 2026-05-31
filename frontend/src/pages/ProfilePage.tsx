@@ -158,41 +158,41 @@ export function ProfilePage() {
 }
 
 const s: Record<string, React.CSSProperties> = {
-    page:   { minHeight: '100vh', background: '#fafafa' },
-    header: { borderBottom: '1px solid #ebebeb', background: '#fff', padding: '28px 0' },
+    page:   { minHeight: '100vh', background: 'var(--bg)' },
+    header: { borderBottom: '1px solid var(--border)', background: 'var(--bg-elevated)', padding: '28px 0' },
     headerInner: {
         maxWidth: 1160, margin: '0 auto', padding: '0 32px',
         display: 'flex', alignItems: 'center', gap: 16,
     },
     avatar: {
         width: 52, height: 52, borderRadius: '50%',
-        background: '#0a0a0a', color: '#fafafa',
+        background: 'var(--accent)', color: 'var(--accent-inv)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: '1.1rem', fontWeight: 600, flexShrink: 0,
     },
     title:  { fontSize: '1.2rem', fontWeight: 600, letterSpacing: '-0.02em' },
-    sub:    { fontSize: '0.85rem', color: '#9a9a9a', marginTop: 2 },
+    sub:    { fontSize: '0.85rem', color: 'var(--text-tertiary)', marginTop: 2 },
     body:   { maxWidth: 1160, margin: '28px auto', padding: '0 32px' },
     grid:   { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, maxWidth: 760 },
     card:   {
-        background: '#fff', border: '1.5px solid #ebebeb',
+        background: 'var(--bg-elevated)', border: '1.5px solid var(--border)',
         borderRadius: 12, padding: '20px 22px',
     },
     sectionLabel: {
         fontSize: '0.7rem', fontWeight: 500,
         textTransform: 'uppercase' as const, letterSpacing: '0.07em',
-        color: '#9a9a9a', marginBottom: 18,
+        color: 'var(--text-tertiary)', marginBottom: 18,
     },
     form:   { display: 'flex', flexDirection: 'column' as const, gap: 14 },
     field:  { display: 'flex', flexDirection: 'column' as const, gap: 5 },
     label:  {
         fontSize: '0.78rem', fontWeight: 500,
-        color: '#5a5a5a', textTransform: 'uppercase' as const, letterSpacing: '0.04em',
+        color: 'var(--text-secondary)', textTransform: 'uppercase' as const, letterSpacing: '0.04em',
     },
     fieldError: { fontSize: '0.75rem', color: '#e53e3e', marginTop: 2 },
     btnPrimary: {
         marginTop: 4, padding: '10px',
-        background: '#0a0a0a', color: '#fafafa',
+        background: 'var(--accent)', color: 'var(--accent-inv)',
         border: 'none', borderRadius: 8,
         fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer',
     },
