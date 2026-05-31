@@ -27,12 +27,27 @@ import { CourseAnalyticsPage } from './pages/CourseAnalyticsPage';
 import { TermsPage } from './pages/TermsPage';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { LandingPage } from './pages/LandingPage';
+import { NotFoundPage } from './pages/NotFoundPage';
+import { ForgotPasswordPage, ResetPasswordPage } from './pages/PasswordResetPages';
+
+function GuestRoute({ children }: { children: React.ReactElement }) {
+  const { isAuthenticated, isLoading, user } = useAuth();
+  if (isLoading) return <div style={{ display:'flex', justifyContent:'center', marginTop:80 }}>Завантаження...</div>;
+  if (isAuthenticated) {
+    if (user?.role === 'admin' || user?.role === 'super_admin') return <Navigate to="/admin" replace />;
+    if (user?.role === 'teacher') return <Navigate to="/teacher" replace />;
+    return <Navigate to="/courses" replace />;
+  }
+  return children;
+}
 
 function AppRoutes() {
   return (
       <Routes>
-        <Route path="/login"                element={<LoginPage />} />
-        <Route path="/register"             element={<RegisterPage />} />
+        <Route path="/login"                element={<GuestRoute><LoginPage /></GuestRoute>} />
+        <Route path="/register"             element={<GuestRoute><RegisterPage /></GuestRoute>} />
+        <Route path="/forgot-password"      element={<GuestRoute><ForgotPasswordPage /></GuestRoute>} />
+        <Route path="/reset-password"       element={<GuestRoute><ResetPasswordPage /></GuestRoute>} />
         <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
 
         <Route path="/admin/*" element={
@@ -45,7 +60,7 @@ function AppRoutes() {
           <>
             <Navbar />
             <Routes>
-              <Route path="/" element={<LandingPage />} />
+              <Route path="/" element={<GuestRoute><LandingPage /></GuestRoute>} />
               <Route path="/courses" element={<CatalogPage />} />
               <Route path="/courses/:id" element={<CoursePage />} />
               <Route path="/instructors/:id" element={<InstructorPage />} />
@@ -116,7 +131,7 @@ function AppRoutes() {
                 </div>
               }/>
 
-              <Route path="*" element={<Navigate to="/courses" replace />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
             <Footer />
           </>

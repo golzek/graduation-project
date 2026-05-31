@@ -29,6 +29,10 @@ export class User {
 
   @Column({ nullable: true }) bannedBy: string | null;
 
+  @Column({ type: 'text', nullable: true }) resetPasswordToken: string | null;
+
+  @Column({ type: 'timestamptz', nullable: true }) resetPasswordExpires: Date | null;
+
   @CreateDateColumn() createdAt: Date;
   @UpdateDateColumn() updatedAt: Date;
 }

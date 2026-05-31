@@ -1,13 +1,15 @@
-import { Injectable, UnauthorizedException, ConflictException, ForbiddenException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, ForbiddenException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
+import * as crypto from 'crypto';
 import { User } from '../users/user.entity';
-import { RegisterDto, LoginDto } from './auth.dto';
+import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto } from './auth.dto';
 import { NotificationService } from '../notifications/notification.service';
 import { ReferralService } from '../referral/referral.service';
+import { EmailService } from './email.service';
 import { fireAndForget } from '../common/logger.util';
 
 @Injectable()
@@ -18,6 +20,7 @@ export class AuthService {
       private readonly config: ConfigService,
       private readonly notifSvc: NotificationService,
       private readonly referralSvc: ReferralService,
+      private readonly emailSvc: EmailService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -90,6 +93,36 @@ export class AuthService {
 
     this.assertNotBanned(user);
     return this.buildResponse(user);
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto): Promise<void> {
+    const user = await this.userRepo.findOne({ where: { email: dto.email } });
+    if (!user) return;
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const hash  = crypto.createHash('sha256').update(token).digest('hex');
+
+    user.resetPasswordToken   = hash;
+    user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000);
+    await this.userRepo.save(user);
+
+    const frontendUrl = this.config.get<string>('FRONTEND_URL', 'http://localhost:3001');
+    const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
+    fireAndForget(this.emailSvc.sendPasswordReset(user.email, user.name, resetUrl), 'forgotPassword:sendEmail');
+  }
+
+  async resetPassword(dto: ResetPasswordDto): Promise<void> {
+    const hash = crypto.createHash('sha256').update(dto.token).digest('hex');
+    const user = await this.userRepo.findOne({ where: { resetPasswordToken: hash } });
+
+    if (!user || !user.resetPasswordExpires || user.resetPasswordExpires < new Date()) {
+      throw new BadRequestException('Токен недійсний або прострочений');
+    }
+
+    user.password             = await bcrypt.hash(dto.password, 10);
+    user.resetPasswordToken   = null as any;
+    user.resetPasswordExpires = null as any;
+    await this.userRepo.save(user);
   }
 
   async findById(id: string) {

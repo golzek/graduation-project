@@ -31,3 +31,15 @@ export class RefreshTokenDto {
   @ApiProperty({ description: 'Refresh token отриманий при вході' })
   @IsString() refreshToken: string;
 }
+export class ForgotPasswordDto {
+  @ApiProperty({ example: 'ivan@example.com' })
+  @IsEmail({}, { message: 'Невірний формат email' }) email: string;
+}
+
+export class ResetPasswordDto {
+  @ApiProperty({ description: 'Токен з листа' })
+  @IsString() token: string;
+
+  @ApiProperty({ example: 'newSecret123', minLength: 6 })
+  @IsString() @MinLength(6, { message: 'Пароль мінімум 6 символів' }) password: string;
+}

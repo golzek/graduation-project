@@ -6,7 +6,7 @@ import {
 import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto } from './auth.dto';
+import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto } from './auth.dto';
 import { JwtAuthGuard, CurrentUser, GoogleAuthGuard } from './auth.guards';
 
 @ApiTags('auth')
@@ -73,6 +73,28 @@ export class AuthController {
   getMe(@CurrentUser() user: any) {
     const { password, ...safe } = user;
     return safe;
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Throttle({ default: { ttl: 900_000, limit: 5 } })
+  @ApiOperation({ summary: 'Запит на скидання пароля', description: 'Надсилає email з посиланням. Ліміт: 5 запитів / 15 хв.' })
+  @ApiBody({ type: ForgotPasswordDto })
+  @ApiResponse({ status: 204, description: 'Лист надіслано (або email не знайдено — відповідь однакова)' })
+  @ApiResponse({ status: 429, description: 'Забагато запитів' })
+  forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto);
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Throttle({ default: { ttl: 900_000, limit: 10 } })
+  @ApiOperation({ summary: 'Скинути пароль за токеном з листа' })
+  @ApiBody({ type: ResetPasswordDto })
+  @ApiResponse({ status: 204, description: 'Пароль змінено' })
+  @ApiResponse({ status: 400, description: 'Токен недійсний або прострочений' })
+  resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto);
   }
 
   @Get('google')

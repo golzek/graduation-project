@@ -5,6 +5,7 @@ import { PassportModule } from '@nestjs/passport';
 import { User } from '../users/user.entity';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { EmailService } from './email.service';
 import { JwtStrategy, GoogleOAuthStrategy } from './auth.guards';
 import { NotificationModule } from '../notifications/notification.module';
 import { ReferralModule } from '../referral/referral.module';
@@ -18,7 +19,7 @@ import { ReferralModule } from '../referral/referral.module';
     ReferralModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, GoogleOAuthStrategy],
+  providers: [AuthService, EmailService, JwtStrategy, GoogleOAuthStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}

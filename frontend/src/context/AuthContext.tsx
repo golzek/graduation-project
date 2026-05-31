@@ -64,11 +64,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = useCallback(async (name: string, email: string, password: string, referralToken?: string) => {
     const d = await apiFetch<any>('/auth/register', { method: 'POST', body: JSON.stringify({ name, email, password, ...(referralToken ? { referralToken } : {}) }) });
     Tokens.set(d.accessToken, d.refreshToken); setUser(d.user);
+    return d.user;
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
     const d = await apiFetch<any>('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
     Tokens.set(d.accessToken, d.refreshToken); setUser(d.user);
+    return d.user;
   }, []);
 
   const loginWithGoogle = useCallback(() => {

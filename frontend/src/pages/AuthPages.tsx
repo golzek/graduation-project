@@ -123,11 +123,18 @@ function GoogleButton({ onClick, loading }: { onClick: () => void; loading?: boo
   );
 }
 
+function getRoleHome(role: string): string {
+  if (role === 'admin' || role === 'super_admin') return '/admin';
+  if (role === 'teacher') return '/teacher';
+  return '/courses';
+}
+
 export function LoginPage() {
-  const { login, loginWithGoogle } = useAuth();
+  const { login, loginWithGoogle, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as any)?.from?.pathname ?? '/courses';
+  const from = (location.state as any)?.from?.pathname;
+  const resetSuccess = (location.state as any)?.resetSuccess;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -135,7 +142,11 @@ export function LoginPage() {
 
   const submit = async (e: FormEvent) => {
     e.preventDefault(); setError(''); setLoading(true);
-    try { await login(email, password); navigate(from, { replace: true }); }
+    try {
+      const loggedUser = await login(email, password) as any;
+      const role = loggedUser?.role ?? user?.role ?? 'student';
+      navigate(from ?? getRoleHome(role), { replace: true });
+    }
     catch (err: any) { setError(err.message); }
     finally { setLoading(false); }
   };
@@ -151,6 +162,11 @@ export function LoginPage() {
           <div style={s.formBox}>
             <h1 style={s.title}>Вхід</h1>
             <p style={s.hint}>Раді тебе бачити знову</p>
+            {resetSuccess && (
+                <div style={{ padding: '10px 14px', borderRadius: 8, background: 'var(--bg)', border: '1.5px solid #86efac', fontSize: '0.85rem', color: 'var(--text)', marginBottom: 16 }}>
+                  Пароль успішно змінено. Увійди з новим паролем.
+                </div>
+            )}
             {error && <div style={s.error}>{error}</div>}
 
             <GoogleButton onClick={loginWithGoogle} loading={loading} />
@@ -168,7 +184,10 @@ export function LoginPage() {
                        onChange={e => setEmail(e.target.value)} placeholder="your@email.com" required />
               </div>
               <div style={s.field}>
-                <label style={s.label}>Пароль</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <label style={{ ...s.label, margin: 0 }}>Пароль</label>
+                  <Link to="/forgot-password" style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>Забув пароль?</Link>
+                </div>
                 <input style={s.input} type="password" value={password}
                        onChange={e => setPassword(e.target.value)} placeholder="••••••••" required />
               </div>
@@ -203,7 +222,10 @@ export function RegisterPage() {
     e.preventDefault(); setError('');
     if (password.length < 6) { setError('Пароль мінімум 6 символів'); return; }
     setLoading(true);
-    try { await register(name, email, password, referralToken); navigate('/courses', { replace: true }); }
+    try {
+      const newUser = await register(name, email, password, referralToken) as any;
+      navigate(getRoleHome(newUser?.role ?? 'student'), { replace: true });
+    }
     catch (err: any) { setError(err.message); }
     finally { setLoading(false); }
   };

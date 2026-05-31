@@ -376,7 +376,6 @@ export class AdminService {
     const enrollment = await this.enrollmentRepo.findOne({ where: { userId, courseId } });
     if (!enrollment) throw new NotFoundException('Запис на курс не знайдено');
 
-    // Remove progress for all lessons of this course
     const course = await this.courseRepo.findOne({ where: { id: courseId }, relations: ['modules', 'modules.lessons'] });
     if (course) {
       const lessonIds = course.modules.flatMap(m => m.lessons.map(l => l.id));
