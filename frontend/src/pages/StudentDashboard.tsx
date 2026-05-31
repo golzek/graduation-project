@@ -108,7 +108,7 @@ export function StudentDashboard() {
     return (
         <div style={s.page}>
             <div style={s.header}>
-                <div style={s.headerInner}>
+                <div style={s.headerInner} className="r-header-inner">
                     <div style={s.avatar}>{user?.name?.[0] ?? 'S'}</div>
                     <div>
                         <h1 style={s.greeting}>Вітаємо, {user?.name?.split(' ')[0]}!</h1>
@@ -117,16 +117,16 @@ export function StudentDashboard() {
                 </div>
             </div>
 
-            <div style={s.body}>
+            <div style={s.body} className="r-body">
                 <LearningStats />
-                <div style={s.metricsRow}>
+                <div style={s.metricsRow} className="r-metrics">
                     <MetricCard label="Курсів записано"   value={totalCourses}    />
                     <MetricCard label="Завершено"          value={completedCourses}/>
                     <MetricCard label="Середній прогрес"  value={`${avgProgress}%`}/>
                     <MetricCard label="Сертифікатів"       value={completedCourses}/>
                 </div>
 
-                <div style={s.twoCol}>
+                <div style={s.twoCol} className="r-two-col">
                     <div style={s.section}>
                         <div style={s.sectionHead}>
                             <p style={s.sectionTitle}>Мої курси</p>
@@ -232,7 +232,7 @@ const s: Record<string, React.CSSProperties> = {
     page:    { minHeight: '100vh', background: 'var(--bg)' },
     loading: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', color: 'var(--text-tertiary)' },
     header:  { borderBottom: '1px solid var(--border)', background: 'var(--bg-elevated)', padding: '28px 0' },
-    headerInner: { maxWidth: 1160, margin: '0 auto', padding: '0 32px', display: 'flex', alignItems: 'center', gap: 16 },
+    headerInner: { maxWidth: 1160, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 16 },
     avatar: {
         width: 44, height: 44, borderRadius: '50%',
         background: 'var(--accent)', color: 'var(--accent-inv)',
@@ -241,12 +241,12 @@ const s: Record<string, React.CSSProperties> = {
     },
     greeting:    { fontSize: '1.2rem', fontWeight: 600, letterSpacing: '-0.02em' },
     greetingSub: { fontSize: '0.85rem', color: 'var(--text-tertiary)', marginTop: 2 },
-    body:        { maxWidth: 1160, margin: '28px auto', padding: '0 32px' },
-    metricsRow:  { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 },
+    body:        { maxWidth: 1160, margin: '28px auto' },
+    metricsRow:  { display: 'grid', gap: 12, marginBottom: 24 },
     metricCard:  { background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 10, padding: '16px 18px' },
     metricValue: { fontSize: '1.6rem', fontWeight: 600, letterSpacing: '-0.03em', marginBottom: 2 },
     metricLabel: { fontSize: '0.75rem', color: 'var(--text-tertiary)', textTransform: 'uppercase' as const, letterSpacing: '0.05em' },
-    twoCol:      { display: 'grid', gridTemplateColumns: '1fr 380px', gap: 16, alignItems: 'start' },
+    twoCol:      { display: 'grid', gap: 16, alignItems: 'start' },
     section:     { background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 12, padding: '18px 20px' },
     sectionHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
     sectionTitle:{ fontSize: '0.75rem', fontWeight: 500, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: 'var(--text-tertiary)' },

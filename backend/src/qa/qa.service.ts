@@ -39,7 +39,6 @@ export class QaService {
 
         const isInstructor = course && course.authorId === requesterId;
 
-        // Students only see their own questions; instructor sees all
         if (isInstructor) return all;
         return all.filter(q => q.authorId === requesterId);
     }

@@ -115,13 +115,13 @@ export function AdminPanel() {
   return (
       <div style={s.page}>
         <div style={s.header}>
-          <div style={s.headerInner}>
+          <div style={s.headerInner} className="r-admin-header-inner">
             <Link to="/courses" style={s.backLink}>← До сайту</Link>
             <div style={s.headerTitle}>
               <span style={s.headerDot} />
               Адмін-панель
             </div>
-            <div style={s.tabsRow}>
+            <div style={s.tabsRow} className="r-admin-tabs">
               {tabs.map(t => (
                   <button
                       key={t.key}
@@ -146,7 +146,7 @@ export function AdminPanel() {
           </div>
         </div>
 
-        <div style={s.body}>
+        <div style={s.body} className="r-admin-body">
           {tab === 'stats'   && <StatsTab />}
           {tab === 'users'   && <UsersTab />}
           {tab === 'courses' && <CoursesTab />}
@@ -220,7 +220,7 @@ function StatsTab() {
   if (loading || !stats) return (
       <div>
         {periodSelector}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 12, marginBottom: 24 }}>
+        <div style={{ display: 'grid', gap: 12, marginBottom: 24 }} className="r-metrics-5">
           {[0,1,2,3,4].map(i => (
               <div key={i} style={s.card}>
                 <Skeleton width={50} height={28} style={{ marginBottom: 8 }} />
@@ -260,7 +260,7 @@ function StatsTab() {
 
         {periodSelector}
 
-        <div style={{ ...s.metricsRow, gridTemplateColumns: 'repeat(5,1fr)' }}>
+        <div style={{ ...s.metricsRow,  }}>
           {metrics.map(m => (
               <div key={m.label} style={s.card}>
                 {'highlight' in m && m.highlight ? (
@@ -274,7 +274,7 @@ function StatsTab() {
           ))}
         </div>
 
-        <div style={s.twoCol}>
+        <div style={s.twoCol} className="r-two-col-equal">
           <div style={s.card}>
             <p style={s.cardTitle}>Користувачі по ролях</p>
             {(() => {
@@ -402,7 +402,7 @@ function UsersTab() {
       <div>
         <p style={s.pageTitle}>Користувачі {!loading && `(${users.length})`}</p>
 
-        <div style={s.filterRow}>
+        <div style={s.filterRow} className="r-filter-row">
           <input
               className="input"
               style={{ flex: 1 }}
@@ -423,7 +423,7 @@ function UsersTab() {
           </select>
         </div>
 
-        <div style={s.tableWrap}>
+        <div style={s.tableWrap} className="r-table-wrap">
           <table style={s.table}>
             <thead>
             <tr>
@@ -591,7 +591,7 @@ function CourseDetailModal({ courseId, onClose }: { courseId: string; onClose: (
                   <Skeleton width={320} height={24} style={{ marginBottom: 8 }} />
                   <Skeleton width={200} height={14} />
                   <Skeleton height={80} borderRadius={10} style={{ marginTop: 8 }} />
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginTop: 8 }}>
+                  <div style={{ display: 'grid', gap: 12, marginTop: 8 }}>
                     {[0,1,2].map(i => <Skeleton key={i} height={60} borderRadius={10} />)}
                   </div>
                 </div>
@@ -633,7 +633,7 @@ function CourseDetailModal({ courseId, onClose }: { courseId: string; onClose: (
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 20 }}>
+                  <div style={{ display: 'grid', gap: 10, marginBottom: 20 }} className="r-metrics">
                     {[
                       { label: 'Ціна', value: course.price === 0 ? 'Безкоштовно' : `${course.price} ₴` },
                       { label: 'Рівень', value: levelLabel[course.level] ?? course.level },
@@ -833,7 +833,7 @@ function CoursesTab() {
         )}
         <p style={s.pageTitle}>Курси {!loading && `(${courses.length})`}</p>
 
-        <div style={s.filterRow}>
+        <div style={s.filterRow} className="r-filter-row">
           <input
               className="input"
               style={{ flex: 1 }}
@@ -854,7 +854,7 @@ function CoursesTab() {
           </select>
         </div>
 
-        <div style={s.tableWrap}>
+        <div style={s.tableWrap} className="r-table-wrap">
           <table style={s.table}>
             <thead>
             <tr>
@@ -1133,7 +1133,7 @@ function PromosTab() {
           ))}
         </div>
 
-        <div style={s.tableWrap}>
+        <div style={s.tableWrap} className="r-table-wrap">
           <table style={s.table}>
             <thead>
             <tr>
@@ -1263,7 +1263,7 @@ function PayoutsTab() {
       <div>
         <p style={s.pageTitle}>Виплати викладачам {!loading && `(${payouts.length})`}</p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 20 }}>
+        <div style={{ display: 'grid', gap: 12, marginBottom: 20 }} className="r-three-col">
           {[
             { label: 'Очікують обробки', value: `${totalPending.toLocaleString('uk-UA')} ₴`, color: '#d97706', bg: '#fffbeb' },
             { label: 'Схвалено (не виплачено)', value: `${totalApproved.toLocaleString('uk-UA')} ₴`, color: '#2563eb', bg: '#eff6ff' },
@@ -1288,7 +1288,7 @@ function PayoutsTab() {
           ))}
         </div>
 
-        <div style={s.tableWrap}>
+        <div style={s.tableWrap} className="r-table-wrap">
           <table style={s.table}>
             <thead>
             <tr>
@@ -1575,7 +1575,7 @@ function AuditTab() {
 
                     {expanded === log.id && (
                         <div style={{ padding: '0 14px 12px', borderTop: '1px solid var(--border)' }}>
-                          <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '4px 16px', fontSize: '0.8rem', marginTop: 8 }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '4px 16px', fontSize: '0.8rem', marginTop: 8 }} className="r-label-value">
                             <span style={{ color: 'var(--text-tertiary)' }}>Entity</span>
                             <span>{log.entity}{log.entityId ? ` / ${log.entityId}` : ''}</span>
                             <span style={{ color: 'var(--text-tertiary)' }}>Role</span>
@@ -1695,7 +1695,7 @@ const s: Record<string, React.CSSProperties> = {
   },
   headerInner: {
     maxWidth: 1160, margin: '0 auto',
-    padding: '0 32px', height: 56,
+    height: 56,
     display: 'flex', alignItems: 'center', gap: 24,
   },
   backLink: {
@@ -1729,7 +1729,7 @@ const s: Record<string, React.CSSProperties> = {
     flexShrink: 0,
   },
 
-  body: { maxWidth: 1160, margin: '28px auto', padding: '0 32px' },
+  body: { maxWidth: 1160, margin: '28px auto' },
 
   pageTitle: {
     fontSize: '0.7rem', fontWeight: 500,
@@ -1737,7 +1737,7 @@ const s: Record<string, React.CSSProperties> = {
     color: 'var(--text-tertiary)', marginBottom: 18,
   },
 
-  metricsRow: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 20 },
+  metricsRow: { display: 'grid', gap: 12, marginBottom: 20 },
 
   card: { background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 12, padding: '18px 20px' },
   cardTitle: {
@@ -1750,14 +1750,14 @@ const s: Record<string, React.CSSProperties> = {
   metricLabel: { fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500 },
   metricSub:   { fontSize: '0.72rem', color: 'var(--text-tertiary)', marginTop: 3 },
 
-  twoCol: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 },
+  twoCol: { display: 'grid', gap: 16 },
 
   track: { height: 3, background: 'var(--bg-muted)', borderRadius: 99, overflow: 'hidden' },
   fill:  { height: '100%', background: 'var(--accent)', borderRadius: 99, transition: 'width 0.4s' },
 
   filterRow: { display: 'flex', gap: 10, marginBottom: 16 },
 
-  tableWrap: { background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 12, overflow: 'hidden' },
+  tableWrap: { background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 12, overflow: 'auto' },
   table:     { width: '100%', borderCollapse: 'collapse' as const },
   th: {
     padding: '11px 16px', textAlign: 'left' as const,
@@ -1872,7 +1872,7 @@ function TeachersTab() {
 
   return (
       <div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
+        <div style={{ display: 'grid', gap: 16, marginBottom: 24 }} className="r-three-col">
           {[
             { label: 'Всього викладачів', value: teachers.length },
             { label: 'Загальний дохід',   value: `${totalRevenue.toLocaleString('uk-UA')} ₴` },

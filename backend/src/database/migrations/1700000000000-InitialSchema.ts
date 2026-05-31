@@ -54,7 +54,6 @@ export class InitialSchema1700000000000 implements MigrationInterface {
       )
     `);
 
-        // lessons
         await qr.query(`
       CREATE TABLE "lessons" (
         "id"            uuid                NOT NULL DEFAULT uuid_generate_v4(),

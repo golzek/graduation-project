@@ -111,13 +111,13 @@ export function SubscriptionPage() {
     return (
         <div style={s.page}>
             <div style={s.header}>
-                <div style={s.headerInner}>
+                <div style={s.headerInner} className="r-container">
                     <h1 style={s.title}>Підписка</h1>
                     <p style={s.sub}>Необмежений доступ до всіх курсів платформи</p>
                 </div>
             </div>
 
-            <div style={s.body}>
+            <div style={s.body} className="r-body">
                 {error && (
                     <div style={s.errorBanner}>{error}</div>
                 )}
@@ -145,7 +145,7 @@ export function SubscriptionPage() {
                     </div>
                 )}
 
-                <div style={s.plansGrid}>
+                <div style={s.plansGrid} className="r-plans-grid">
                     {plans.map(plan => {
                         const isCurrentPlan = active?.plan === plan.plan && active?.status === 'active';
                         return (
@@ -237,8 +237,8 @@ export function SubscriptionPage() {
                 {history.length > 0 && (
                     <div style={s.historySection}>
                         <h2 style={s.faqTitle}>Історія підписок</h2>
-                        <div style={s.historyTable}>
-                            <div style={s.historyHeader}>
+                        <div style={s.historyTable} className="r-feature-strip">
+                            <div style={s.historyHeader} className="r-feature-strip-row">
                                 <span>План</span>
                                 <span>Статус</span>
                                 <span>Оплачено</span>
@@ -246,7 +246,7 @@ export function SubscriptionPage() {
                                 <span>Кінець</span>
                             </div>
                             {history.map(h => (
-                                <div key={h.id} style={s.historyRow}>
+                                <div key={h.id} style={s.historyRow} className="r-feature-strip-row">
                                     <span>{planLabel[h.plan] ?? h.plan}</span>
                                     <span style={{ color: statusColor[h.status] ?? 'var(--text-tertiary)', fontWeight: 500, fontSize: '0.8rem' }}>
                     {statusLabel[h.status] ?? h.status}
@@ -287,10 +287,10 @@ const s: Record<string, React.CSSProperties> = {
     page:    { minHeight: '100vh', background: 'var(--bg)' },
     centered: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' },
     header:  { borderBottom: '1px solid var(--border)', background: 'var(--bg-elevated)', padding: '36px 0 32px' },
-    headerInner: { maxWidth: 1000, margin: '0 auto', padding: '0 32px', textAlign: 'center' as const },
+    headerInner: { maxWidth: 1000, margin: '0 auto', textAlign: 'center' as const },
     title:   { fontSize: '1.8rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 8 },
     sub:     { fontSize: '1rem', color: 'var(--text-tertiary)' },
-    body:    { maxWidth: 1000, margin: '40px auto', padding: '0 32px' },
+    body:    { maxWidth: 1000, margin: '40px auto' },
     errorBanner: {
         background: '#fef2f2', border: '1.5px solid #fecaca', borderRadius: 10,
         padding: '12px 16px', color: '#dc2626', fontSize: '0.875rem', marginBottom: 24,
@@ -311,8 +311,7 @@ const s: Record<string, React.CSSProperties> = {
         flexShrink: 0,
     },
     plansGrid: {
-        display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)',
-        gap: 20, marginBottom: 48,
+        display: 'grid', gap: 20, marginBottom: 48,
     },
     planCard: {
         background: 'var(--bg-elevated)', border: '1.5px solid var(--border)',
@@ -366,13 +365,13 @@ const s: Record<string, React.CSSProperties> = {
     historySection: { marginBottom: 48 },
     historyTable: { border: '1.5px solid var(--border)', borderRadius: 12, overflow: 'hidden' },
     historyHeader: {
-        display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr',
+        display: 'grid',
         padding: '10px 16px', background: 'var(--bg)',
         fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)',
         textTransform: 'uppercase' as const, letterSpacing: '0.05em',
     },
     historyRow: {
-        display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr',
+        display: 'grid',
         padding: '12px 16px', borderTop: '1px solid var(--border)',
         fontSize: '0.875rem', alignItems: 'center',
     },
@@ -386,7 +385,7 @@ const modal: Record<string, React.CSSProperties> = {
     },
     box: {
         background: 'var(--bg-elevated)', borderRadius: 14, padding: '28px 28px 22px',
-        width: 360, boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+        maxWidth: 380, width: '100%', boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
     },
     title: { fontSize: '1rem', fontWeight: 600, color: 'var(--text)', marginBottom: 8 },
     sub:   { fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 22 },

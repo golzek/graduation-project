@@ -23,7 +23,7 @@ const MONTHS_UA = ['Січ','Лют','Бер','Кві','Тра','Чер','Лип
 
 const s: Record<string, React.CSSProperties> = {
     wrap:  { display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 },
-    row:   { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 },
+    row:   { display: 'grid', gap: 12 },
     card:  {
         background: 'var(--bg-elevated)', border: '1.5px solid var(--border)',
         borderRadius: 12, padding: '18px 20px',
@@ -83,7 +83,7 @@ export function LearningStats() {
 
     return (
         <div style={s.wrap}>
-            <div style={s.row}>
+            <div style={s.row} className="r-two-col-equal">
                 <div style={s.card}>
                     <p style={s.label}>Загальний час навчання</p>
                     <p style={s.big}>{fmtTime(totalWatchedSec)}</p>

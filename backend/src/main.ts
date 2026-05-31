@@ -72,10 +72,7 @@ async function bootstrap() {
       tryItOutEnabled: true,
     },
     customSiteTitle: 'E-Learning API Docs',
-    customCss: `
-      .topbar { background-color: #1a1a2e; }
-      .swagger-ui .topbar-wrapper img { content: url('https://upload.wikimedia.org/wikipedia/commons/a/a7/Camponotus_flavomarginatus_ant.jpg'); height: 40px; }
-    `,
+    customCss: `.topbar { background-color: #1a1a2e; }`,
   });
 
   const port = process.env.PORT ?? 3000;

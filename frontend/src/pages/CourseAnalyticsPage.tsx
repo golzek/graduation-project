@@ -40,12 +40,12 @@ export function CourseAnalyticsPage() {
 
     if (loading) return (
         <div style={s.page}>
-            <div style={s.container}>
+            <div style={s.container} className="r-analytics-container">
                 <div style={s.skeletonHeader} />
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 28 }}>
+                <div style={{ display: 'grid', gap: 16, marginBottom: 28 }} className="r-analytics-metrics">
                     {[0,1,2,3].map(i => <div key={i} style={s.skeletonCard} />)}
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                <div style={{ display: 'grid', gap: 20 }} className="r-analytics-two">
                     <div style={{ ...s.skeletonCard, height: 220 }} />
                     <div style={{ ...s.skeletonCard, height: 220 }} />
                 </div>
@@ -75,7 +75,7 @@ export function CourseAnalyticsPage() {
 
     return (
         <div style={s.page}>
-            <div style={s.container}>
+            <div style={s.container} className="r-analytics-container">
 
                 <div style={s.header}>
                     <button onClick={() => navigate('/teacher')} style={s.btnBack}>← Назад</button>
@@ -86,7 +86,7 @@ export function CourseAnalyticsPage() {
                     <Link to={`/courses/${stats.courseId}/edit`} style={s.btnEdit}>Редагувати курс</Link>
                 </div>
 
-                <div style={s.metricsRow}>
+                <div style={s.metricsRow} className="r-analytics-metrics" >
                     {metrics.map(m => (
                         <div key={m.label} style={s.metricCard}>
                             <div style={{ ...s.metricIcon, background: m.color + '18', color: m.color }}>{m.icon}</div>
@@ -113,7 +113,7 @@ export function CourseAnalyticsPage() {
                     </p>
                 </div>
 
-                <div style={s.twoCol}>
+                <div style={s.twoCol} className="r-analytics-two">
                     <div style={s.card}>
                         <p style={s.cardTitle}>Записи за останні 30 днів</p>
                         {stats.enrollsByDay.length === 0 ? (
@@ -176,7 +176,7 @@ export function CourseAnalyticsPage() {
 
                 <div style={{ ...s.card, background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)', border: 'none', color: 'var(--bg-elevated)' }}>
                     <p style={{ ...s.cardTitle, color: 'rgba(255,255,255,0.6)' }}>Загальний підсумок</p>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }}>
+                    <div style={{ display: 'grid', gap: 24 }} className="r-three-col">
                         {[
                             { label: 'Конверсія в сертифікат', value: stats.students > 0 ? `${Math.round((stats.certificates / stats.students) * 100)}%` : '—' },
                             { label: 'Дохід на студента', value: stats.students > 0 ? `${Math.round(stats.revenue / stats.students).toLocaleString('uk-UA')} ₴` : '—' },
@@ -213,12 +213,12 @@ const s: Record<string, React.CSSProperties> = {
         fontWeight: 600, textDecoration: 'none', flexShrink: 0,
         display: 'inline-flex', alignItems: 'center',
     },
-    metricsRow:   { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 20 },
+    metricsRow:   { display: 'grid', gap: 16, marginBottom: 20 },
     metricCard:   { background: 'var(--bg-elevated)', borderRadius: 14, padding: '20px 22px', display: 'flex', alignItems: 'center', gap: 16, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #f3f4f6' },
     metricIcon:   { width: 46, height: 46, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 },
     metricValue:  { margin: 0, fontSize: '1.4rem', fontWeight: 700, color: 'var(--text)' },
     metricLabel:  { margin: '2px 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)' },
-    twoCol:       { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 },
+    twoCol:       { display: 'grid', gap: 20, marginBottom: 20 },
     card:         { background: 'var(--bg-elevated)', borderRadius: 14, padding: '22px 24px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #f3f4f6', marginBottom: 20 },
     cardTitle:    { fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-tertiary)', margin: '0 0 14px' },
     progressTrack:{ flex: 1, height: 12, background: 'var(--bg-muted)', borderRadius: 99, overflow: 'hidden' },

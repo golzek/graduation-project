@@ -141,7 +141,7 @@ export function NotificationBell() {
 
             <div style={{
                 position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-                width: 340,
+                width: 'min(340px, 95vw)',
                 background: 'var(--bg-elevated)',
                 border: '1.5px solid var(--border)',
                 borderRadius: 12,
@@ -150,8 +150,8 @@ export function NotificationBell() {
                 transformOrigin: 'top right',
                 transition: 'opacity 0.18s ease, transform 0.18s ease, visibility 0.18s',
                 ...(open
-                    ? { opacity: 1, transform: 'translateY(0) scale(1)', visibility: 'visible' as const, pointerEvents: 'all' as const }
-                    : { opacity: 0, transform: 'translateY(-6px) scale(0.97)', visibility: 'hidden' as const, pointerEvents: 'none' as const }
+                        ? { opacity: 1, transform: 'translateY(0) scale(1)', visibility: 'visible' as const, pointerEvents: 'all' as const }
+                        : { opacity: 0, transform: 'translateY(-6px) scale(0.97)', visibility: 'hidden' as const, pointerEvents: 'none' as const }
                 ),
             }}>
                 <div style={{
@@ -161,13 +161,13 @@ export function NotificationBell() {
                 }}>
                     <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text)' }}>
                         Нотифікації {unreadCount > 0 && (
-                            <span style={{
-                                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                                background: '#ef4444', color: 'var(--bg-elevated)',
-                                fontSize: '0.65rem', fontWeight: 700,
-                                width: 18, height: 18, borderRadius: '50%', marginLeft: 6,
-                            }}>{unreadCount}</span>
-                        )}
+                        <span style={{
+                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                            background: '#ef4444', color: 'var(--bg-elevated)',
+                            fontSize: '0.65rem', fontWeight: 700,
+                            width: 18, height: 18, borderRadius: '50%', marginLeft: 6,
+                        }}>{unreadCount}</span>
+                    )}
                     </p>
                     {unreadCount > 0 && (
                         <button

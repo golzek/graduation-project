@@ -44,7 +44,7 @@ export function CoursePage() {
                     issuingRef.current = false;
                 }
             }
-        } catch { /* ignore */ }
+        } catch {  }
     };
 
     const handleEnroll = async () => {
@@ -64,7 +64,7 @@ export function CoursePage() {
     return (
         <div style={s.page}>
             <div style={s.header}>
-                <div style={s.headerInner}>
+                <div style={s.headerInner} className="r-course-header-inner">
                     <div style={s.headerLeft}>
                         <p style={s.breadcrumb}>
                             <a href="/courses" style={{ color: 'var(--text-tertiary)' }}>Каталог</a>
@@ -130,8 +130,8 @@ export function CoursePage() {
                 </div>
             </div>
 
-            <div style={s.body}>
-                <aside style={s.sidebar}>
+            <div style={s.body} className="course-body r-course-body" >
+                <aside style={s.sidebar} className="course-sidebar r-course-sidebar" >
                     <p style={s.sideTitle}>Програма</p>
                     {course.modules.map(mod => (
                         <ModuleBlock key={mod.id} mod={mod}
@@ -395,7 +395,6 @@ function LessonPlayer({ lesson, isEnrolled, onProgressSaved, courseAuthorId }: {
                     {completed ? '✓ Завершено' : 'Позначити як завершений'}
                 </button>
             )}
-            {/* ✅ FIXED: courseAuthorId тепер в скоупі */}
             <LessonQA lessonId={lesson.id} isEnrolled={isEnrolled} courseAuthorId={courseAuthorId} />
         </div>
     );
@@ -489,7 +488,7 @@ const s: Record<string, React.CSSProperties> = {
     page:    { minHeight: '100vh', background: 'var(--bg)' },
     centered:{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', color: 'var(--text-tertiary)' },
     header:  { borderBottom: '1px solid var(--border)', padding: '40px 0 32px', background: 'var(--bg-elevated)' },
-    headerInner: { maxWidth: 1160, margin: '0 auto', padding: '0 32px', display: 'flex', gap: 40, alignItems: 'flex-start' },
+    headerInner: { maxWidth: 1160, margin: '0 auto', display: 'flex', gap: 40, alignItems: 'flex-start' },
     headerLeft: { flex: 1 },
     breadcrumb: { fontSize: '0.8rem', color: 'var(--text-tertiary)', marginBottom: 12 },
     title:   { fontSize: '1.6rem', fontWeight: 600, letterSpacing: '-0.03em', marginBottom: 10 },
@@ -502,7 +501,7 @@ const s: Record<string, React.CSSProperties> = {
         textTransform: 'uppercase' as const, letterSpacing: '0.04em',
     },
     card: {
-        width: 280, flexShrink: 0,
+        flexShrink: 0,
         border: '1.5px solid var(--border)', borderRadius: 12,
         padding: 24, background: 'var(--bg-elevated)',
     },
@@ -517,8 +516,8 @@ const s: Record<string, React.CSSProperties> = {
     },
     progressTrack: { height: 4, background: 'var(--bg-subtle)', borderRadius: 99, overflow: 'hidden' },
     progressFill:  { height: '100%', background: 'var(--accent)', borderRadius: 99, transition: 'width 0.5s' },
-    body:    { maxWidth: 1160, margin: '32px auto', padding: '0 32px', display: 'flex', gap: 32 },
-    sidebar: { width: 280, flexShrink: 0 },
+    body:    { maxWidth: 1160, margin: '32px auto', display: 'flex', gap: 32 },
+    sidebar: { flexShrink: 0 },
     sideTitle: {
         fontSize: '0.7rem', fontWeight: 500, textTransform: 'uppercase' as const,
         letterSpacing: '0.07em', color: 'var(--text-tertiary)', marginBottom: 12,
@@ -526,7 +525,7 @@ const s: Record<string, React.CSSProperties> = {
     player: { flex: 1 },
     playerEmpty: {
         border: '1.5px solid var(--border)', borderRadius: 12,
-        height: 320, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        minHeight: 180, maxHeight: 480, height: '45vw', display: 'flex', alignItems: 'center', justifyContent: 'center',
     },
 };
 

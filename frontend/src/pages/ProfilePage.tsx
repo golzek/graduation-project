@@ -65,7 +65,7 @@ export function ProfilePage() {
     return (
         <div style={s.page}>
             <div style={s.header}>
-                <div style={s.headerInner}>
+                <div style={s.headerInner} className="r-header-inner">
                     <div style={s.avatar}>{initials}</div>
                     <div>
                         <h1 style={s.title}>{user?.name}</h1>
@@ -74,8 +74,8 @@ export function ProfilePage() {
                 </div>
             </div>
 
-            <div style={s.body}>
-                <div style={s.grid}>
+            <div style={s.body} className="r-body">
+                <div style={s.grid} className="r-profile-grid">
 
                     <section style={s.card}>
                         <p style={s.sectionLabel}>Особисті дані</p>
@@ -161,8 +161,7 @@ const s: Record<string, React.CSSProperties> = {
     page:   { minHeight: '100vh', background: 'var(--bg)' },
     header: { borderBottom: '1px solid var(--border)', background: 'var(--bg-elevated)', padding: '28px 0' },
     headerInner: {
-        maxWidth: 1160, margin: '0 auto', padding: '0 32px',
-        display: 'flex', alignItems: 'center', gap: 16,
+        maxWidth: 1160, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 16,
     },
     avatar: {
         width: 52, height: 52, borderRadius: '50%',
@@ -172,8 +171,8 @@ const s: Record<string, React.CSSProperties> = {
     },
     title:  { fontSize: '1.2rem', fontWeight: 600, letterSpacing: '-0.02em' },
     sub:    { fontSize: '0.85rem', color: 'var(--text-tertiary)', marginTop: 2 },
-    body:   { maxWidth: 1160, margin: '28px auto', padding: '0 32px' },
-    grid:   { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, maxWidth: 760 },
+    body:   { maxWidth: 1160, margin: '28px auto' },
+    grid:   { display: 'grid', gap: 16, maxWidth: 760 },
     card:   {
         background: 'var(--bg-elevated)', border: '1.5px solid var(--border)',
         borderRadius: 12, padding: '20px 22px',

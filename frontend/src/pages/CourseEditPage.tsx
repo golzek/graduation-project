@@ -124,7 +124,7 @@ export function CourseEditPage() {
     return (
         <div style={s.page}>
             <div style={s.topBar}>
-                <div style={s.topInner}>
+                <div style={s.topInner} className="r-edit-body">
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <Link to="/teacher" style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>← Панель</Link>
                         <span style={{ color: 'var(--border-strong)' }}>/</span>
@@ -166,8 +166,8 @@ export function CourseEditPage() {
                 </div>
             )}
 
-            <div style={s.body}>
-                <div style={s.grid}>
+            <div style={s.body} className="r-edit-body">
+                <div style={s.grid} className="r-edit-grid" >
                     <div style={s.col}>
                         <div style={s.card}>
                             <h3 style={s.cardTitle}>Інформація про курс</h3>
@@ -177,7 +177,7 @@ export function CourseEditPage() {
                             <Field label="Опис">
                                 <textarea value={courseForm.description} onChange={e => setCourseForm(f => ({ ...f, description: e.target.value }))} style={{ ...inp, height: 90, resize: 'vertical' as const }} />
                             </Field>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                            <div style={{ display: 'grid', gap: 12 }} className="r-two-col-equal">
                                 <Field label="Категорія">
                                     <input value={courseForm.category} onChange={e => setCourseForm(f => ({ ...f, category: e.target.value }))} style={inp} placeholder="Програмування" />
                                 </Field>
@@ -245,7 +245,7 @@ export function CourseEditPage() {
                                                     onChange={e => setLessonForms(f => ({ ...f, [mod.id]: { ...(f[mod.id] ?? { ...EMPTY_LESSON }), title: e.target.value } }))}
                                                     style={{ ...inp, marginBottom: 8 }}
                                                 />
-                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+                                                <div style={{ display: 'grid', gap: 8, marginBottom: 8 }} className="r-two-col-equal">
                                                     <select
                                                         value={lessonForms[mod.id]?.type ?? 'video'}
                                                         onChange={e => setLessonForms(f => ({ ...f, [mod.id]: { ...(f[mod.id] ?? { ...EMPTY_LESSON }), type: e.target.value } }))}
@@ -373,7 +373,6 @@ export function CourseEditPage() {
                                 </div>
                             ))}
 
-
                             <div style={s.addModBox}>
                                 <input
                                     placeholder="Назва нового модуля"
@@ -418,7 +417,7 @@ const s: Record<string, React.CSSProperties> = {
     topBar:  { background: 'var(--bg-elevated)', borderBottom: '1px solid var(--border)', padding: '12px 0', position: 'sticky', top: 0, zIndex: 10 },
     topInner:{ maxWidth: 1100, margin: '0 auto', padding: '0 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
     body:    { maxWidth: 1100, margin: '24px auto', padding: '0 24px 40px' },
-    grid:    { display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 20 },
+    grid:    { display: 'grid', gap: 20 },
     col:     { display: 'flex', flexDirection: 'column', gap: 16 },
     card:    { background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 12, padding: 20 },
     cardTitle: { fontSize: '0.9rem', fontWeight: 600, marginBottom: 16, color: 'var(--text)' },

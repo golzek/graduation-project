@@ -30,7 +30,6 @@ interface InstructorProfile {
     isFollowing: boolean;
 }
 
-
 function levelLabel(level: string) {
     const map: Record<string, { label: string; color: string; bg: string }> = {
         beginner:     { label: 'Початковий', color: '#15803d', bg: '#dcfce7' },
@@ -56,7 +55,6 @@ function pluralCourses(n: number) {
     return 'курсів';
 }
 
-
 function Skeleton({ w, h, r = 8 }: { w: string | number; h: number; r?: number }) {
     return (
         <div style={{
@@ -67,7 +65,6 @@ function Skeleton({ w, h, r = 8 }: { w: string | number; h: number; r?: number }
         }} />
     );
 }
-
 
 function CourseCard({ course }: { course: InstructorProfile['courses'][0] }) {
     const lv = levelLabel(course.level);
@@ -159,16 +156,8 @@ export function InstructorPage() {
 
     return (
         <div style={s.page}>
-            <style>{`
-                @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-                @media (max-width: 700px) {
-                    .instructor-hero-inner { flex-direction: column !important; align-items: flex-start !important; }
-                    .instructor-stats-grid { grid-template-columns: repeat(2,1fr) !important; }
-                }
-            `}</style>
-
             <div style={s.hero}>
-                <div className="instructor-hero-inner" style={s.heroInner}>
+                <div className="r-instructor-hero-inner" style={s.heroInner} >
                     <div style={s.avatarWrap}>
                         {instructor.avatarUrl
                             ? <img src={instructor.avatarUrl} alt={instructor.name} style={s.avatar} />
@@ -185,8 +174,8 @@ export function InstructorPage() {
             </div>
 
             <div style={s.statsBar}>
-                <div style={s.statsInner}>
-                    <div className="instructor-stats-grid" style={s.statsGrid}>
+                <div style={s.statsInner} className="r-instructor-stats-inner">
+                    <div className="r-instructor-grid" style={s.statsGrid} >
                         <StatCard icon="📚" value={stats.totalCourses} label={pluralCourses(stats.totalCourses)} />
                         <StatCard icon="👥" value={stats.totalStudents} label={pluralStudents(stats.totalStudents)} />
                         <StatCard
@@ -252,7 +241,6 @@ export function InstructorPage() {
     );
 }
 
-
 function StatCard({ icon, value, label }: { icon: string; value: string | number; label: string }) {
     return (
         <div style={s.statCard}>
@@ -262,7 +250,6 @@ function StatCard({ icon, value, label }: { icon: string; value: string | number
         </div>
     );
 }
-
 
 function LoadingSkeleton() {
     return (
@@ -278,14 +265,14 @@ function LoadingSkeleton() {
                 </div>
             </div>
             <div style={s.statsBar}>
-                <div style={s.statsInner}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
+                <div style={s.statsInner} className="r-instructor-stats-inner">
+                    <div style={{ display: 'grid', gap: 16 }}>
                         {[1,2,3,4].map(i => <Skeleton key={i} w="100%" h={80} r={12} />)}
                     </div>
                 </div>
             </div>
             <div style={s.body}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 20 }}>
+                <div style={{ display: 'grid', gap: 20 }}>
                     {[1,2,3].map(i => <Skeleton key={i} w="100%" h={320} r={14} />)}
                 </div>
             </div>
@@ -293,14 +280,12 @@ function LoadingSkeleton() {
     );
 }
 
-
 const s: Record<string, React.CSSProperties> = {
     page:   { minHeight: '100vh', background: 'var(--bg)' },
 
     hero:      { background: 'var(--bg-elevated)', borderBottom: '1px solid var(--border)', padding: '36px 0' },
     heroInner: {
-        maxWidth: 1100, margin: '0 auto', padding: '0 32px',
-        display: 'flex', alignItems: 'center', gap: 28,
+        maxWidth: 1100, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 28,
     },
     avatarWrap: { flexShrink: 0 },
     avatar:    { width: 96, height: 96, borderRadius: '50%', objectFit: 'cover', border: '3px solid #f0f0f0' },
@@ -315,10 +300,10 @@ const s: Record<string, React.CSSProperties> = {
     since:   { fontSize: '0.82rem', color: 'var(--text-tertiary)' },
 
     statsBar:   { background: 'var(--bg-elevated)', borderBottom: '1px solid var(--border)', padding: '20px 0' },
-    statsInner: { maxWidth: 1100, margin: '0 auto', padding: '0 32px' },
+    statsInner: { maxWidth: 1100, margin: '0 auto',  },
     statsGrid: {
         display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
+
         gap: 16,
     },
     statCard: {
@@ -331,7 +316,7 @@ const s: Record<string, React.CSSProperties> = {
     statValue: { fontSize: '1.4rem', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text)' },
     statLabel: { fontSize: '0.72rem', color: 'var(--text-tertiary)', textAlign: 'center' },
 
-    body: { maxWidth: 1100, margin: '32px auto', padding: '0 32px' },
+    body: { maxWidth: 1100, margin: '32px auto' },
 
     toolbar: {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -352,7 +337,7 @@ const s: Record<string, React.CSSProperties> = {
         padding: '7px 12px', borderRadius: 8,
         border: '1.5px solid var(--border)', background: 'var(--bg-elevated)',
         fontSize: '0.82rem', color: 'var(--text)', outline: 'none',
-        width: 180,
+        width: 'clamp(100px, 20vw, 180px)',
     },
     sortWrap:      { display: 'flex', gap: 6 },
     sortBtn: {
@@ -365,7 +350,7 @@ const s: Record<string, React.CSSProperties> = {
 
     grid: {
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+
         gap: 20,
     },
 

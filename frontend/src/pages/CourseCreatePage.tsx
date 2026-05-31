@@ -17,7 +17,7 @@ export function CourseCreatePage() {
                 method: 'POST',
                 body: JSON.stringify(form),
             });
-            // Redirect to editor so teacher can add modules/lessons and publish
+
             navigate(`/courses/${course.id}/edit`);
         } catch (e: any) {
             setError(e.message);
@@ -27,7 +27,7 @@ export function CourseCreatePage() {
     };
 
     return (
-        <div style={{ maxWidth: 600, margin: '40px auto', padding: '0 32px 40px' }}>
+        <div style={{ maxWidth: 600, margin: '40px auto', padding: '0 32px 40px' }} className="r-course-create-wrap">
             <div style={{ marginBottom: 28 }}>
                 <h2 style={{ fontSize: '1.5rem', fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 6 }}>
                     Створити курс
@@ -73,7 +73,7 @@ export function CourseCreatePage() {
                 />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 24 }}>
+            <div style={{ display: 'grid', gap: 12, marginBottom: 24 }} className="r-two-col-equal">
                 <div>
                     <label style={lbl}>Рівень</label>
                     <select value={form.level} onChange={e => setForm({ ...form, level: e.target.value })} style={inp}>

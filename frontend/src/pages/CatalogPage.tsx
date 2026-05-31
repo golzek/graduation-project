@@ -48,6 +48,7 @@ export function CatalogPage() {
   const [sort, setSort]           = useState('newest');
   const [page, setPage]           = useState(1);
   const [view, setView]           = useState<'grid' | 'list'>('grid');
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const { isAuthenticated } = useAuth();
 
   const resetFilters = () => {
@@ -96,7 +97,7 @@ export function CatalogPage() {
   return (
       <div style={s.page}>
         <div style={s.hero}>
-          <div style={s.heroInner}>
+          <div style={s.heroInner} className="r-container-wide">
             <div style={s.heroText}>
               <h1 style={s.heroTitle}>Каталог курсів</h1>
               <p style={s.heroSub}>
@@ -118,8 +119,8 @@ export function CatalogPage() {
           </div>
         </div>
 
-        <div style={s.body}>
-          <aside style={s.aside}>
+        <div style={s.body} className="r-sidebar-layout">
+          <aside style={s.aside} className="r-sidebar r-catalog-aside">
             <div style={s.asideHeader}>
               <span style={s.asideTitle}>Фільтри</span>
               {hasActiveFilters && (
@@ -187,11 +188,88 @@ export function CatalogPage() {
             </div>
           </aside>
 
-          <main style={s.main}>
-            <div style={s.toolbar}>
-              <p style={s.toolbarCount}>
-                {loading ? 'Завантаження...' : `${total} результат${total === 1 ? '' : total < 5 ? 'и' : 'ів'}`}
-              </p>
+          {}
+          <div className={`r-filter-drawer-overlay${mobileFilterOpen ? ' open' : ''}`}
+               onClick={() => setMobileFilterOpen(false)}>
+            <div className="r-filter-drawer" onClick={e => e.stopPropagation()}>
+              <div className="r-filter-drawer-handle" />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text)' }}>Фільтри</span>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {hasActiveFilters && (
+                      <button style={{ fontSize: '0.75rem', padding: '4px 10px', borderRadius: 6, border: '1.5px solid var(--border)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'inherit' }} onClick={resetFilters}>Скинути</button>
+                  )}
+                  <button style={{ fontSize: '0.75rem', padding: '4px 10px', borderRadius: 6, background: 'var(--accent)', color: 'var(--accent-inv)', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 500 }} onClick={() => setMobileFilterOpen(false)}>Готово</button>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: 20 }}>
+                <p style={s.filterLabel}>Категорія</p>
+                <div style={s.filterList}>
+                  {dynamicCategories.map(cat => (
+                      <button key={cat}
+                              style={{ ...s.filterChip, ...((category === cat || (cat === 'Всі' && !category)) ? s.filterChipActive : {}) }}
+                              onClick={() => { setCategory(cat === 'Всі' ? '' : cat); setPage(1); }}>
+                        {cat}
+                      </button>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ marginBottom: 20 }}>
+                <p style={s.filterLabel}>Рівень</p>
+                {LEVELS.map(l => (
+                    <button key={l.value}
+                            style={{ ...s.filterRow, ...(level === l.value ? s.filterRowActive : {}) }}
+                            onClick={() => { setLevel(l.value); setPage(1); }}>
+                      <span style={s.filterDot(level === l.value)} />
+                      {l.label}
+                    </button>
+                ))}
+              </div>
+
+              <div style={{ marginBottom: 20 }}>
+                <p style={s.filterLabel}>Максимальна ціна</p>
+                <div style={s.priceDisplay}>
+                  {maxPrice >= MAX_PRICE ? (
+                      <span style={s.priceAny}>Будь-яка</span>
+                  ) : (
+                      <span style={s.priceValue}>до {maxPrice.toLocaleString()} ₴</span>
+                  )}
+                </div>
+                <input type="range" min={0} max={MAX_PRICE} step={100} value={maxPrice}
+                       onChange={e => { setMaxPrice(Number(e.target.value)); setPage(1); }}
+                       style={{ ...s.range, width: '100%' }} />
+              </div>
+
+              <div>
+                <p style={s.filterLabel}>Мінімальний рейтинг</p>
+                <div style={{ display: 'flex', gap: 3 }}>
+                  {[1,2,3,4,5].map(star => (
+                      <button key={star}
+                              onClick={() => { setMinRating(minRating === star ? 0 : star); setPage(1); }}
+                              style={{ ...s.starBtn, color: star <= minRating ? '#f59e0b' : 'var(--border-strong)', fontSize: '1.4rem' }}>
+                        ★
+                      </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <main style={s.main} className="r-sidebar-main">
+            <div style={s.toolbar} className="catalog-toolbar">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <p style={s.toolbarCount}>
+                  {loading ? 'Завантаження...' : `${total} результат${total === 1 ? '' : total < 5 ? 'и' : 'ів'}`}
+                </p>
+                <button
+                    className="r-mobile-filter-btn"
+                    onClick={() => setMobileFilterOpen(true)}
+                >
+                  {hasActiveFilters ? `⚙ Фільтри (!)` : `⚙ Фільтри`}
+                </button>
+              </div>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <select value={sort} onChange={e => setSort(e.target.value)} style={s.sortSelect}>
                   {SORT_OPTIONS.map(o => (
@@ -472,7 +550,7 @@ function StarRating({ value }: { value: number | null }) {
 const s: Record<string, any> = {
   page:   { minHeight: '100vh', background: 'var(--bg-subtle)' },
   hero:   { background: 'var(--bg-elevated)', borderBottom: '1px solid var(--border)', padding: '40px 0 28px' },
-  heroInner: { maxWidth: 1200, margin: '0 auto', padding: '0 32px', display: 'flex', flexDirection: 'column' as const, gap: 16 },
+  heroInner: { maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column' as const, gap: 16 },
   heroText: {},
   heroTitle: { fontSize: '1.7rem', fontWeight: 800, letterSpacing: '-0.04em', color: 'var(--text)', marginBottom: 4 },
   heroSub:   { color: 'var(--text-tertiary)', fontSize: '0.875rem' },
@@ -488,8 +566,8 @@ const s: Record<string, any> = {
     transition: 'border-color 0.15s',
   },
 
-  body:  { maxWidth: 1200, margin: '28px auto', padding: '0 32px', display: 'flex', gap: 28, alignItems: 'flex-start' },
-  aside: { width: 210, flexShrink: 0, background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 14, padding: '18px 16px', position: 'sticky' as const, top: 80 },
+  body:  { maxWidth: 1200, margin: '28px auto', display: 'flex', gap: 28, alignItems: 'flex-start' },
+  aside: { flexShrink: 0, background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 14, padding: '18px 16px', position: 'sticky' as const, top: 80 },
   asideHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   asideTitle: { fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: 'var(--text)' },
   resetBtn: { background: 'none', border: 'none', fontSize: '0.75rem', color: '#dc2626', cursor: 'pointer', padding: 0, fontFamily: 'inherit' },
@@ -534,7 +612,7 @@ const s: Record<string, any> = {
   viewBtn: { padding: '6px 10px', background: 'var(--bg-elevated)', border: 'none', cursor: 'pointer', fontSize: '1rem', color: 'var(--text-tertiary)', transition: 'background 0.1s' },
   viewBtnActive: { background: 'var(--accent)', color: 'var(--accent-inv)' },
 
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 },
+  grid: { display: 'grid', gap: 16 },
   listLayout: { display: 'flex', flexDirection: 'column' as const, gap: 10 },
   listRow: {
     display: 'flex', alignItems: 'center', gap: 16,

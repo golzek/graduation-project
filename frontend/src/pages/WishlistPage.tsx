@@ -65,13 +65,13 @@ export function WishlistPage() {
         return (
             <div style={s.page}>
                 <div style={s.headerWrap}>
-                    <div style={s.headerInner}>
+                    <div style={s.headerInner} className="r-wishlist-header-inner">
                         <div style={s.skeletonTitle} />
                         <div style={s.skeletonSub} />
                     </div>
                 </div>
-                <div style={s.body}>
-                    <div style={s.grid}>
+                <div style={s.body} className="r-wishlist-body">
+                    <div style={s.grid} className="r-wishlist-grid">
                         {[1, 2, 3, 4].map(i => (
                             <div key={i} style={s.skeletonCard} />
                         ))}
@@ -84,7 +84,7 @@ export function WishlistPage() {
     return (
         <div style={s.page}>
             <div style={s.headerWrap}>
-                <div style={s.headerInner}>
+                <div style={s.headerInner} className="r-wishlist-header-inner">
                     <div>
                         <h1 style={s.title}>Список бажань</h1>
                         <p style={s.subtitle}>
@@ -114,7 +114,7 @@ export function WishlistPage() {
                 </div>
             </div>
 
-            <div style={s.body}>
+            <div style={s.body} className="r-wishlist-body">
                 {items.length === 0 ? (
                     <div style={s.empty}>
                         <div style={s.emptyIcon}>♡</div>
@@ -127,7 +127,7 @@ export function WishlistPage() {
                         </Link>
                     </div>
                 ) : (
-                    <div style={s.grid}>
+                    <div style={s.grid} className="r-wishlist-grid">
                         {sorted.map(item => (
                             <WishlistCard
                                 key={item.id}
@@ -227,8 +227,7 @@ const s: Record<string, React.CSSProperties> = {
     page:        { minHeight: '100vh', background: 'var(--bg)' },
     headerWrap:  { borderBottom: '1px solid var(--border)', background: 'var(--bg-elevated)', padding: '28px 0' },
     headerInner: {
-        maxWidth: 1160, margin: '0 auto', padding: '0 32px',
-        display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+        maxWidth: 1160, margin: '0 auto', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
         gap: 16, flexWrap: 'wrap' as const,
     },
     title:    { fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 4 },
@@ -247,10 +246,9 @@ const s: Record<string, React.CSSProperties> = {
         border: '1.5px solid var(--accent)',
     },
 
-    body:  { maxWidth: 1160, margin: '32px auto', padding: '0 32px' },
+    body:  { maxWidth: 1160, margin: '32px auto' },
     grid: {
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
         gap: 20,
     },
 

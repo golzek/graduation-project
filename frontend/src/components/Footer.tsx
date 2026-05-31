@@ -6,7 +6,7 @@ export function Footer() {
 
     return (
         <footer style={s.footer}>
-            <div style={s.inner}>
+            <div style={s.inner} className="r-footer-inner">
                 <div style={s.brand}>
                     <Link to="/courses" style={s.logo}>LearnHub</Link>
                     <p style={s.tagline}>
@@ -39,7 +39,7 @@ export function Footer() {
             </div>
 
             <div style={s.bar}>
-                <div style={s.barInner}>
+                <div style={s.barInner} className="r-footer-bar-inner">
           <span style={s.barText}>
             Зроблено з ❤️ для освіти
           </span>
@@ -65,7 +65,6 @@ const s: Record<string, React.CSSProperties> = {
         margin: '0 auto',
         padding: '56px 32px 48px',
         display: 'grid',
-        gridTemplateColumns: '2fr 1fr 1fr 1fr',
         gap: 40,
     },
 

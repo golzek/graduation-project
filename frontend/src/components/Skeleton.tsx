@@ -30,7 +30,7 @@ export function StudentDashboardSkeleton() {
     return (
         <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
             <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg-elevated)', padding: '28px 0' }}>
-                <div style={{ maxWidth: 1160, margin: '0 auto', padding: '0 32px', display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ maxWidth: 1160, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 16 }} className="r-header-inner">
                     <Skeleton width={44} height={44} borderRadius="50%" />
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                         <Skeleton width={180} height={20} />
@@ -39,8 +39,8 @@ export function StudentDashboardSkeleton() {
                 </div>
             </div>
 
-            <div style={{ maxWidth: 1160, margin: '28px auto', padding: '0 32px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
+            <div style={{ maxWidth: 1160, margin: '28px auto' }} className="r-skeleton-body">
+                <div style={{ display: 'grid', gap: 12, marginBottom: 24 }} className="r-skeleton-metrics">
                     {[0,1,2,3].map(i => (
                         <div key={i} style={{ background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 10, padding: '16px 18px' }}>
                             <Skeleton width={60} height={32} style={{ marginBottom: 8 }} />
@@ -49,7 +49,7 @@ export function StudentDashboardSkeleton() {
                     ))}
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 16 }}>
+                <div style={{ display: 'grid', gap: 16 }} className="r-skeleton-two">
                     <div style={{ background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 12, padding: '18px 20px' }}>
                         <Skeleton width={80} height={12} style={{ marginBottom: 16 }} />
                         {[0,1,2].map(i => (
@@ -99,7 +99,7 @@ export function TeacherDashboardSkeleton() {
     return (
         <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
             <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg-elevated)', padding: '28px 0' }}>
-                <div style={{ maxWidth: 1160, margin: '0 auto', padding: '0 32px', display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ maxWidth: 1160, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 16 }} className="r-header-inner">
                     <Skeleton width={44} height={44} borderRadius="50%" />
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                         <Skeleton width={200} height={20} />
@@ -108,8 +108,8 @@ export function TeacherDashboardSkeleton() {
                 </div>
             </div>
 
-            <div style={{ maxWidth: 1160, margin: '28px auto', padding: '0 32px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
+            <div style={{ maxWidth: 1160, margin: '28px auto' }} className="r-skeleton-body">
+                <div style={{ display: 'grid', gap: 12, marginBottom: 24 }} className="r-skeleton-metrics">
                     {[0,1,2,3].map(i => (
                         <div key={i} style={{ background: 'var(--bg-elevated)', border: '1.5px solid var(--border)', borderRadius: 10, padding: '16px 18px' }}>
                             <Skeleton width={70} height={32} style={{ marginBottom: 8 }} />

@@ -39,7 +39,7 @@ export function MyCertificatesPage() {
               <Link to="/courses" style={s.btnLink}>Перейти до каталогу</Link>
             </div>
         ) : (
-            <div style={s.grid}>
+            <div style={s.grid} className="r-certs-grid">
               {certs.map((cert) => (
                   <CertCard key={cert.id} cert={cert} />
               ))}
@@ -104,7 +104,7 @@ export function VerifyCertPage() {
     } finally { setLoading(false); }
   };
 
-  // auto-check if code is in URL
+
   useEffect(() => { if (codeParam) check(codeParam); }, [codeParam]);
 
   const handleSubmit = () => {
@@ -116,7 +116,7 @@ export function VerifyCertPage() {
   return (
       <div style={sv.page}>
         <div style={sv.card}>
-          {/* Header */}
+          {}
           <div style={{ textAlign: 'center', marginBottom: 28 }}>
             <div style={{ fontSize: '2.5rem', marginBottom: 10 }}>🎓</div>
             <h1 style={{ fontSize: '1.3rem', fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>
@@ -127,7 +127,7 @@ export function VerifyCertPage() {
             </p>
           </div>
 
-          {/* Input */}
+          {}
           <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
             <input
                 value={input}
@@ -154,7 +154,7 @@ export function VerifyCertPage() {
             >{loading ? '...' : 'Перевірити'}</button>
           </div>
 
-          {/* Result */}
+          {}
           {loading && (
               <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
                 Перевірка...
@@ -235,7 +235,7 @@ const s: Record<string, React.CSSProperties> = {
   centered: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', color: 'var(--text-secondary)' },
   empty: { textAlign: 'center', padding: '80px 32px' },
   btnLink: { display: 'inline-block', marginTop: 20, padding: '12px 24px', background: '#4f46e5', color: 'var(--bg-elevated)', borderRadius: 10, textDecoration: 'none', fontWeight: 600 },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 24, maxWidth: 1100, margin: '40px auto', padding: '0 32px' },
+  grid: { display: 'grid', gap: 24, maxWidth: 1100, margin: '40px auto' },
   card: { background: 'var(--bg-elevated)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.08)' },
   cardTop: { background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', padding: '24px', textAlign: 'center', color: 'var(--bg-elevated)' },
   cardTopLabel: { margin: '8px 0 0', fontWeight: 600, opacity: 0.9, fontSize: 14 },

@@ -8,7 +8,7 @@ const s: Record<string, React.CSSProperties> = {
     background: 'var(--bg)',
   },
   left: {
-    width: 420, flexShrink: 0,
+    flexShrink: 0,
     display: 'flex', flexDirection: 'column' as const,
     justifyContent: 'center', padding: '60px 48px',
     borderRight: '1px solid #ebebeb',
@@ -141,13 +141,13 @@ export function LoginPage() {
   };
 
   return (
-      <div style={s.page}>
-        <div style={s.left}>
+      <div style={s.page} className="auth-layout r-auth-page" >
+        <div style={s.left} className="auth-left r-auth-left" >
           <Link to="/" style={s.logo}><span style={s.dot}/>LearnHub</Link>
           <p style={s.tagline}>Навчання без зайвого шуму</p>
           <p style={s.sub}>Курси, прогрес і сертифікати — все в одному місці.</p>
         </div>
-        <div style={s.right}>
+        <div style={s.right} className="auth-right r-auth-right" >
           <div style={s.formBox}>
             <h1 style={s.title}>Вхід</h1>
             <p style={s.hint}>Раді тебе бачити знову</p>
@@ -209,13 +209,13 @@ export function RegisterPage() {
   };
 
   return (
-      <div style={s.page}>
-        <div style={s.left}>
+      <div style={s.page} className="auth-layout r-auth-page" >
+        <div style={s.left} className="auth-left r-auth-left" >
           <Link to="/" style={s.logo}><span style={s.dot}/>LearnHub</Link>
           <p style={s.tagline}>Почни навчатися сьогодні</p>
           <p style={s.sub}>Безкоштовна реєстрація. Доступ до сотень курсів.</p>
         </div>
-        <div style={s.right}>
+        <div style={s.right} className="auth-right r-auth-right" >
           <div style={s.formBox}>
             <h1 style={s.title}>Реєстрація</h1>
             <p style={s.hint}>Створи акаунт за хвилину</p>

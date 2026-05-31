@@ -95,15 +95,14 @@ export function TeacherDashboard() {
           </div>
         </div>
 
-        <div style={s.body}>
+        <div style={s.body} className="r-body">
 
-          <div style={s.metricsRow}>
+          <div style={s.metricsRow} className="metrics-row r-metrics" >
             <MetricCard icon="📚" label="Курсів" value={stats.totalCourses} color="#4f46e5" />
             <MetricCard icon="👥" label="Студентів" value={stats.totalStudents} color="#0891b2" />
             <MetricCard icon="💰" label="Дохід (₴)" value={stats.totalRevenue.toLocaleString('uk-UA')} color="#059669" />
             <MetricCard icon="🎓" label="Сертифікатів" value={stats.totalCertificates} color="#d97706" />
           </div>
-
 
           {stats.courses.length === 0 ? (
               <div style={s.empty}>
@@ -111,7 +110,7 @@ export function TeacherDashboard() {
                 <Link to="/courses/create" style={s.btnLink}>Створити перший курс</Link>
               </div>
           ) : (
-              <div style={s.twoCol}>
+              <div style={s.twoCol} className="r-two-col-300">
 
                 <div style={s.courseList}>
                   <h3 style={s.sectionTitle}>Мої курси</h3>
@@ -134,11 +133,9 @@ export function TeacherDashboard() {
                   ))}
                 </div>
 
-
                 {selectedCourse && (
                     <div style={s.courseDetail}>
                       <h3 style={s.sectionTitle}>{selectedCourse.title}</h3>
-
 
                       <div style={s.miniMetrics}>
                         <MiniMetric label="Студентів" value={selectedCourse.students} />
@@ -146,7 +143,6 @@ export function TeacherDashboard() {
                         <MiniMetric label="Сертифікатів" value={selectedCourse.certificates} />
                         <MiniMetric label="Сер. прогрес" value={`${selectedCourse.avgProgressPercent}%`} />
                       </div>
-
 
                       <div style={{ marginBottom: 24 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 6 }}>
@@ -158,14 +154,12 @@ export function TeacherDashboard() {
                         </div>
                       </div>
 
-
                       {selectedCourse.enrollsByDay.length > 0 && (
                           <div style={{ marginBottom: 24 }}>
                             <p style={s.chartTitle}>Записи за останні 30 днів</p>
                             <MiniBarChart data={selectedCourse.enrollsByDay} />
                           </div>
                       )}
-
 
                       {selectedCourse.topLessons.length > 0 && (
                           <div>
@@ -211,7 +205,6 @@ export function TeacherDashboard() {
       </div>
   );
 }
-
 
 function PayoutsPanel() {
   const [data, setData]           = useState<EarningsSummary | null>(null);
@@ -294,7 +287,7 @@ function PayoutsPanel() {
             <p style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>Не вдалось завантажити дані</p>
         ) : (
             <>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 20 }}>
+              <div style={{ display: 'grid', gap: 12, marginBottom: 20 }} className="r-metrics">
                 {[
                   { label: 'Валовий дохід', value: `${data.gross.toLocaleString('uk-UA')} ₴`, sub: 'від продажів', color: 'var(--text-secondary)' },
                   { label: 'Комісія платформи', value: `${data.platformFeePercent}%`, sub: `−${(data.gross * data.platformFeePercent / 100).toLocaleString('uk-UA')} ₴`, color: '#d97706' },
@@ -336,7 +329,7 @@ function PayoutsPanel() {
               {showForm && (
                   <div style={{ background: '#f0fdf4', border: '1.5px solid #bbf7d0', borderRadius: 10, padding: 18, marginBottom: 18 }}>
                     <p style={{ margin: '0 0 14px', fontWeight: 600, fontSize: 14, color: '#065f46' }}>Новий запит на виплату</p>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 10, marginBottom: 12 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 10, marginBottom: 12 }} className="r-label-value">
                       <div>
                         <label style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Сума (₴) *</label>
                         <input
@@ -483,7 +476,7 @@ function PromoCodesPanel({ courseId }: { courseId: string }) {
 
         {showForm && (
             <div style={{ background: 'var(--bg)', borderRadius: 10, padding: 16, marginBottom: 16, border: '1.5px solid #ede9fe' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+              <div style={{ display: 'grid', gap: 10, marginBottom: 10 }} className="r-two-col-equal">
                 <div>
                   <label style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Код *</label>
                   <input
@@ -628,19 +621,19 @@ const s: Record<string, React.CSSProperties> = {
   title: { fontSize: 26, fontWeight: 700, margin: 0 },
   sub: { opacity: 0.7, marginTop: 4 },
   btnCreate: { padding: '12px 24px', background: '#4f46e5', color: 'var(--bg-elevated)', borderRadius: 10, textDecoration: 'none', fontWeight: 600, fontSize: 14 },
-  body: { maxWidth: 1200, margin: '32px auto', padding: '0 32px' },
-  metricsRow: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 },
+  body: { maxWidth: 1200, margin: '32px auto',  },
+  metricsRow: { display: 'grid', gap: 16, marginBottom: 28 },
   metricCard: { background: 'var(--bg-elevated)', borderRadius: 14, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' },
   metricIcon: { width: 48, height: 48, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 },
   metricValue: { margin: 0, fontSize: 24, fontWeight: 700, color: 'var(--text)' },
   metricLabel: { margin: '2px 0 0', fontSize: 13, color: 'var(--text-secondary)' },
-  twoCol: { display: 'grid', gridTemplateColumns: '300px 1fr', gap: 24 },
+  twoCol: { display: 'grid', gap: 24 },
   courseList: { background: 'var(--bg-elevated)', borderRadius: 14, padding: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', height: 'fit-content' },
   sectionTitle: { fontSize: 15, fontWeight: 700, margin: '0 0 16px', color: 'var(--text)' },
   courseRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', borderRadius: 10, cursor: 'pointer', marginBottom: 6, transition: 'background 0.15s' },
   courseRowActive: { background: '#ede9fe' },
   courseDetail: { background: 'var(--bg-elevated)', borderRadius: 14, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' },
-  miniMetrics: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 },
+  miniMetrics: { display: 'grid', gap: 12, marginBottom: 20 },
   miniMetric: { background: 'var(--bg)', borderRadius: 10, padding: '12px 16px' },
   progressTrack: { height: 10, background: 'var(--border)', borderRadius: 5, overflow: 'hidden' },
   progressFill: { height: '100%', background: '#4f46e5', borderRadius: 5, transition: 'width 0.5s' },

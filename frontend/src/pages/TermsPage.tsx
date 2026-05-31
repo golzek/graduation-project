@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 export function TermsPage() {
     return (
         <div style={s.page}>
-            <div style={s.inner}>
+            <div style={s.inner} className="r-prose-inner">
                 <p style={s.breadcrumb}>
                     <Link to="/courses" style={s.breadLink}>Головна</Link>
                     {' / '}Умови використання
@@ -98,7 +98,7 @@ const ss: Record<string, React.CSSProperties> = {
 
 const s: Record<string, React.CSSProperties> = {
     page:  { minHeight: '100vh', background: 'var(--bg)', paddingBottom: 80 },
-    inner: { maxWidth: 720, margin: '0 auto', padding: '48px 32px 0' },
+    inner: { maxWidth: 720, margin: '0 auto' },
 
     breadcrumb: { fontSize: '0.8rem', color: 'var(--text-tertiary)', marginBottom: 32 },
     breadLink:  { color: 'var(--text-tertiary)', textDecoration: 'none' },
