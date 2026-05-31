@@ -132,7 +132,7 @@ export function AdminPanel() {
                   </button>
               ))}
             </div>
-            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
               <NotificationBell />
               <button
                   onClick={toggle}

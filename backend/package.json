@@ -10,7 +10,9 @@
     "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/database/data-source.ts",
     "migration:show": "typeorm-ts-node-commonjs migration:show -d src/database/data-source.ts",
     "seed": "ts-node --project tsconfig.json src/database/seed-runner.ts",
-    "seed:fresh": "npm run migration:revert && npm run migration:run && npm run seed"
+    "seed:fresh": "npm run migration:revert && npm run migration:run && npm run seed",
+    "test": "jest",
+    "test:cov": "jest --coverage"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.400.0",
@@ -45,13 +47,17 @@
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
     "@nestjs/schematics": "^10.0.0",
+    "@nestjs/testing": "^11.1.24",
     "@types/bcryptjs": "^2.4.3",
     "@types/express": "^4.17.17",
+    "@types/jest": "^30.0.0",
     "@types/multer": "^1.4.7",
     "@types/node": "^20.0.0",
     "@types/passport-jwt": "^3.0.9",
     "@types/pdfkit": "^0.12.0",
     "@types/uuid": "^9.0.0",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.4.11",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typeorm-ts-node-commonjs": "^0.3.20",

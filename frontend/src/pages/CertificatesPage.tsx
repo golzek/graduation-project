@@ -51,6 +51,39 @@ export function MyCertificatesPage() {
 
 function CertCard({ cert }: { cert: Cert }) {
   const [claiming, setClaiming] = useState(false);
+  const [review, setReview]     = useState<{ rating: number; body: string } | null>(null);
+  const [hasReview, setHasReview] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted]   = useState(false);
+  const [rating, setRating]   = useState(5);
+  const [body, setBody]       = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    apiFetch<{ has: boolean }>(`/reviews/${cert.course.id}/my`)
+        .then(r => setHasReview(r.has))
+        .catch(() => {});
+  }, [cert.course.id]);
+
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    setError('');
+    try {
+      await apiFetch(`/reviews/${cert.course.id}`, {
+        method: 'POST',
+        body: JSON.stringify({ rating, body }),
+      });
+      setSubmitted(true);
+      setHasReview(true);
+      setShowForm(false);
+    } catch (e: any) {
+      setError(e.message ?? 'Помилка');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const date = new Date(cert.issuedAt).toLocaleDateString('uk-UA', {
     day: 'numeric', month: 'long', year: 'numeric',
   });
@@ -80,6 +113,52 @@ function CertCard({ cert }: { cert: Cert }) {
               Перевірити
             </Link>
           </div>
+
+          {submitted ? (
+              <p style={s.reviewSent}>✅ Відгук надіслано на модерацію</p>
+          ) : hasReview ? (
+              <p style={s.reviewSent}>✔ Ви вже залишили відгук</p>
+          ) : (
+              <>
+                <button
+                    style={s.btnReview}
+                    onClick={() => setShowForm(f => !f)}
+                >
+                  {showForm ? 'Сховати' : '✍ Залишити відгук'}
+                </button>
+
+                {showForm && (
+                    <div style={s.reviewForm}>
+                      <div style={{ display: 'flex', gap: 4, marginBottom: 10 }}>
+                        {[1,2,3,4,5].map(n => (
+                            <button
+                                key={n}
+                                onClick={() => setRating(n)}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer',
+                                  fontSize: 24, color: n <= rating ? '#f59e0b' : '#d1d5db',
+                                  padding: '0 2px', lineHeight: 1 }}
+                            >★</button>
+                        ))}
+                      </div>
+                      <textarea
+                          value={body}
+                          onChange={e => setBody(e.target.value)}
+                          placeholder="Розкажіть про курс..."
+                          rows={3}
+                          style={s.textarea}
+                      />
+                      {error && <p style={{ color: '#dc2626', fontSize: 13, margin: '4px 0 0' }}>{error}</p>}
+                      <button
+                          onClick={handleSubmit}
+                          disabled={submitting}
+                          style={{ ...s.btnDownload, marginTop: 10, display: 'block', textAlign: 'center' as const }}
+                      >
+                        {submitting ? 'Надсилання...' : 'Надіслати'}
+                      </button>
+                    </div>
+                )}
+              </>
+          )}
         </div>
       </div>
   );
@@ -249,6 +328,10 @@ const s: Record<string, React.CSSProperties> = {
   actions: { display: 'flex', gap: 10 },
   btnDownload: { flex: 1, padding: '10px', background: '#4f46e5', color: 'var(--bg-elevated)', borderRadius: 8, textDecoration: 'none', textAlign: 'center' as const, fontSize: 13, fontWeight: 600 },
   btnVerify: { padding: '10px 16px', background: 'var(--bg-muted)', color: 'var(--text-secondary)', borderRadius: 8, textDecoration: 'none', fontSize: 13, fontWeight: 500 },
+  btnReview: { marginTop: 12, width: '100%', padding: '9px', background: 'var(--bg-muted)', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer', color: 'var(--text-secondary)', fontFamily: 'inherit' },
+  reviewForm: { marginTop: 12, padding: '14px', background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 10 },
+  textarea: { width: '100%', padding: '10px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: 13, fontFamily: 'inherit', resize: 'vertical' as const, background: 'var(--bg-elevated)', color: 'var(--text)', boxSizing: 'border-box' as const, outline: 'none' },
+  reviewSent: { marginTop: 12, fontSize: 13, color: 'var(--text-tertiary)', textAlign: 'center' as const, padding: '8px', background: 'var(--bg-muted)', borderRadius: 8 },
   verifyPage: { minHeight: '100vh', background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 32 },
   verifyCard: { background: 'var(--bg-elevated)', borderRadius: 20, padding: '48px 40px', maxWidth: 480, width: '100%', boxShadow: '0 4px 24px rgba(0,0,0,0.08)' },
   verifyRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid var(--border)', fontSize: 15 },

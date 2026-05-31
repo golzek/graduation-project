@@ -8,6 +8,7 @@ import { IsInt, IsString, IsOptional, Min, Max } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Review } from './review.entity';
 import { Course, Enrollment } from '../courses/course.entity';
+import { Certificate } from '../certificates/certificate.entity';
 import { User, UserRole } from '../users/user.entity';
 
 export class CreateReviewDto {
@@ -21,14 +22,15 @@ export class CreateReviewDto {
 @Injectable()
 export class ReviewService {
   constructor(
-      @InjectRepository(Review)     private reviewRepo:     Repository<Review>,
-      @InjectRepository(Enrollment) private enrollmentRepo: Repository<Enrollment>,
-      @InjectRepository(Course)     private courseRepo:     Repository<Course>,
+      @InjectRepository(Review)       private reviewRepo:     Repository<Review>,
+      @InjectRepository(Enrollment)   private enrollmentRepo: Repository<Enrollment>,
+      @InjectRepository(Course)       private courseRepo:     Repository<Course>,
+      @InjectRepository(Certificate)  private certRepo:       Repository<Certificate>,
   ) {}
 
   async create(courseId: string, dto: CreateReviewDto, user: User) {
-    const enrolled = await this.enrollmentRepo.findOne({ where: { userId: user.id, courseId } });
-    if (!enrolled) throw new ForbiddenException('Запишись на курс перед тим як залишати відгук');
+    const cert = await this.certRepo.findOne({ where: { userId: user.id, courseId } });
+    if (!cert) throw new ForbiddenException('Відгук можна залишити лише після отримання сертифіката');
     const existing = await this.reviewRepo.findOne({ where: { userId: user.id, courseId } });
     if (existing) throw new ConflictException('Ти вже залишив відгук на цей курс');
     const review = this.reviewRepo.create({ ...dto, userId: user.id, courseId, isApproved: false });
