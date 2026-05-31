@@ -253,11 +253,22 @@ function QuizPlayer({ lesson, isEnrolled, onDone, completed, courseAuthorId }: {
     const PASS_THRESHOLD = 0.5;
 
     const [answers, setAnswers]     = useState<Record<number, number>>({});
-    const [submitted, setSubmitted] = useState(false);
-    const [score, setScore]         = useState(0);
-    const [passed, setPassed]       = useState(false);
+    const [submitted, setSubmitted] = useState(completed);
+    const [score, setScore]         = useState<number | null>(completed ? null : 0);
+    const [passed, setPassed]       = useState(completed);
 
-    useEffect(() => { setAnswers({}); setSubmitted(false); setScore(0); setPassed(false); }, [lesson.id]);
+    useEffect(() => {
+        if (completed) {
+            setSubmitted(true);
+            setPassed(true);
+            setScore(null);
+        } else {
+            setAnswers({});
+            setSubmitted(false);
+            setScore(0);
+            setPassed(false);
+        }
+    }, [lesson.id, completed]);
 
     if (!questions.length) {
         return (
@@ -304,57 +315,61 @@ function QuizPlayer({ lesson, isEnrolled, onDone, completed, courseAuthorId }: {
                 </p>
             )}
 
-            <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 20 }}>
-                {questions.map((q, qi) => (
-                    <div key={qi} style={{ background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 10, padding: '16px 18px' }}>
-                        <p style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 12, color: 'var(--text)' }}>
-                            {qi + 1}. {q.question}
-                        </p>
-                        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 8 }}>
-                            {q.options.map((opt, oi) => {
-                                const selected  = answers[qi] === oi;
-                                const isCorrect = submitted && oi === q.correctIndex;
-                                const isWrong   = submitted && selected && oi !== q.correctIndex;
-                                return (
-                                    <button
-                                        key={oi}
-                                        disabled={submitted || !isEnrolled}
-                                        onClick={() => setAnswers(a => ({ ...a, [qi]: oi }))}
-                                        style={{
-                                            textAlign: 'left' as const, padding: '10px 14px',
-                                            borderRadius: 8, cursor: submitted || !isEnrolled ? 'default' : 'pointer',
-                                            border: `1.5px solid ${isCorrect ? '#86efac' : isWrong ? '#fca5a5' : selected ? 'var(--accent)' : 'var(--border)'}`,
-                                            background: isCorrect ? '#f0fdf4' : isWrong ? '#fff5f5' : selected ? 'var(--bg-subtle)' : 'var(--bg-elevated)',
-                                            fontSize: '0.875rem', color: 'var(--text)',
-                                            fontFamily: 'inherit',
-                                        }}
-                                    >
-                                        {isCorrect && '✓ '}{isWrong && '✗ '}{opt}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                        {submitted && q.explanation && (
-                            <div style={{ marginTop: 10, padding: '8px 12px', background: '#eff6ff', borderRadius: 6, borderLeft: '3px solid #3b82f6', fontSize: '0.8rem', color: '#1e40af' }}>
-                                💡 {q.explanation}
+            {(!submitted || score !== null) && (
+                <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 20 }}>
+                    {questions.map((q, qi) => (
+                        <div key={qi} style={{ background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 10, padding: '16px 18px' }}>
+                            <p style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 12, color: 'var(--text)' }}>
+                                {qi + 1}. {q.question}
+                            </p>
+                            <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 8 }}>
+                                {q.options.map((opt, oi) => {
+                                    const selected  = answers[qi] === oi;
+                                    const isCorrect = submitted && oi === q.correctIndex;
+                                    const isWrong   = submitted && selected && oi !== q.correctIndex;
+                                    return (
+                                        <button
+                                            key={oi}
+                                            disabled={submitted || !isEnrolled}
+                                            onClick={() => setAnswers(a => ({ ...a, [qi]: oi }))}
+                                            style={{
+                                                textAlign: 'left' as const, padding: '10px 14px',
+                                                borderRadius: 8, cursor: submitted || !isEnrolled ? 'default' : 'pointer',
+                                                border: `1.5px solid ${isCorrect ? '#86efac' : isWrong ? '#fca5a5' : selected ? 'var(--accent)' : 'var(--border)'}`,
+                                                background: isCorrect ? '#f0fdf4' : isWrong ? '#fff5f5' : selected ? 'var(--bg-subtle)' : 'var(--bg-elevated)',
+                                                fontSize: '0.875rem', color: 'var(--text)',
+                                                fontFamily: 'inherit',
+                                            }}
+                                        >
+                                            {isCorrect && '✓ '}{isWrong && '✗ '}{opt}
+                                        </button>
+                                    );
+                                })}
                             </div>
-                        )}
-                    </div>
-                ))}
-            </div>
+                            {submitted && q.explanation && (
+                                <div style={{ marginTop: 10, padding: '8px 12px', background: '#eff6ff', borderRadius: 6, borderLeft: '3px solid #3b82f6', fontSize: '0.8rem', color: '#1e40af' }}>
+                                    💡 {q.explanation}
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
 
             {submitted && (
                 <div style={{ marginTop: 20, padding: '16px 20px', borderRadius: 10, textAlign: 'center' as const,
-                    background: score === questions.length ? '#f0fdf4' : passed ? '#fffbeb' : '#fff5f5',
-                    border: `1.5px solid ${score === questions.length ? '#86efac' : passed ? '#fde68a' : '#fca5a5'}`,
+                    background: passed ? '#f0fdf4' : '#fff5f5',
+                    border: `1.5px solid ${passed ? '#86efac' : '#fca5a5'}`,
                 }}>
                     <p style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: 4 }}>
                         {score === questions.length ? '🎉 Ідеально!' : passed ? '👍 Зараховано!' : '😔 Не зараховано'}
                     </p>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: passed ? 4 : 12 }}>
-                        {score} / {questions.length} правильних відповідей
-                    </p>
-                    {passed && completed && (
+                    {score !== null && (
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: passed ? 4 : 12 }}>
+                            {score} / {questions.length} правильних відповідей
+                        </p>
+                    )}
+                    {passed && (
                         <p style={{ fontSize: '0.8rem', color: '#16a34a', marginBottom: 4 }}>✓ Урок завершено</p>
                     )}
                     {!passed && (

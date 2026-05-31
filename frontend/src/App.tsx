@@ -26,6 +26,7 @@ import { InstructorPage } from './pages/InstructorPage';
 import { CourseAnalyticsPage } from './pages/CourseAnalyticsPage';
 import { TermsPage } from './pages/TermsPage';
 import { PrivacyPage } from './pages/PrivacyPage';
+import { LandingPage } from './pages/LandingPage';
 
 function AppRoutes() {
   return (
@@ -44,7 +45,7 @@ function AppRoutes() {
           <>
             <Navbar />
             <Routes>
-              <Route path="/"        element={<Navigate to="/courses" replace />} />
+              <Route path="/" element={<LandingPage />} />
               <Route path="/courses" element={<CatalogPage />} />
               <Route path="/courses/:id" element={<CoursePage />} />
               <Route path="/instructors/:id" element={<InstructorPage />} />

@@ -296,12 +296,17 @@ export function CourseEditPage() {
                                                     </div>
                                                 </div>
                                                 {(lessonForms[mod.id]?.type ?? 'video') === 'video' && (
-                                                    <input
-                                                        placeholder="URL відео (необов'язково)"
-                                                        value={lessonForms[mod.id]?.contentUrl ?? ''}
-                                                        onChange={e => setLessonForms(f => ({ ...f, [mod.id]: { ...(f[mod.id] ?? { ...EMPTY_LESSON }), contentUrl: e.target.value } }))}
-                                                        style={{ ...inp, marginBottom: 8 }}
-                                                    />
+                                                    <div style={{ marginBottom: 8 }}>
+                                                        <input
+                                                            placeholder="Посилання на YouTube (напр. https://youtu.be/dQw4w9WgXcQ)"
+                                                            value={lessonForms[mod.id]?.contentUrl ?? ''}
+                                                            onChange={e => setLessonForms(f => ({ ...f, [mod.id]: { ...(f[mod.id] ?? { ...EMPTY_LESSON }), contentUrl: e.target.value } }))}
+                                                            style={inp}
+                                                        />
+                                                        <p style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', marginTop: 4 }}>
+                                                            Підтримуються посилання youtube.com/watch?v=... та youtu.be/...
+                                                        </p>
+                                                    </div>
                                                 )}
                                                 {(lessonForms[mod.id]?.type ?? 'video') === 'text' && (
                                                     <textarea

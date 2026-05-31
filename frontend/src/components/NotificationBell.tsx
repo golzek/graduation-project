@@ -4,14 +4,77 @@ import { useNotifications, Notification } from '../context/NotificationContext';
 
 const TYPE_ICON: Record<string, string> = {
     course_pending_review : '📋',
-    new_user_registered   : '👥',
     course_approved       : '✅',
     course_rejected       : '❌',
-    enrollment_confirmed  : '🎉',
-    new_course_available  : '🎓',
     course_status_changed : '🔄',
+    new_course_available  : '🎓',
+    course_announcement   : '📢',
+    enrollment_confirmed  : '🎉',
     new_enrollment        : '👤',
+    promo_code_pending    : '🏷️',
+    promo_code_approved   : '✅',
+    promo_code_rejected   : '❌',
+    payout_request_pending: '💸',
+    payout_approved       : '✅',
+    payout_rejected       : '❌',
+    payout_paid           : '💰',
+    new_review_pending    : '⭐',
+    review_approved       : '✅',
+    new_review_on_course  : '💬',
+    new_qa_question       : '❓',
+    new_qa_answer         : '💬',
+    certificate_issued    : '🏆',
+    new_user_registered   : '👥',
+    account_banned        : '🚫',
+    account_unbanned      : '✅',
 };
+
+function resolveRoute(n: Notification): string | null {
+    const { courseId, questionId, reviewId, pdfUrl } = n.meta ?? {};
+
+    switch (n.type) {
+        case 'course_pending_review':
+        case 'new_user_registered':
+        case 'new_review_pending':
+        case 'payout_request_pending':
+        case 'promo_code_pending':
+            return '/admin';
+
+        case 'course_approved':
+        case 'course_rejected':
+        case 'course_status_changed':
+        case 'new_course_available':
+        case 'enrollment_confirmed':
+        case 'course_announcement':
+        case 'new_enrollment':
+        case 'new_review_on_course':
+            return courseId ? `/courses/${courseId}` : null;
+
+        case 'new_qa_question':
+        case 'new_qa_answer':
+            return courseId ? `/courses/${courseId}` : null;
+
+        case 'review_approved':
+            return courseId ? `/courses/${courseId}` : null;
+
+        case 'certificate_issued':
+            return '/certificates';
+
+        case 'payout_approved':
+        case 'payout_rejected':
+        case 'payout_paid':
+        case 'promo_code_approved':
+        case 'promo_code_rejected':
+            return '/teacher';
+
+        case 'account_banned':
+        case 'account_unbanned':
+            return null;
+
+        default:
+            return courseId ? `/courses/${courseId}` : null;
+    }
+}
 
 function timeAgo(iso: string) {
     const diff = Date.now() - new Date(iso).getTime();
@@ -105,10 +168,8 @@ export function NotificationBell() {
 
     const handleNavigate = (n: Notification) => {
         setOpen(false);
-        const courseId = n.meta?.courseId;
-        if (!courseId) return;
-        if (n.type === 'course_pending_review') navigate('/admin');
-        else navigate(`/courses/${courseId}`);
+        const route = resolveRoute(n);
+        if (route) navigate(route);
     };
 
     return (
