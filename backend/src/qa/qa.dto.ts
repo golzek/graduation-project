@@ -6,12 +6,12 @@ export class CreateQuestionDto {
     @IsUUID() lessonId: string;
 
     @ApiProperty({ example: 'Чим відрізняється interface від type в TypeScript?', description: 'Текст питання' })
-    @IsString() text: string;
+    @IsString() body: string;
 }
 
 export class UpdateQuestionDto {
     @ApiPropertyOptional({ example: 'Чим відрізняється interface від type alias?', description: 'Новий текст питання' })
-    @IsOptional() @IsString() text?: string;
+    @IsOptional() @IsString() body?: string;
 }
 
 export class CreateAnswerDto {
@@ -19,5 +19,5 @@ export class CreateAnswerDto {
     @IsUUID() questionId: string;
 
     @ApiProperty({ example: 'Interface підтримує declaration merging, а type — ні. Для об\'єктів зазвичай використовують interface.', description: 'Текст відповіді' })
-    @IsString() text: string;
+    @IsString() body: string;
 }

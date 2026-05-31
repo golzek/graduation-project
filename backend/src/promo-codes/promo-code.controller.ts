@@ -79,7 +79,7 @@ export class PromoCodeController {
     @ApiBearerAuth('JWT')
     @ApiOperation({ summary: 'Схвалити або відхилити промокод (адмін)' })
     @ApiParam({ name: 'id', description: 'UUID промокоду' })
-    @ApiBody({ schema: { type: 'object', required: ['status'], properties: { status: { type: 'string', enum: ['approved', 'rejected'] } } } })
+    @ApiBody({ type: ReviewPromoCodeDto })
     @ApiResponse({ status: 200, description: 'Рішення збережено' })
     review(@Param('id') id: string, @Body() dto: ReviewPromoCodeDto) {
         return this.svc.review(id, dto);

@@ -51,7 +51,7 @@ export class PayoutController {
         description: 'Можливі дії: `approved`, `rejected`, `paid` — позначає як виплачений',
     })
     @ApiParam({ name: 'id', description: 'UUID запиту на виплату' })
-    @ApiBody({ schema: { type: 'object', required: ['status'], properties: { status: { type: 'string', enum: Object.values(PayoutStatus) }, note: { type: 'string', example: 'Виплачено через Monobank' } } } })
+    @ApiBody({ type: ReviewPayoutDto })
     @ApiResponse({ status: 200, description: 'Статус запиту оновлено' })
     adminReview(@Param('id') id: string, @Body() dto: ReviewPayoutDto, @CurrentUser() admin: any) {
         return this.svc.adminReview(id, dto, admin.id);

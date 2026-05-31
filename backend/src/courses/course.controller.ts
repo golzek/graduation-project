@@ -24,33 +24,15 @@ export class CourseController {
   @ApiResponse({ status: 200, description: 'Масив курсів + загальна кількість' })
   findAll(@Query() f: CourseFilterDto) { return this.svc.findAll(f); }
 
-  @Get(':id')
-  @UseGuards(OptionalJwtAuthGuard)
-  @ApiOperation({ summary: 'Деталі курсу (модулі, уроки, рейтинг, статус запису)' })
-  @ApiParam({ name: 'id', description: 'UUID курсу' })
-  @ApiResponse({ status: 200, description: 'Деталі курсу' })
-  @ApiResponse({ status: 404, description: 'Курс не знайдено' })
-  findOne(@Param('id') id: string, @CurrentUser() u?: any) { return this.svc.findOne(id, u?.id); }
 
-
-  @Post(':id/enroll')
-  @UseGuards(JwtAuthGuard)
+  @Get('my/list')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.TEACHER, UserRole.ADMIN)
   @ApiBearerAuth('JWT')
-  @ApiOperation({ summary: 'Записатись на курс', description: 'Для платних курсів — після успішної оплати через /payments/create/:courseId' })
-  @ApiParam({ name: 'id', description: 'UUID курсу' })
-  @ApiResponse({ status: 201, description: 'Успішний запис на курс' })
-  @ApiResponse({ status: 409, description: 'Вже записаний на цей курс' })
-  enroll(@Param('id') id: string, @CurrentUser() u: any) { return this.svc.enroll(id, u); }
-
-  @Get(':id/progress')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('JWT')
-  @ApiOperation({ summary: 'Прогрес курсу у відсотках', description: 'Повертає { percent: number, completedLessons: number, totalLessons: number }' })
-  @ApiParam({ name: 'id', description: 'UUID курсу' })
-  @ApiResponse({ status: 200, description: 'Відсоток проходження' })
-  getProgress(@Param('id') id: string, @CurrentUser() u: any) {
-    return this.svc.getCourseProgress(id, u.id);
-  }
+  @ApiOperation({ summary: 'Мої курси (тільки для викладача)', description: 'Список курсів що створив авторизований викладач' })
+  @ApiResponse({ status: 200, description: 'Масив курсів викладача' })
+  @ApiResponse({ status: 403, description: 'Доступно лише викладачам і адмінам' })
+  findMy(@CurrentUser() u: any) { return this.svc.findMyCourses(u.id); }
 
   @Get('my/enrollments-progress')
   @UseGuards(JwtAuthGuard)
@@ -71,15 +53,85 @@ export class CourseController {
     return this.svc.updateProgress(dto, u);
   }
 
-
-  @Get('my/list')
+  @Patch('modules/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.TEACHER, UserRole.ADMIN)
   @ApiBearerAuth('JWT')
-  @ApiOperation({ summary: 'Мої курси (тільки для викладача)', description: 'Список курсів що створив авторизований викладач' })
-  @ApiResponse({ status: 200, description: 'Масив курсів викладача' })
-  @ApiResponse({ status: 403, description: 'Доступно лише викладачам і адмінам' })
-  findMy(@CurrentUser() u: any) { return this.svc.findMyCourses(u.id); }
+  @ApiOperation({ summary: 'Оновити модуль' })
+  @ApiParam({ name: 'id', description: 'UUID модуля' })
+  @ApiResponse({ status: 200, description: 'Модуль оновлено' })
+  updateModule(@Param('id') id: string, @Body() dto: Partial<CreateModuleDto>, @CurrentUser() u: any) {
+    return this.svc.updateModule(id, dto, u);
+  }
+
+  @Delete('modules/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.TEACHER, UserRole.ADMIN)
+  @ApiBearerAuth('JWT')
+  @ApiOperation({ summary: 'Видалити модуль (і всі його уроки)' })
+  @ApiParam({ name: 'id', description: 'UUID модуля' })
+  @ApiResponse({ status: 200, description: 'Модуль видалено' })
+  removeModule(@Param('id') id: string, @CurrentUser() u: any) { return this.svc.removeModule(id, u); }
+
+  @Post('modules/:moduleId/lessons')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.TEACHER, UserRole.ADMIN)
+  @ApiBearerAuth('JWT')
+  @ApiOperation({ summary: 'Додати урок до модуля' })
+  @ApiParam({ name: 'moduleId', description: 'UUID модуля' })
+  @ApiBody({ type: CreateLessonDto })
+  @ApiResponse({ status: 201, description: 'Урок додано' })
+  addLesson(@Param('moduleId') mid: string, @Body() dto: CreateLessonDto, @CurrentUser() u: any) {
+    return this.svc.addLesson(mid, dto, u);
+  }
+
+  @Patch('lessons/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.TEACHER, UserRole.ADMIN)
+  @ApiBearerAuth('JWT')
+  @ApiOperation({ summary: 'Оновити урок' })
+  @ApiParam({ name: 'id', description: 'UUID уроку' })
+  @ApiResponse({ status: 200, description: 'Урок оновлено' })
+  updateLesson(@Param('id') id: string, @Body() dto: Partial<CreateLessonDto>, @CurrentUser() u: any) {
+    return this.svc.updateLesson(id, dto, u);
+  }
+
+  @Delete('lessons/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.TEACHER, UserRole.ADMIN)
+  @ApiBearerAuth('JWT')
+  @ApiOperation({ summary: 'Видалити урок' })
+  @ApiParam({ name: 'id', description: 'UUID уроку' })
+  @ApiResponse({ status: 200, description: 'Урок видалено' })
+  removeLesson(@Param('id') id: string, @CurrentUser() u: any) { return this.svc.removeLesson(id, u); }
+
+
+  @Get(':id')
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiOperation({ summary: 'Деталі курсу (модулі, уроки, рейтинг, статус запису)' })
+  @ApiParam({ name: 'id', description: 'UUID курсу' })
+  @ApiResponse({ status: 200, description: 'Деталі курсу' })
+  @ApiResponse({ status: 404, description: 'Курс не знайдено' })
+  findOne(@Param('id') id: string, @CurrentUser() u?: any) { return this.svc.findOne(id, u?.id); }
+
+  @Post(':id/enroll')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT')
+  @ApiOperation({ summary: 'Записатись на курс', description: 'Для платних курсів — після успішної оплати через /payments/create/:courseId' })
+  @ApiParam({ name: 'id', description: 'UUID курсу' })
+  @ApiResponse({ status: 201, description: 'Успішний запис на курс' })
+  @ApiResponse({ status: 409, description: 'Вже записаний на цей курс' })
+  enroll(@Param('id') id: string, @CurrentUser() u: any) { return this.svc.enroll(id, u); }
+
+  @Get(':id/progress')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT')
+  @ApiOperation({ summary: 'Прогрес курсу у відсотках', description: 'Повертає { percent: number, completedLessons: number, totalLessons: number }' })
+  @ApiParam({ name: 'id', description: 'UUID курсу' })
+  @ApiResponse({ status: 200, description: 'Відсоток проходження' })
+  getProgress(@Param('id') id: string, @CurrentUser() u: any) {
+    return this.svc.getCourseProgress(id, u.id);
+  }
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -113,7 +165,6 @@ export class CourseController {
   @ApiResponse({ status: 200, description: 'Курс видалено' })
   remove(@Param('id') id: string, @CurrentUser() u: any) { return this.svc.remove(id, u); }
 
-
   @Post(':courseId/modules')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.TEACHER, UserRole.ADMIN)
@@ -125,57 +176,4 @@ export class CourseController {
   addModule(@Param('courseId') cid: string, @Body() dto: CreateModuleDto, @CurrentUser() u: any) {
     return this.svc.addModule(cid, dto, u);
   }
-
-  @Patch('modules/:id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.TEACHER, UserRole.ADMIN)
-  @ApiBearerAuth('JWT')
-  @ApiOperation({ summary: 'Оновити модуль' })
-  @ApiParam({ name: 'id', description: 'UUID модуля' })
-  @ApiResponse({ status: 200, description: 'Модуль оновлено' })
-  updateModule(@Param('id') id: string, @Body() dto: Partial<CreateModuleDto>, @CurrentUser() u: any) {
-    return this.svc.updateModule(id, dto, u);
-  }
-
-  @Delete('modules/:id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.TEACHER, UserRole.ADMIN)
-  @ApiBearerAuth('JWT')
-  @ApiOperation({ summary: 'Видалити модуль (і всі його уроки)' })
-  @ApiParam({ name: 'id', description: 'UUID модуля' })
-  @ApiResponse({ status: 200, description: 'Модуль видалено' })
-  removeModule(@Param('id') id: string, @CurrentUser() u: any) { return this.svc.removeModule(id, u); }
-
-
-  @Post('modules/:moduleId/lessons')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.TEACHER, UserRole.ADMIN)
-  @ApiBearerAuth('JWT')
-  @ApiOperation({ summary: 'Додати урок до модуля' })
-  @ApiParam({ name: 'moduleId', description: 'UUID модуля' })
-  @ApiBody({ type: CreateLessonDto })
-  @ApiResponse({ status: 201, description: 'Урок додано' })
-  addLesson(@Param('moduleId') mid: string, @Body() dto: CreateLessonDto, @CurrentUser() u: any) {
-    return this.svc.addLesson(mid, dto, u);
-  }
-
-  @Patch('lessons/:id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.TEACHER, UserRole.ADMIN)
-  @ApiBearerAuth('JWT')
-  @ApiOperation({ summary: 'Оновити урок' })
-  @ApiParam({ name: 'id', description: 'UUID уроку' })
-  @ApiResponse({ status: 200, description: 'Урок оновлено' })
-  updateLesson(@Param('id') id: string, @Body() dto: Partial<CreateLessonDto>, @CurrentUser() u: any) {
-    return this.svc.updateLesson(id, dto, u);
-  }
-
-  @Delete('lessons/:id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.TEACHER, UserRole.ADMIN)
-  @ApiBearerAuth('JWT')
-  @ApiOperation({ summary: 'Видалити урок' })
-  @ApiParam({ name: 'id', description: 'UUID уроку' })
-  @ApiResponse({ status: 200, description: 'Урок видалено' })
-  removeLesson(@Param('id') id: string, @CurrentUser() u: any) { return this.svc.removeLesson(id, u); }
 }
