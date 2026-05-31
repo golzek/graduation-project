@@ -684,6 +684,7 @@ html.dark ::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
 }
 
 .r-mobile-filter-btn { display: none; }
+.r-filter-drawer-overlay { display: none; }
 
 @media (max-width: 768px) {
   .r-catalog-aside { display: none !important; }
