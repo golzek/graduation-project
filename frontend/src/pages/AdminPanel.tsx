@@ -260,7 +260,7 @@ function StatsTab() {
 
         {periodSelector}
 
-        <div style={{ ...s.metricsRow,  }}>
+        <div style={{ ...s.metricsRow }} className="r-metrics-5">
           {metrics.map(m => (
               <div key={m.label} style={s.card}>
                 {'highlight' in m && m.highlight ? (
@@ -935,7 +935,6 @@ function CoursesTab() {
   );
 }
 
-
 function ReviewsTab() {
   const toast = useToast();
   const [reviews, setReviews]   = useState<PendingReview[]>([]);
@@ -1203,7 +1202,6 @@ function PromosTab() {
       </div>
   );
 }
-
 
 interface AdminPayoutRequest {
   id: string;
@@ -1683,7 +1681,6 @@ function TopCoursesTable({ courses }: { courses: { courseId: string; title: stri
   );
 }
 
-
 const s: Record<string, React.CSSProperties> = {
   page:   { minHeight: '100vh', background: 'var(--bg)' },
 
@@ -1794,7 +1791,6 @@ const s: Record<string, React.CSSProperties> = {
     fontSize: '0.8rem', cursor: 'pointer', outline: 'none',
     fontFamily: 'inherit', color: 'var(--text)',
   },
-
 
   actionBtn: {
     padding: '5px 10px', borderRadius: 6,

@@ -63,7 +63,7 @@ const s: Record<string, React.CSSProperties> = {
     inner: {
         maxWidth: 1160,
         margin: '0 auto',
-        padding: '56px 32px 48px',
+
         display: 'grid',
         gap: 40,
     },
@@ -92,7 +92,7 @@ const s: Record<string, React.CSSProperties> = {
     bar: { borderTop: '1px solid #f5f5f5', background: 'var(--bg)' },
     barInner: {
         maxWidth: 1160, margin: '0 auto',
-        padding: '14px 32px',
+
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     },
     barText: { fontSize: '0.78rem', color: 'var(--text-tertiary)' },

@@ -101,7 +101,7 @@ export function Navbar() {
               {isAuthenticated ? (
                   <>
                     {}
-                    <span className="nav-desktop-only"><NotificationBell /></span>
+                    <NotificationBell />
 
                     <div ref={dropRef} style={s.profileWrap} className="nav-desktop-only">
                       <button style={s.profileBtn} onClick={() => setOpen(v => !v)} aria-expanded={open}>

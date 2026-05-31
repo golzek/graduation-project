@@ -296,7 +296,7 @@ export function CatalogPage() {
                     )}
                   </div>
               ) : (
-                  <div style={view === 'grid' ? s.grid : s.listLayout}>
+                  <div style={view === 'grid' ? s.grid : s.listLayout} className={view === 'grid' ? 'r-catalog-grid' : ''}>
                     {(loading && courses.length === 0 ? Array(6).fill(null) : courses).map((c, i) =>
                         c === null ? (
                             <SkeletonCard key={i} />
@@ -500,7 +500,7 @@ function CourseListRow({ course, progress, lessonsCount, isAuthenticated }: {
 
   return (
       <Link to={`/courses/${course.id}`} style={{ ...s.listRow }}>
-        <div style={{
+        <div className="r-list-thumb" style={{
           width: 120, height: 75, flexShrink: 0, borderRadius: 8, overflow: 'hidden',
           background: course.thumbnailUrl ? undefined : getGradient(course.title),
           position: 'relative' as const,
@@ -520,7 +520,7 @@ function CourseListRow({ course, progress, lessonsCount, isAuthenticated }: {
           <h3 style={{ fontSize: '0.92rem', fontWeight: 700, marginBottom: 4, color: 'var(--text)', letterSpacing: '-0.01em' }}>{course.title}</h3>
           <p style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', lineHeight: 1.4, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{course.description}</p>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column' as const, alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
+        <div className="r-list-meta" style={{ display: 'flex', flexDirection: 'column' as const, alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
           <StarRating value={course.rating} />
           <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>{lessonsCount} урок{lessonsCount < 5 ? 'и' : 'ів'}</span>
           <span style={{ fontWeight: 700, fontSize: '0.9rem', color: isEnrolled ? '#16a34a' : 'var(--text)' }}>

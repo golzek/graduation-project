@@ -449,8 +449,8 @@ html.dark ::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
   .r-wishlist-body { padding: 0 24px; }
   .r-instructor-hero-inner { padding: 0 24px; }
   .r-instructor-stats-inner { padding: 0 24px; }
-  .r-footer-inner { padding: 40px 24px 32px; gap: 28px; }
-  .r-footer-bar-inner { padding: 14px 24px; }
+  .r-footer-inner { padding: 40px 24px 32px !important; gap: 28px; }
+  .r-footer-bar-inner { padding: 14px 24px !important; }
   .r-nav-inner { padding: 0 24px; }
   .r-prose-inner { padding: 36px 24px 0; }
   .r-skeleton-body { padding: 0 24px; }
@@ -479,8 +479,7 @@ html.dark ::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
   .r-container-wide { padding: 0 16px; }
   .r-body,
   .r-body-wide { padding: 0 16px; margin: 16px auto; }
-  .r-sidebar-layout { padding: 0 16px; flex-direction: column; gap: 0; margin: 16px auto; }
-  .r-sidebar { width: 100%; position: static !important; }
+  .r-sidebar-layout { padding: 0 16px; margin: 16px auto; }
   .r-header-inner { padding: 0 16px; }
 
 
@@ -549,16 +548,33 @@ html.dark ::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
   .r-prose-inner { padding: 28px 16px 0; }
 
 
-  .r-footer-inner { padding: 32px 16px 24px; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .r-footer-bar-inner { padding: 12px 16px; }
+  .r-footer-inner { padding: 32px 16px 24px !important; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .r-footer-bar-inner { padding: 12px 16px !important; }
 
 
   .r-skeleton-body { padding: 0 16px; }
 
 
-  .r-catalog-aside { display: none !important; }
-  .r-mobile-filter-btn { display: flex !important; }
+  .r-list-thumb { display: none !important; }
+  .r-list-meta { display: none !important; }
+}
 
+@media (max-width: 600px) {
+  .r-sidebar-layout { flex-direction: column; gap: 0; }
+  .r-sidebar { width: 100%; position: static !important; }
+  .r-catalog-aside { display: none !important; }
+  .r-mobile-filter-btn {
+    display: inline-flex !important;
+    align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 8px;
+    background: var(--bg-elevated);
+    border: 1.5px solid var(--border);
+    font-size: 0.82rem; color: var(--text-secondary);
+    cursor: pointer; font-family: inherit;
+  }
+  .catalog-toolbar {
+    flex-wrap: wrap; gap: 8px;
+  }
 
   .r-filter-drawer-overlay {
     position: fixed; inset: 0; z-index: 200;
@@ -581,9 +597,6 @@ html.dark ::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
     border-radius: 99px;
     margin: 0 auto 20px;
   }
-
-
-  .r-list-thumb { display: none !important; }
 }
 
 @media (max-width: 480px) {
@@ -605,8 +618,8 @@ html.dark ::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
   .r-instructor-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
   .r-analytics-metrics { grid-template-columns: repeat(2, 1fr); }
 
-  .r-footer-inner { grid-template-columns: 1fr; gap: 16px; padding: 24px 12px 20px; }
-  .r-footer-bar-inner { padding: 10px 12px; flex-direction: column; align-items: flex-start; gap: 4px; }
+  .r-footer-inner { grid-template-columns: 1fr !important; gap: 16px; padding: 24px 12px 20px !important; }
+  .r-footer-bar-inner { padding: 10px 12px !important; flex-direction: column; align-items: flex-start; gap: 4px; }
 
   .r-admin-body { padding: 0 12px; }
   .r-analytics-container { padding: 12px; }
@@ -686,21 +699,7 @@ html.dark ::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
 .r-mobile-filter-btn { display: none; }
 .r-filter-drawer-overlay { display: none; }
 
-@media (max-width: 768px) {
-  .r-catalog-aside { display: none !important; }
-  .r-mobile-filter-btn {
-    display: inline-flex !important;
-    align-items: center; gap: 6px;
-    padding: 7px 14px; border-radius: 8px;
-    background: var(--bg-elevated);
-    border: 1.5px solid var(--border);
-    font-size: 0.82rem; color: var(--text-secondary);
-    cursor: pointer; font-family: inherit;
-  }
-  .catalog-toolbar {
-    flex-wrap: wrap; gap: 8px;
-  }
-}
+
 
 @media (max-width: 768px) {
 
@@ -818,6 +817,7 @@ html.dark ::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
 
 @media (max-width: 480px) {
   .r-list-thumb { display: none !important; }
+  .r-list-meta { display: none !important; }
 }
 
 @media (max-width: 480px) {
