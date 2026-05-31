@@ -180,8 +180,13 @@ export class PaymentController {
     description: '⚠️ **Не викликати вручну.** Ендпоінт для підтвердження платежів від WayForPay. Перевіряє підпис і активує запис / підписку.',
   })
   @ApiResponse({ status: 200, description: 'Відповідь для WayForPay (accept / decline)' })
-  async handleCallback(@Body() body: Record<string, any>) {
+  async handleCallback(@Body() rawBody: Record<string, any>) {
     try {
+      let body = rawBody;
+      const firstKey = Object.keys(rawBody)[0];
+      if (firstKey && rawBody[firstKey] === '' && firstKey.startsWith('{')) {
+        try { body = JSON.parse(firstKey); } catch {}
+      }
       const result = this.wfp.verifyCallback(body);
       if (result.status !== 'success') return this.wfp.buildCallbackResponse(result.orderId, 'decline');
 
