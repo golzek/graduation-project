@@ -22,21 +22,61 @@ async function bootstrap() {
 
   const swagger = new DocumentBuilder()
       .setTitle('E-Learning Platform API')
-      .setDescription('Вебплатформа для онлайн-навчання — дипломний проект')
+      .setDescription(
+          `## Вебплатформа для онлайн-навчання — дипломний проект
+
+### Аутентифікація
+Більшість ендпоінтів потребують JWT-токен. Натисніть **Authorize** і введіть \`Bearer <ваш_токен>\`.
+Токен отримується через \`POST /auth/login\` або \`POST /auth/register\`.
+
+### Ролі
+| Роль | Права |
+|------|-------|
+| \`student\` | перегляд курсів, запис, прогрес, нотифікації |
+| \`teacher\` | створення курсів, аналітика, промокоди, виплати |
+| \`admin\`   | усі права + управління платформою |
+      `,
+      )
       .setVersion('1.0')
-      .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'JWT')
-      .addTag('auth',         'Аутентифікація та профіль')
-      .addTag('courses',      'Курси, модулі, уроки')
-      .addTag('reviews',      'Відгуки та рейтинги')
-      .addTag('certificates', 'Сертифікати')
-      .addTag('analytics',    'Аналітика для викладачів')
-      .addTag('admin',        'Адміністрування платформи')
+      .setContact('Підтримка', '', 'support@elearning.ua')
+      .addBearerAuth(
+          { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', description: 'Введіть JWT accessToken' },
+          'JWT',
+      )
+      .addTag('auth',          'Аутентифікація, реєстрація, профіль, Google OAuth')
+      .addTag('courses',       'Курси, модулі, уроки, прогрес, записи')
+      .addTag('certificates',  'Видача та верифікація сертифікатів')
+      .addTag('analytics',     'Аналітика для студентів і викладачів')
+      .addTag('payments',      'Оплата курсів та підписки (WayForPay)')
+      .addTag('subscriptions', 'Управління підписками')
+      .addTag('notifications', 'Сповіщення користувача')
+      .addTag('wishlist',      'Список бажань')
+      .addTag('qa',            'Питання та відповіді до уроків')
+      .addTag('promo-codes',   'Промокоди зі знижками')
+      .addTag('payouts',       'Запити на виплату для викладачів')
+      .addTag('referral',      'Реферальна програма')
+      .addTag('instructors',   'Публічні профілі викладачів')
+      .addTag('admin',         'Адміністрування платформи')
+      .addTag('audit',         'Журнал подій (лише адмін)')
       .build();
 
-  SwaggerModule.setup('api/docs', app,
-      SwaggerModule.createDocument(app, swagger),
-      { swaggerOptions: { persistAuthorization: true } },
-  );
+  const document = SwaggerModule.createDocument(app, swagger);
+
+  SwaggerModule.setup('api/docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+      tagsSorter: 'alpha',
+      operationsSorter: 'alpha',
+      docExpansion: 'none',
+      filter: true,
+      tryItOutEnabled: true,
+    },
+    customSiteTitle: 'E-Learning API Docs',
+    customCss: `
+      .topbar { background-color: #1a1a2e; }
+      .swagger-ui .topbar-wrapper img { content: url('https://upload.wikimedia.org/wikipedia/commons/a/a7/Camponotus_flavomarginatus_ant.jpg'); height: 40px; }
+    `,
+  });
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);

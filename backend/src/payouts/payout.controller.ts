@@ -1,12 +1,9 @@
-import {
-    Controller, Get, Post, Patch, Param, Body, Query, UseGuards,
-} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-
+import { Controller, Get, Post, Patch, Param, Body, Query, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiParam, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { PayoutService, CreatePayoutRequestDto, ReviewPayoutDto } from './payout.service';
-import { PayoutStatus }                                           from './payout-request.entity';
-import { JwtAuthGuard, RolesGuard, Roles, CurrentUser }          from '../auth/auth.guards';
-import { UserRole }                                               from '../users/user.entity';
+import { PayoutStatus } from './payout-request.entity';
+import { JwtAuthGuard, RolesGuard, Roles, CurrentUser } from '../auth/auth.guards';
+import { UserRole } from '../users/user.entity';
 
 @ApiTags('payouts')
 @Controller('payouts')
@@ -18,15 +15,22 @@ export class PayoutController {
     @Get('my/earnings')
     @UseGuards(RolesGuard)
     @Roles(UserRole.TEACHER, UserRole.ADMIN)
-    @ApiOperation({ summary: 'Зведення заробітку та список запитів викладача' })
-    getEarnings(@CurrentUser() user: any) {
-        return this.svc.getEarnings(user.id);
-    }
+    @ApiOperation({
+        summary: 'Зведення заробітку викладача',
+        description: 'Загальний заробіток, вже виплачено, доступно до виплати та список всіх запитів',
+    })
+    @ApiResponse({ status: 200, description: 'Фінансове зведення' })
+    getEarnings(@CurrentUser() user: any) { return this.svc.getEarnings(user.id); }
 
     @Post('my/request')
     @UseGuards(RolesGuard)
     @Roles(UserRole.TEACHER, UserRole.ADMIN)
-    @ApiOperation({ summary: 'Подати запит на виплату' })
+    @ApiOperation({
+        summary: 'Подати запит на виплату',
+        description: 'Сума не може перевищувати доступний баланс викладача',
+    })
+    @ApiResponse({ status: 201, description: 'Запит подано, очікує розгляду адміном' })
+    @ApiResponse({ status: 400, description: 'Недостатньо коштів для виплати' })
     createRequest(@CurrentUser() user: any, @Body() dto: CreatePayoutRequestDto) {
         return this.svc.createRequest(user.id, dto);
     }
@@ -34,21 +38,22 @@ export class PayoutController {
     @Get('admin/all')
     @UseGuards(RolesGuard)
     @Roles(UserRole.ADMIN)
-    @ApiOperation({ summary: 'Усі запити на виплату (адмін)' })
-    @ApiQuery({ name: 'status', required: false, enum: PayoutStatus })
-    adminList(@Query('status') status?: PayoutStatus) {
-        return this.svc.adminList(status);
-    }
+    @ApiOperation({ summary: 'Всі запити на виплату (адмін)' })
+    @ApiQuery({ name: 'status', required: false, enum: PayoutStatus, description: 'Фільтр по статусу' })
+    @ApiResponse({ status: 200, description: 'Масив запитів на виплату' })
+    adminList(@Query('status') status?: PayoutStatus) { return this.svc.adminList(status); }
 
     @Patch('admin/:id/review')
     @UseGuards(RolesGuard)
     @Roles(UserRole.ADMIN)
-    @ApiOperation({ summary: 'Схвалити / відхилити / позначити виплаченим (адмін)' })
-    adminReview(
-        @Param('id') id: string,
-        @Body() dto: ReviewPayoutDto,
-        @CurrentUser() admin: any,
-    ) {
+    @ApiOperation({
+        summary: 'Розглянути запит на виплату (адмін)',
+        description: 'Можливі дії: `approved`, `rejected`, `paid` — позначає як виплачений',
+    })
+    @ApiParam({ name: 'id', description: 'UUID запиту на виплату' })
+    @ApiBody({ schema: { type: 'object', required: ['status'], properties: { status: { type: 'string', enum: Object.values(PayoutStatus) }, note: { type: 'string', example: 'Виплачено через Monobank' } } } })
+    @ApiResponse({ status: 200, description: 'Статус запиту оновлено' })
+    adminReview(@Param('id') id: string, @Body() dto: ReviewPayoutDto, @CurrentUser() admin: any) {
         return this.svc.adminReview(id, dto, admin.id);
     }
 }

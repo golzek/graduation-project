@@ -5,8 +5,9 @@ import {
 import { Response } from 'express';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiResponse, ApiBody, ApiQuery, ApiExcludeEndpoint } from '@nestjs/swagger';
 import { IsOptional, IsString, IsEnum } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { v4 as uuidv4 } from 'uuid';
 import { WayForPayService } from './wayforpay.service';
 import { Course, Enrollment } from '../courses/course.entity';
@@ -18,10 +19,12 @@ import { NotificationService } from '../notifications/notification.service';
 import { fireAndForget } from '../common/logger.util';
 
 class CreatePaymentDto {
+  @ApiPropertyOptional({ example: 'SAVE20', description: 'Промокод зі знижкою' })
   @IsOptional() @IsString() promoCode?: string;
 }
 
 class CreateSubscriptionPaymentDto {
+  @ApiProperty({ enum: SubscriptionPlan, example: SubscriptionPlan.MONTHLY, description: 'Тип підписки: monthly або annual' })
   @IsEnum(SubscriptionPlan) plan: SubscriptionPlan;
 }
 
@@ -44,7 +47,33 @@ export class PaymentController {
   @Post('create/:courseId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT')
-  @ApiOperation({ summary: 'Отримати дані для форми оплати курсу WayForPay' })
+  @ApiOperation({
+    summary: 'Отримати параметри форми оплати курсу (WayForPay)',
+    description: `Повертає дані для відправки форми на сайт WayForPay.
+    - Якщо курс безкоштовний — одразу записує студента і повертає \`{ free: true }\`
+    - Якщо є активна підписка — повертає \`{ subscriptionAccess: true }\`
+    - Інакше повертає поля для HTML-форми оплати`,
+  })
+  @ApiParam({ name: 'courseId', description: 'UUID курсу' })
+  @ApiBody({ type: CreatePaymentDto, required: false })
+  @ApiResponse({
+    status: 201,
+    description: 'Дані форми або статус доступу',
+    schema: {
+      example: {
+        free: false,
+        orderId: 'order_abc123_def456_a1b2c3d4',
+        price: 499,
+        finalPrice: 399,
+        discountPercent: 20,
+        merchantAccount: 'merchant_id',
+        merchantDomainName: 'example.com',
+        authorizationCode: '...',
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Не авторизований' })
+  @ApiResponse({ status: 404, description: 'Курс не знайдено' })
   async createPayment(
       @Param('courseId') courseId: string,
       @CurrentUser() user: any,
@@ -101,7 +130,23 @@ export class PaymentController {
   @Post('subscribe')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT')
-  @ApiOperation({ summary: 'Отримати дані для форми оплати підписки WayForPay' })
+  @ApiOperation({
+    summary: 'Отримати параметри форми оплати підписки (WayForPay)',
+    description: 'Підписка надає доступ до всіх курсів платформи. Плани: monthly (місячний), annual (річний).',
+  })
+  @ApiBody({ type: CreateSubscriptionPaymentDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Дані форми оплати підписки',
+    schema: {
+      example: {
+        orderId: 'sub_monthly_abc123_a1b2c3d4',
+        plan: 'monthly',
+        amount: 299,
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Не авторизований' })
   async createSubscriptionPayment(
       @CurrentUser() user: any,
       @Body() dto: CreateSubscriptionPaymentDto,
@@ -130,25 +175,20 @@ export class PaymentController {
 
   @Post('callback')
   @HttpCode(200)
-  @ApiOperation({ summary: 'Webhook від WayForPay (не викликати вручну)' })
+  @ApiOperation({
+    summary: 'Webhook від WayForPay',
+    description: '⚠️ **Не викликати вручну.** Ендпоінт для підтвердження платежів від WayForPay. Перевіряє підпис і активує запис / підписку.',
+  })
+  @ApiResponse({ status: 200, description: 'Відповідь для WayForPay (accept / decline)' })
   async handleCallback(@Body() body: Record<string, any>) {
     try {
       const result = this.wfp.verifyCallback(body);
-
-      if (result.status !== 'success') {
-        return this.wfp.buildCallbackResponse(result.orderId, 'decline');
-      }
+      if (result.status !== 'success') return this.wfp.buildCallbackResponse(result.orderId, 'decline');
 
       if (result.type === 'subscription') {
         const { userId, plan, orderId, amount } = result;
         if (!userId || !plan) return this.wfp.buildCallbackResponse(orderId, 'decline');
-
-        await this.subSvc.activate({
-          userId,
-          plan:      plan as SubscriptionPlan,
-          paidPrice: amount,
-          orderId,
-        });
+        await this.subSvc.activate({ userId, plan: plan as SubscriptionPlan, paidPrice: amount, orderId });
         return this.wfp.buildCallbackResponse(orderId, 'accept');
       }
 
@@ -162,9 +202,7 @@ export class PaymentController {
           const discounted = await this.promoSvc.applyCode(promoCode, courseId);
           if (discounted !== null) paidPrice = discounted;
         }
-        const savedEnrollment = await this.enrollmentRepo.save(
-            this.enrollmentRepo.create({ userId, courseId, paidPrice }),
-        );
+        await this.enrollmentRepo.save(this.enrollmentRepo.create({ userId, courseId, paidPrice }));
         const courseForNotif = await this.courseRepo.findOne({ where: { id: courseId } });
         if (courseForNotif) {
           fireAndForget(this.notifSvc.notifyStudentEnrolled(userId, courseId, courseForNotif.title), 'notif:notifyStudentEnrolled');
@@ -180,9 +218,8 @@ export class PaymentController {
   }
 
   @Get('return')
-  @ApiOperation({ summary: 'WayForPay returnUrl GET redirect handler' })
+  @ApiExcludeEndpoint()
   async handleReturnGet(@Query() query: Record<string, any>, @Res() res: Response) {
-    console.log('[WFP return GET] query:', JSON.stringify(query));
     const frontendUrl = process.env.FRONTEND_URL ?? 'https://graduation-frontend.onrender.com';
     const orderRef = query.orderReference ?? query.order_id ?? '';
     const status = (query.transactionStatus === 'Approved' || query.reasonCode === '1100') ? 'success' : 'failure';
@@ -191,21 +228,34 @@ export class PaymentController {
 
   @Post('return')
   @HttpCode(302)
-  @ApiOperation({ summary: 'WayForPay returnUrl — приймає POST і редіректить на фронтенд' })
+  @ApiExcludeEndpoint()
   async handleReturn(@Body() body: Record<string, any>, @Res() res: Response) {
     const frontendUrl = process.env.FRONTEND_URL ?? 'https://graduation-frontend.onrender.com';
     const orderId     = body.orderReference ?? '';
     const reasonCode  = body.reasonCode;
-
     const status = reasonCode === '1100' || reasonCode === 1100 ? 'success' : 'failure';
-
     return res.redirect(`${frontendUrl}/payment/result?status=${status}&order_id=${orderId}`);
   }
 
   @Get('status/:courseId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT')
-  @ApiOperation({ summary: 'Перевірити доступ до курсу (запис або підписка)' })
+  @ApiOperation({
+    summary: 'Перевірити доступ до курсу',
+    description: 'Повертає чи має поточний юзер доступ до курсу — через запис або активну підписку',
+  })
+  @ApiParam({ name: 'courseId', description: 'UUID курсу' })
+  @ApiResponse({
+    status: 200,
+    description: 'Статус доступу',
+    schema: {
+      example: {
+        enrolled: true,
+        byEnrollment: false,
+        bySubscription: true,
+      },
+    },
+  })
   async checkEnrollment(
       @Param('courseId') courseId: string,
       @CurrentUser() user: any,

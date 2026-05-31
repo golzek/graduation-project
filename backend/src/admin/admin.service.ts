@@ -314,7 +314,7 @@ export class AdminService {
 
     const revenueRows = await this.enrollmentRepo
         .createQueryBuilder('e')
-        .leftJoin('e.course', 'c')
+        .leftJoin('courses', 'c', 'c.id = e."course_id"')
         .select('c."author_id"', 'teacherId')
         .addSelect('SUM(e."paidPrice")', 'revenue')
         .addSelect('COUNT(e.id)', 'enrollments')
@@ -334,7 +334,7 @@ export class AdminService {
 
     const certRows = await this.certRepo
         .createQueryBuilder('cert')
-        .leftJoin('cert.course', 'c')
+        .leftJoin('courses', 'c', 'c.id = cert."course_id"')
         .select('c."author_id"', 'teacherId')
         .addSelect('COUNT(cert.id)', 'certificates')
         .where('c."author_id" IN (:...ids)', { ids: teacherIds })
