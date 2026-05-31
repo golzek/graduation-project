@@ -327,7 +327,7 @@ export class AdminService {
         .select('c."author_id"', 'teacherId')
         .addSelect('COUNT(c.id)', 'total')
         .addSelect(`COUNT(CASE WHEN c.status = 'published' THEN 1 END)`, 'published')
-        .addSelect(`COUNT(CASE WHEN c.status = 'pending' THEN 1 END)`, 'pending')
+        .addSelect(`COUNT(CASE WHEN c.status = 'draft' THEN 1 END)`, 'draft')
         .where('c."author_id" IN (:...ids)', { ids: teacherIds })
         .groupBy('c."author_id"')
         .getRawMany();
@@ -365,7 +365,7 @@ export class AdminService {
       enrollments:  parseInt(revenueMap[t.id]?.enrollments)   || 0,
       totalCourses: parseInt(courseMap[t.id]?.total)          || 0,
       published:    parseInt(courseMap[t.id]?.published)      || 0,
-      pending:      parseInt(courseMap[t.id]?.pending)        || 0,
+      pending:      parseInt(courseMap[t.id]?.draft)        || 0,
       certificates: parseInt(certMap[t.id]?.certificates)     || 0,
       avgRating:    parseFloat(ratingMap[t.id]?.avgRating)    || 0,
       reviewCount:  parseInt(ratingMap[t.id]?.reviewCount)    || 0,
