@@ -371,4 +371,38 @@ export class AdminService {
       reviewCount:  parseInt(ratingMap[t.id]?.reviewCount)    || 0,
     })).sort((a, b) => b.revenue - a.revenue);
   }
+
+  async revokeEnrollment(userId: string, courseId: string) {
+    const enrollment = await this.enrollmentRepo.findOne({ where: { userId, courseId } });
+    if (!enrollment) throw new NotFoundException('Запис на курс не знайдено');
+
+    // Remove progress for all lessons of this course
+    const course = await this.courseRepo.findOne({ where: { id: courseId }, relations: ['modules', 'modules.lessons'] });
+    if (course) {
+      const lessonIds = course.modules.flatMap(m => m.lessons.map(l => l.id));
+      if (lessonIds.length) {
+        await this.progressRepo.query(
+            `DELETE FROM progress WHERE user_id = $1 AND lesson_id = ANY($2)`,
+            [userId, lessonIds],
+        );
+      }
+    }
+
+    await this.enrollmentRepo.remove(enrollment);
+    return { success: true, message: 'Доступ до курсу відкликано' };
+  }
+
+  async getUserEnrollments(userId: string) {
+    const enrollments = await this.enrollmentRepo.find({
+      where: { userId },
+      relations: ['course'],
+      order: { enrolledAt: 'DESC' },
+    });
+    return enrollments.map(e => ({
+      courseId:   e.courseId,
+      courseTitle: (e.course as any)?.title ?? '',
+      paidPrice:  e.paidPrice,
+      enrolledAt: e.enrolledAt,
+    }));
+  }
 }

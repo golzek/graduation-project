@@ -106,4 +106,20 @@ export class AdminController {
   @ApiParam({ name: 'id', description: 'UUID курсу' })
   @ApiResponse({ status: 200, description: 'Курс видалено' })
   deleteCourse(@Param('id') id: string) { return this.svc.deleteCourse(id); }
+
+  @Get('users/:id/enrollments')
+  @ApiOperation({ summary: 'Курси на які записаний користувач' })
+  @ApiParam({ name: 'id', description: 'UUID користувача' })
+  @ApiResponse({ status: 200, description: 'Список записів на курси' })
+  getUserEnrollments(@Param('id') id: string) { return this.svc.getUserEnrollments(id); }
+
+  @Delete('users/:userId/enrollments/:courseId')
+  @ApiOperation({ summary: 'Відкликати доступ до курсу (рефанд)', description: 'Видаляє запис на курс та весь прогрес. Використовується після ручного рефанду через WayForPay.' })
+  @ApiParam({ name: 'userId',   description: 'UUID користувача' })
+  @ApiParam({ name: 'courseId', description: 'UUID курсу' })
+  @ApiResponse({ status: 200, description: 'Доступ відкликано' })
+  revokeEnrollment(
+      @Param('userId')   userId:   string,
+      @Param('courseId') courseId: string,
+  ) { return this.svc.revokeEnrollment(userId, courseId); }
 }

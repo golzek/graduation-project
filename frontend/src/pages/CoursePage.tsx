@@ -145,7 +145,8 @@ export function CoursePage() {
                         <ModuleBlock key={mod.id} mod={mod}
                                      isEnrolled={hasAccess}
                                      activeId={activeLesson?.id}
-                                     onSelect={setActiveLesson} />
+                                     onSelect={setActiveLesson}
+                                     completedLessonIds={progress?.completedLessonIds ?? []} />
                     ))}
                 </aside>
 
@@ -156,6 +157,7 @@ export function CoursePage() {
                             isEnrolled={hasAccess}
                             onProgressSaved={handleProgressSaved}
                             courseAuthorId={course?.author?.id}
+                            completedLessonIds={progress?.completedLessonIds ?? []}
                         />
                         : <div style={s.playerEmpty}>
                             <p style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem' }}>
@@ -195,9 +197,9 @@ export function CoursePage() {
     );
 }
 
-function ModuleBlock({ mod, isEnrolled, activeId, onSelect }: {
+function ModuleBlock({ mod, isEnrolled, activeId, onSelect, completedLessonIds }: {
     mod: CourseModule; isEnrolled: boolean;
-    activeId?: string; onSelect: (l: Lesson) => void;
+    activeId?: string; onSelect: (l: Lesson) => void; completedLessonIds: string[];
 }) {
     const [open, setOpen] = useState(true);
     const icons: Record<string, string> = { video: '▶', text: '文', quiz: '?' };
@@ -208,14 +210,17 @@ function ModuleBlock({ mod, isEnrolled, activeId, onSelect }: {
                 <span style={ms.modCount}>{mod.lessons.length}</span>
             </div>
             {open && mod.lessons.map(l => {
-                const locked  = !l.isFree && !isEnrolled;
+                const locked   = !l.isFree && !isEnrolled;
                 const isActive = l.id === activeId;
+                const isDone   = completedLessonIds.includes(l.id);
                 return (
                     <div key={l.id}
                          style={{ ...ms.lesson, ...(isActive ? ms.lessonActive : {}), ...(locked ? ms.lessonLocked : {}) }}
                          onClick={() => !locked && onSelect(l)}>
-                        <span style={ms.icon}>{locked ? '○' : icons[l.type]}</span>
-                        <span style={ms.lessonTitle}>{l.title}</span>
+                        <span style={{ ...ms.icon, ...(isDone && !isActive ? { color: 'var(--accent)' } : {}) }}>
+                            {locked ? '○' : isDone ? '✓' : icons[l.type]}
+                        </span>
+                        <span style={{ ...ms.lessonTitle, ...(isDone && !isActive ? { color: 'var(--text-tertiary)' } : {}) }}>{l.title}</span>
                         {l.durationSec > 0 && <span style={ms.dur}>{Math.round(l.durationSec/60)}хв</span>}
                     </div>
                 );
@@ -389,14 +394,32 @@ function QuizPlayer({ lesson, isEnrolled, onDone, completed, courseAuthorId }: {
     );
 }
 
-function LessonPlayer({ lesson, isEnrolled, onProgressSaved, courseAuthorId }: {
-    lesson: Lesson; isEnrolled: boolean; onProgressSaved: () => void; courseAuthorId?: string;
+function getYouTubeId(url: string): string | null {
+    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    return match ? match[1] : null;
+}
+
+function LessonPlayer({ lesson, isEnrolled, onProgressSaved, courseAuthorId, completedLessonIds }: {
+    lesson: Lesson; isEnrolled: boolean; onProgressSaved: () => void; courseAuthorId?: string; completedLessonIds: string[];
 }) {
     const { updateProgress } = useCourseActions();
     const videoRef = useRef<HTMLVideoElement>(null);
-    const [completed, setCompleted] = useState(false);
+    const [completed, setCompleted] = useState(() => completedLessonIds.includes(lesson.id));
+    const [videoUrl, setVideoUrl] = useState<string | null>(null);
 
-    useEffect(() => { setCompleted(false); }, [lesson.id]);
+    useEffect(() => { setCompleted(completedLessonIds.includes(lesson.id)); }, [lesson.id, completedLessonIds]);
+
+    useEffect(() => {
+        if (lesson.type !== 'video' || !lesson.contentUrl) return;
+        if (lesson.contentUrl.startsWith('http')) {
+            setVideoUrl(lesson.contentUrl);
+            return;
+        }
+        setVideoUrl(null);
+        apiFetch<{ url: string }>(`/upload/video-url/${lesson.contentUrl}`)
+            .then(res => setVideoUrl(res.url))
+            .catch(() => setVideoUrl(lesson.contentUrl));
+    }, [lesson.id, lesson.contentUrl, lesson.type]);
 
     const markDone = async (watchedSec: number) => {
         if (completed || !isEnrolled) return;
@@ -404,8 +427,7 @@ function LessonPlayer({ lesson, isEnrolled, onProgressSaved, courseAuthorId }: {
         try {
             await updateProgress(lesson.id, true, watchedSec);
             onProgressSaved();
-        } catch {
-        }
+        } catch {}
     };
 
     const handleTime = () => {
@@ -420,19 +442,42 @@ function LessonPlayer({ lesson, isEnrolled, onProgressSaved, courseAuthorId }: {
         return <QuizPlayer lesson={lesson} isEnrolled={isEnrolled} onDone={() => markDone(0)} completed={completed} courseAuthorId={courseAuthorId} />;
     }
 
+    const ytId = lesson.type === 'video' && lesson.contentUrl ? getYouTubeId(lesson.contentUrl) : null;
+
     return (
         <div style={ps.box}>
             <h2 style={ps.title}>{lesson.title}</h2>
+
             {lesson.type === 'video' && lesson.contentUrl && (
                 <>
-                    <video ref={videoRef} controls onTimeUpdate={handleTime}
-                           style={{ width: '100%', borderRadius: 8, background: '#000', marginBottom: 12 }}>
-                        <source src={lesson.contentUrl} />
-                    </video>
+                    {ytId ? (
+                        <div style={{ position: 'relative', paddingTop: '56.25%', borderRadius: 8, overflow: 'hidden', marginBottom: 12, background: '#000' }}>
+                            <iframe
+                                src={`https://www.youtube.com/embed/${ytId}`}
+                                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                            />
+                        </div>
+                    ) : videoUrl ? (
+                        <video ref={videoRef} controls onTimeUpdate={handleTime}
+                               style={{ width: '100%', borderRadius: 8, background: '#000', marginBottom: 12 }}>
+                            <source src={videoUrl} />
+                        </video>
+                    ) : (
+                        <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: 8, background: '#000', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <span style={{ color: '#6b7280', fontSize: '0.85rem' }}>Завантаження відео...</span>
+                        </div>
+                    )}
+
                     {isEnrolled && (
                         <div style={{ marginBottom: 20 }}>
                             {completed ? (
                                 <div style={ps.btnDone}>✓ Урок завершено</div>
+                            ) : ytId ? (
+                                <button style={ps.btnMark} onClick={() => markDone(0)}>
+                                    Позначити як завершений
+                                </button>
                             ) : (
                                 <div style={ps.videoHint}>
                                     <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
@@ -444,6 +489,7 @@ function LessonPlayer({ lesson, isEnrolled, onProgressSaved, courseAuthorId }: {
                     )}
                 </>
             )}
+
             {lesson.type === 'text' && lesson.textContent && (
                 <div style={ps.textContent}
                      dangerouslySetInnerHTML={{ __html: lesson.textContent }} />

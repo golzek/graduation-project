@@ -17,7 +17,7 @@ export interface Lesson {
   contentUrl: string | null; textContent: string | null;
   durationSec: number; orderIndex: number; isFree: boolean;
 }
-export interface Progress { percent: number; completedCount: number; totalCount: number; }
+export interface Progress { percent: number; completedCount: number; totalCount: number; completedLessonIds: string[]; }
 
 export function useCourses(params: Record<string, any> = {}) {
   const [result, setResult]   = useState<{ data: Course[]; total: number; totalPages: number } | null>(null);

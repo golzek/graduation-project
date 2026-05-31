@@ -354,6 +354,7 @@ function UsersTab() {
   const [loading, setLoading]       = useState(true);
   const [page, setPage]             = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [refundModal, setRefundModal] = useState<AdminUser | null>(null);
   const LIMIT = 20;
 
   const load = useCallback(async (p = 1) => {
@@ -377,7 +378,7 @@ function UsersTab() {
     try {
       await apiFetch(`/admin/users/${id}`, { method: 'PATCH', body: JSON.stringify({ role }) });
       toast.success('Роль оновлено');
-      load(page);
+      await load(page);
     } catch { toast.error('Помилка зміни ролі'); }
   };
 
@@ -385,7 +386,7 @@ function UsersTab() {
     try {
       await apiFetch(`/admin/users/${id}`, { method: 'PATCH', body: JSON.stringify({ isActive: !isActive }) });
       toast.success(isActive ? 'Користувача заблоковано' : 'Користувача розблоковано');
-      load(page);
+      await load(page);
     } catch { toast.error('Помилка'); }
   };
 
@@ -394,7 +395,7 @@ function UsersTab() {
     try {
       await apiFetch(`/admin/users/${id}`, { method: 'DELETE' });
       toast.success('Видалено');
-      load(page);
+      await load(page);
     } catch { toast.error('Помилка видалення'); }
   };
 
@@ -482,6 +483,9 @@ function UsersTab() {
                       <button style={s.actionBtn} onClick={() => handleToggleActive(u.id, u.isActive)}>
                         {u.isActive ? 'Блок' : 'Розблок'}
                       </button>
+                      <button style={{ ...s.actionBtn, background: 'var(--bg-subtle)', color: 'var(--text)' }} onClick={() => setRefundModal(u)}>
+                        Курси
+                      </button>
                       <button style={{ ...s.actionBtn, ...s.actionBtnDanger }} onClick={() => handleDelete(u.id)}>
                         Видалити
                       </button>
@@ -500,6 +504,82 @@ function UsersTab() {
               <button className="btn" onClick={() => load(page + 1)} disabled={page >= totalPages} style={{ padding:'4px 12px' }}>→</button>
             </div>
         )}
+        {refundModal && (
+            <UserEnrollmentsModal
+                user={refundModal}
+                onClose={() => setRefundModal(null)}
+                onRevoked={() => toast.success('Доступ відкликано')}
+            />
+        )}
+      </div>
+  );
+}
+
+function UserEnrollmentsModal({ user, onClose, onRevoked }: {
+  user: AdminUser; onClose: () => void; onRevoked: () => void;
+}) {
+  const [enrollments, setEnrollments] = React.useState<{ courseId: string; courseTitle: string; paidPrice: number; enrolledAt: string }[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [revoking, setRevoking] = React.useState<string | null>(null);
+  const toast = useToast();
+
+  React.useEffect(() => {
+    apiFetch<any[]>(`/admin/users/${user.id}/enrollments`)
+        .then(setEnrollments)
+        .catch(() => toast.error('Не вдалось завантажити курси'))
+        .finally(() => setLoading(false));
+  }, [user.id]);
+
+  const handleRevoke = async (courseId: string, courseTitle: string) => {
+    if (!window.confirm(`Відкликати доступ до «${courseTitle}»?\n\nПереконайтесь, що рефанд через WayForPay вже виконано.`)) return;
+    setRevoking(courseId);
+    try {
+      await apiFetch(`/admin/users/${user.id}/enrollments/${courseId}`, { method: 'DELETE' });
+      setEnrollments(prev => prev.filter(e => e.courseId !== courseId));
+      onRevoked();
+    } catch (e: any) {
+      toast.error(e.message ?? 'Помилка');
+    } finally {
+      setRevoking(null);
+    }
+  };
+
+  return (
+      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
+           onClick={onClose}>
+        <div style={{ background: 'var(--bg-elevated)', borderRadius: 14, padding: '28px 32px', maxWidth: 560, width: '90%', maxHeight: '80vh', overflowY: 'auto', position: 'relative' }}
+             onClick={e => e.stopPropagation()}>
+          <button onClick={onClose} style={{ position: 'absolute', top: 14, right: 16, background: 'none', border: 'none', fontSize: '1.1rem', cursor: 'pointer', color: 'var(--text-tertiary)' }}>✕</button>
+          <p style={{ fontWeight: 600, fontSize: '1rem', marginBottom: 4 }}>Курси користувача</p>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', marginBottom: 20 }}>{user.name} · {user.email}</p>
+          <div style={{ padding: '8px 12px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, fontSize: '0.78rem', color: '#92400e', marginBottom: 18 }}>
+            ⚠️ Спочатку виконайте рефанд через WayForPay Merchant Portal, потім натисніть «Відкликати доступ».
+          </div>
+          {loading ? (
+              <p style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>Завантаження...</p>
+          ) : enrollments.length === 0 ? (
+              <p style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>Немає записів на курси</p>
+          ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {enrollments.map(e => (
+                    <div key={e.courseId} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', border: '1px solid var(--border)', borderRadius: 8 }}>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontSize: '0.875rem', fontWeight: 500, marginBottom: 2 }}>{e.courseTitle}</p>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
+                          {Number(e.paidPrice) > 0 ? `${e.paidPrice} ₴` : 'Безкоштовно'} · {new Date(e.enrolledAt).toLocaleDateString('uk-UA')}
+                        </p>
+                      </div>
+                      <button
+                          onClick={() => handleRevoke(e.courseId, e.courseTitle)}
+                          disabled={revoking === e.courseId}
+                          style={{ padding: '6px 14px', borderRadius: 6, border: '1.5px solid #fca5a5', background: revoking === e.courseId ? 'var(--bg-subtle)' : '#fff5f5', color: '#dc2626', fontSize: '0.8rem', cursor: revoking === e.courseId ? 'default' : 'pointer', fontFamily: 'inherit', fontWeight: 500, whiteSpace: 'nowrap' as const }}>
+                        {revoking === e.courseId ? '...' : 'Відкликати доступ'}
+                      </button>
+                    </div>
+                ))}
+              </div>
+          )}
+        </div>
       </div>
   );
 }
@@ -806,7 +886,7 @@ function CoursesTab() {
     try {
       await apiFetch(`/admin/courses/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) });
       toast.success('Статус оновлено');
-      load(page);
+      await load(page);
     } catch { toast.error('Помилка'); }
   };
 
@@ -815,15 +895,10 @@ function CoursesTab() {
     try {
       await apiFetch(`/admin/courses/${id}`, { method: 'DELETE' });
       toast.success('Курс видалено');
-      load(page);
+      await load(page);
     } catch { toast.error('Помилка видалення'); }
   };
 
-  const statusStyle: Record<string, React.CSSProperties> = {
-    draft:     { ...s.badge, background: 'var(--bg-subtle)', color: 'var(--text-secondary)' },
-    published: { ...s.badge, ...s.badgeGreen },
-    archived:  { ...s.badge, ...s.badgeRed },
-  };
   const statusLabel: Record<string, string> = { draft: 'Чернетка', published: 'Опублікований', archived: 'Архів' };
 
   return (

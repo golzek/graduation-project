@@ -191,12 +191,13 @@ export class CourseService {
     if (!ids.length) return { percent: 0, completedCount: 0, totalCount: 0 };
 
     const result = await this.progressRepo.query(
-        `SELECT COUNT(*) as done FROM progress WHERE user_id = $1 AND lesson_id = ANY($2) AND completed = true`,
+        `SELECT lesson_id FROM progress WHERE user_id = $1 AND lesson_id = ANY($2) AND completed = true`,
         [userId, ids],
     );
 
-    const done = parseInt(result[0]?.done) || 0;
-    return { percent: Math.round((done / ids.length) * 100), completedCount: done, totalCount: ids.length };
+    const completedLessonIds: string[] = result.map((r: any) => r.lesson_id);
+    const done = completedLessonIds.length;
+    return { percent: Math.round((done / ids.length) * 100), completedCount: done, totalCount: ids.length, completedLessonIds };
   }
 
   private checkOwner(course: Course, user: User) {
