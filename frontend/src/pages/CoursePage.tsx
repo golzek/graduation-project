@@ -9,7 +9,7 @@ import { PaymentButton } from '../components/PaymentButton';
 
 export function CoursePage() {
     const { id } = useParams<{ id: string }>();
-    const { user, isAuthenticated } = useAuth();
+    const { user, isAuthenticated, hasRole } = useAuth();
     const toast = useToast();
     const navigate = useNavigate();
     const { course, loading, error } = useCourse(id!);
@@ -23,7 +23,7 @@ export function CoursePage() {
     useEffect(() => {
         if (course?.modules?.length) {
             const first = course.modules[0]?.lessons?.[0];
-            if (first && (first.isFree || course.isEnrolled)) setActiveLesson(first);
+            if (first && (first.isFree || hasAccess)) setActiveLesson(first);
         }
     }, [course]);
     const issuingRef = React.useRef(false);
@@ -60,6 +60,10 @@ export function CoursePage() {
 
     const totalLessons  = course.modules.reduce((a, m) => a + m.lessons.length, 0);
     const totalDuration = course.modules.flatMap(m => m.lessons).reduce((a, l) => a + l.durationSec, 0);
+
+    const isOwner   = !!user && !!course.author?.id && String(user.id) === String(course.author.id);
+    const isPriv    = hasRole('admin', 'moderator', 'super_admin');
+    const hasAccess = !!course.isEnrolled || isOwner || isPriv;
 
     return (
         <div style={s.page}>
@@ -108,6 +112,10 @@ export function CoursePage() {
 
                         {course.isEnrolled ? (
                             <button style={s.btnOutline}>Продовжити навчання</button>
+                        ) : isOwner || isPriv ? (
+                            <button style={s.btnOutline} disabled>
+                                {isOwner ? 'Це ваш курс' : 'Перегляд як адміністратор'}
+                            </button>
                         ) : Number(course.price) === 0 ? (
                             <button style={s.btnPrimary} onClick={handleEnroll} disabled={enrolling}>
                                 {enrolling ? 'Записуємось...' : 'Записатись'}
@@ -121,7 +129,7 @@ export function CoursePage() {
                             />
                         )}
 
-                        {!course.isEnrolled && (
+                        {!course.isEnrolled && !isOwner && !isPriv && (
                             <div style={{ marginTop: 10 }}>
                                 <WishlistButton courseId={course.id} variant="full" />
                             </div>
@@ -135,7 +143,7 @@ export function CoursePage() {
                     <p style={s.sideTitle}>Програма</p>
                     {course.modules.map(mod => (
                         <ModuleBlock key={mod.id} mod={mod}
-                                     isEnrolled={!!course.isEnrolled}
+                                     isEnrolled={hasAccess}
                                      activeId={activeLesson?.id}
                                      onSelect={setActiveLesson} />
                     ))}
@@ -145,13 +153,13 @@ export function CoursePage() {
                     {activeLesson
                         ? <LessonPlayer
                             lesson={activeLesson}
-                            isEnrolled={!!course.isEnrolled}
+                            isEnrolled={hasAccess}
                             onProgressSaved={handleProgressSaved}
                             courseAuthorId={course?.author?.id}
                         />
                         : <div style={s.playerEmpty}>
                             <p style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem' }}>
-                                {course.isEnrolled ? '← Вибери урок' : 'Запишись на курс для доступу до уроків'}
+                                {hasAccess ? '← Вибери урок' : 'Запишись на курс для доступу до уроків'}
                             </p>
                         </div>
                     }
@@ -229,7 +237,7 @@ const ms: Record<string, React.CSSProperties> = {
     dur:         { fontSize: '0.7rem', color: 'var(--text-tertiary)', flexShrink: 0 },
 };
 
-interface QuizQuestion { question: string; options: string[]; correctIndex: number; }
+interface QuizQuestion { question: string; options: string[]; correctIndex: number; explanation?: string; }
 
 function QuizPlayer({ lesson, isEnrolled, onDone, completed, courseAuthorId }: {
     lesson: Lesson; isEnrolled: boolean; onDone: () => void; completed: boolean; courseAuthorId?: string;
@@ -237,21 +245,21 @@ function QuizPlayer({ lesson, isEnrolled, onDone, completed, courseAuthorId }: {
     let questions: QuizQuestion[] = [];
     try { questions = JSON.parse(lesson.textContent ?? '[]'); } catch {}
 
-    const [answers, setAnswers]   = useState<Record<number, number>>({});
-    const [submitted, setSubmitted] = useState(false);
-    const [score, setScore]       = useState(0);
+    const PASS_THRESHOLD = 0.5;
 
-    useEffect(() => { setAnswers({}); setSubmitted(false); setScore(0); }, [lesson.id]);
+    const [answers, setAnswers]     = useState<Record<number, number>>({});
+    const [submitted, setSubmitted] = useState(false);
+    const [score, setScore]         = useState(0);
+    const [passed, setPassed]       = useState(false);
+
+    useEffect(() => { setAnswers({}); setSubmitted(false); setScore(0); setPassed(false); }, [lesson.id]);
 
     if (!questions.length) {
         return (
             <div style={ps.box}>
                 <h2 style={ps.title}>{lesson.title}</h2>
                 <p style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem' }}>Квіз не має питань.</p>
-                {isEnrolled && !completed && (
-                    <button style={ps.btnMark} onClick={onDone}>Позначити як завершений</button>
-                )}
-                {completed && <button style={ps.btnDone} disabled>✓ Завершено</button>}
+                {completed && <div style={ps.btnDone}>✓ Завершено</div>}
                 <LessonQA lessonId={lesson.id} isEnrolled={isEnrolled} courseAuthorId={courseAuthorId} />
             </div>
         );
@@ -259,9 +267,18 @@ function QuizPlayer({ lesson, isEnrolled, onDone, completed, courseAuthorId }: {
 
     const handleSubmit = () => {
         const correct = questions.filter((q, i) => answers[i] === q.correctIndex).length;
+        const didPass = correct / questions.length > PASS_THRESHOLD;
         setScore(correct);
+        setPassed(didPass);
         setSubmitted(true);
-        if (isEnrolled && !completed) onDone();
+        if (isEnrolled && !completed && didPass) onDone();
+    };
+
+    const handleRetry = () => {
+        setAnswers({});
+        setSubmitted(false);
+        setScore(0);
+        setPassed(false);
     };
 
     const allAnswered = questions.every((_, i) => answers[i] !== undefined);
@@ -269,11 +286,19 @@ function QuizPlayer({ lesson, isEnrolled, onDone, completed, courseAuthorId }: {
     return (
         <div style={ps.box}>
             <h2 style={ps.title}>{lesson.title}</h2>
+
             {!isEnrolled && (
                 <div style={{ padding: '12px 16px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text-tertiary)', fontSize: '0.85rem', marginBottom: 20 }}>
                     Запишіться на курс щоб пройти квіз
                 </div>
             )}
+
+            {!submitted && (
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', marginBottom: 16, padding: '8px 12px', background: 'var(--bg-subtle)', borderRadius: 6, borderLeft: '3px solid var(--accent)' }}>
+                    Для зарахування уроку потрібно відповісти правильно більш ніж на {Math.round(PASS_THRESHOLD * 100)}% питань
+                </p>
+            )}
+
             <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 20 }}>
                 {questions.map((q, qi) => (
                     <div key={qi} style={{ background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 10, padding: '16px 18px' }}>
@@ -304,40 +329,61 @@ function QuizPlayer({ lesson, isEnrolled, onDone, completed, courseAuthorId }: {
                                 );
                             })}
                         </div>
+                        {submitted && q.explanation && (
+                            <div style={{ marginTop: 10, padding: '8px 12px', background: '#eff6ff', borderRadius: 6, borderLeft: '3px solid #3b82f6', fontSize: '0.8rem', color: '#1e40af' }}>
+                                💡 {q.explanation}
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>
 
-            {submitted ? (
-                <div style={{ marginTop: 20, padding: '14px 18px', borderRadius: 10, textAlign: 'center' as const,
-                    background: score === questions.length ? '#f0fdf4' : score >= questions.length / 2 ? '#fffbeb' : '#fff5f5',
-                    border: `1.5px solid ${score === questions.length ? '#86efac' : score >= questions.length / 2 ? '#fde68a' : '#fca5a5'}`,
+            {submitted && (
+                <div style={{ marginTop: 20, padding: '16px 20px', borderRadius: 10, textAlign: 'center' as const,
+                    background: score === questions.length ? '#f0fdf4' : passed ? '#fffbeb' : '#fff5f5',
+                    border: `1.5px solid ${score === questions.length ? '#86efac' : passed ? '#fde68a' : '#fca5a5'}`,
                 }}>
                     <p style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: 4 }}>
-                        {score === questions.length ? '🎉 Відмінно!' : score >= questions.length / 2 ? '👍 Непогано!' : '😔 Спробуй ще'}
+                        {score === questions.length ? '🎉 Ідеально!' : passed ? '👍 Зараховано!' : '😔 Не зараховано'}
                     </p>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: passed ? 4 : 12 }}>
                         {score} / {questions.length} правильних відповідей
                     </p>
-                    {completed && <p style={{ marginTop: 8, fontSize: '0.8rem', color: '#16a34a' }}>✓ Урок завершено</p>}
+                    {passed && completed && (
+                        <p style={{ fontSize: '0.8rem', color: '#16a34a', marginBottom: 4 }}>✓ Урок завершено</p>
+                    )}
+                    {!passed && (
+                        <>
+                            <p style={{ fontSize: '0.78rem', color: '#b45309', marginBottom: 12 }}>
+                                Потрібно більше {Math.round(PASS_THRESHOLD * 100)}% правильних відповідей. Перегляньте пояснення вище і спробуйте ще раз.
+                            </p>
+                            <button onClick={handleRetry} style={{
+                                padding: '8px 24px', borderRadius: 8, border: '1.5px solid var(--border)',
+                                background: 'var(--bg-elevated)', fontSize: '0.875rem', cursor: 'pointer',
+                                fontFamily: 'inherit', fontWeight: 500, color: 'var(--text)',
+                            }}>
+                                Спробувати ще раз
+                            </button>
+                        </>
+                    )}
                 </div>
-            ) : (
-                isEnrolled && (
-                    <button
-                        onClick={handleSubmit}
-                        disabled={!allAnswered}
-                        style={{
-                            marginTop: 20, width: '100%', padding: '11px',
-                            background: allAnswered ? 'var(--accent)' : 'var(--border)',
-                            color: allAnswered ? 'var(--bg)' : 'var(--text-tertiary)',
-                            border: 'none', borderRadius: 8, fontSize: '0.9rem',
-                            fontWeight: 600, cursor: allAnswered ? 'pointer' : 'default',
-                            fontFamily: 'inherit',
-                        }}
-                    >
-                        Перевірити відповіді
-                    </button>
-                )
+            )}
+
+            {!submitted && isEnrolled && (
+                <button
+                    onClick={handleSubmit}
+                    disabled={!allAnswered}
+                    style={{
+                        marginTop: 20, width: '100%', padding: '11px',
+                        background: allAnswered ? 'var(--accent)' : 'var(--border)',
+                        color: allAnswered ? 'var(--bg)' : 'var(--text-tertiary)',
+                        border: 'none', borderRadius: 8, fontSize: '0.9rem',
+                        fontWeight: 600, cursor: allAnswered ? 'pointer' : 'default',
+                        fontFamily: 'inherit',
+                    }}
+                >
+                    Перевірити відповіді
+                </button>
             )}
         </div>
     );
@@ -378,16 +424,31 @@ function LessonPlayer({ lesson, isEnrolled, onProgressSaved, courseAuthorId }: {
         <div style={ps.box}>
             <h2 style={ps.title}>{lesson.title}</h2>
             {lesson.type === 'video' && lesson.contentUrl && (
-                <video ref={videoRef} controls onTimeUpdate={handleTime}
-                       style={{ width: '100%', borderRadius: 8, background: 'var(--accent)', marginBottom: 20 }}>
-                    <source src={lesson.contentUrl} />
-                </video>
+                <>
+                    <video ref={videoRef} controls onTimeUpdate={handleTime}
+                           style={{ width: '100%', borderRadius: 8, background: '#000', marginBottom: 12 }}>
+                        <source src={lesson.contentUrl} />
+                    </video>
+                    {isEnrolled && (
+                        <div style={{ marginBottom: 20 }}>
+                            {completed ? (
+                                <div style={ps.btnDone}>✓ Урок завершено</div>
+                            ) : (
+                                <div style={ps.videoHint}>
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
+                                        Урок зарахується автоматично після перегляду 80% відео
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </>
             )}
             {lesson.type === 'text' && lesson.textContent && (
                 <div style={ps.textContent}
                      dangerouslySetInnerHTML={{ __html: lesson.textContent }} />
             )}
-            {isEnrolled && (
+            {lesson.type === 'text' && isEnrolled && (
                 <button
                     style={completed ? ps.btnDone : ps.btnMark}
                     onClick={() => markDone(lesson.durationSec)}
@@ -409,8 +470,12 @@ const ps: Record<string, React.CSSProperties> = {
         background: 'transparent', fontSize: '0.85rem', cursor: 'pointer',
     },
     btnDone: {
-        padding: '8px 20px', borderRadius: 6, border: '1.5px solid var(--accent)',
+        display: 'inline-block', padding: '8px 20px', borderRadius: 6, border: '1.5px solid var(--accent)',
         background: 'var(--accent)', color: 'var(--accent-inv)', fontSize: '0.85rem', cursor: 'default',
+    },
+    videoHint: {
+        padding: '8px 12px', borderRadius: 6, border: '1px dashed var(--border)',
+        background: 'var(--bg-subtle)',
     },
 };
 

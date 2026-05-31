@@ -6,9 +6,9 @@ interface LessonData { id: string; title: string; type: string; contentUrl: stri
 interface ModuleData  { id: string; title: string; orderIndex: number; lessons: LessonData[]; }
 interface CourseData  { id: string; title: string; description: string; category: string; level: string; price: number; status: string; modules: ModuleData[]; }
 
-interface QuizQuestion { question: string; options: string[]; correctIndex: number; }
+interface QuizQuestion { question: string; options: string[]; correctIndex: number; explanation?: string; }
 const EMPTY_LESSON = { title: '', type: 'video', contentUrl: '', textContent: '', durationSec: 0, isFree: false };
-const EMPTY_QUESTION: QuizQuestion = { question: '', options: ['', '', '', ''], correctIndex: 0 };
+const EMPTY_QUESTION: QuizQuestion = { question: '', options: ['', '', '', ''], correctIndex: 0, explanation: '' };
 
 export function CourseEditPage() {
     const { id } = useParams<{ id: string }>();
@@ -25,6 +25,9 @@ export function CourseEditPage() {
     const [lessonForms, setLessonForms] = useState<Record<string, typeof EMPTY_LESSON>>({});
     const [addingLesson, setAddingLesson] = useState<Record<string, boolean>>({});
     const [quizQuestions, setQuizQuestions] = useState<Record<string, QuizQuestion[]>>({});
+    const [modError, setModError]           = useState('');
+    const [lessonErrors, setLessonErrors]   = useState<Record<string, string>>({});
+    const [courseErrors, setCourseErrors]   = useState<Partial<Record<'title'|'description'|'category', string>>>({});
 
     const load = async () => {
         if (!id) return;
@@ -42,6 +45,12 @@ export function CourseEditPage() {
     const flash = (msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(''), 2500); };
 
     const saveCourse = async () => {
+        const errs: typeof courseErrors = {};
+        if (!courseForm.title.trim())       errs.title       = 'Введіть назву курсу';
+        if (!courseForm.description.trim()) errs.description = 'Введіть опис курсу';
+        if (!courseForm.category.trim())    errs.category    = 'Вкажіть категорію';
+        setCourseErrors(errs);
+        if (Object.keys(errs).length) return;
         setSaving(true); setError('');
         try {
             await apiFetch(`/courses/${id}`, { method: 'PATCH', body: JSON.stringify(courseForm) });
@@ -62,7 +71,8 @@ export function CourseEditPage() {
     };
 
     const addModule = async () => {
-        if (!newModTitle.trim()) return;
+        if (!newModTitle.trim()) { setModError('Введіть назву модуля'); return; }
+        setModError('');
         setAddingMod(true);
         try {
             await apiFetch(`/courses/${id}/modules`, { method: 'POST', body: JSON.stringify({ title: newModTitle }) });
@@ -82,7 +92,23 @@ export function CourseEditPage() {
 
     const addLesson = async (moduleId: string) => {
         const form = lessonForms[moduleId] ?? { ...EMPTY_LESSON };
-        if (!form.title.trim()) return;
+        if (!form.title.trim()) {
+            setLessonErrors(e => ({ ...e, [moduleId]: 'Введіть назву уроку' }));
+            return;
+        }
+        if (form.type === 'quiz') {
+            const qs = quizQuestions[moduleId] ?? [];
+            if (!qs.length) {
+                setLessonErrors(e => ({ ...e, [moduleId]: 'Додайте хоча б одне питання до квізу' }));
+                return;
+            }
+            const incomplete = qs.findIndex(q => !q.question.trim() || q.options.some(o => !o.trim()));
+            if (incomplete !== -1) {
+                setLessonErrors(e => ({ ...e, [moduleId]: `Заповніть всі варіанти відповідей у питанні ${incomplete + 1}` }));
+                return;
+            }
+        }
+        setLessonErrors(e => ({ ...e, [moduleId]: '' }));
         setAddingLesson(l => ({ ...l, [moduleId]: true }));
         try {
             const qs = quizQuestions[moduleId] ?? [];
@@ -171,15 +197,15 @@ export function CourseEditPage() {
                     <div style={s.col}>
                         <div style={s.card}>
                             <h3 style={s.cardTitle}>Інформація про курс</h3>
-                            <Field label="Назва">
-                                <input value={courseForm.title} onChange={e => setCourseForm(f => ({ ...f, title: e.target.value }))} style={inp} />
+                            <Field label="Назва *" error={courseErrors.title}>
+                                <input value={courseForm.title} onChange={e => { setCourseForm(f => ({ ...f, title: e.target.value })); setCourseErrors(e => ({...e, title: undefined})); }} style={errInp(!!courseErrors.title)} />
                             </Field>
-                            <Field label="Опис">
-                                <textarea value={courseForm.description} onChange={e => setCourseForm(f => ({ ...f, description: e.target.value }))} style={{ ...inp, height: 90, resize: 'vertical' as const }} />
+                            <Field label="Опис *" error={courseErrors.description}>
+                                <textarea value={courseForm.description} onChange={e => { setCourseForm(f => ({ ...f, description: e.target.value })); setCourseErrors(e => ({...e, description: undefined})); }} style={{ ...errInp(!!courseErrors.description), height: 90, resize: 'vertical' as const }} />
                             </Field>
                             <div style={{ display: 'grid', gap: 12 }} className="r-two-col-equal">
-                                <Field label="Категорія">
-                                    <input value={courseForm.category} onChange={e => setCourseForm(f => ({ ...f, category: e.target.value }))} style={inp} placeholder="Програмування" />
+                                <Field label="Категорія *" error={courseErrors.category}>
+                                    <input value={courseForm.category} onChange={e => { setCourseForm(f => ({ ...f, category: e.target.value })); setCourseErrors(e => ({...e, category: undefined})); }} style={errInp(!!courseErrors.category)} placeholder="Програмування" />
                                 </Field>
                                 <Field label="Ціна (₴)">
                                     <input type="number" min={0} value={courseForm.price} onChange={e => setCourseForm(f => ({ ...f, price: Number(e.target.value) }))} style={inp} />
@@ -240,11 +266,14 @@ export function CourseEditPage() {
                                                     + Новий урок
                                                 </p>
                                                 <input
-                                                    placeholder="Назва уроку"
+                                                    placeholder="Назва уроку *"
                                                     value={lessonForms[mod.id]?.title ?? ''}
-                                                    onChange={e => setLessonForms(f => ({ ...f, [mod.id]: { ...(f[mod.id] ?? { ...EMPTY_LESSON }), title: e.target.value } }))}
-                                                    style={{ ...inp, marginBottom: 8 }}
+                                                    onChange={e => { setLessonForms(f => ({ ...f, [mod.id]: { ...(f[mod.id] ?? { ...EMPTY_LESSON }), title: e.target.value } })); setLessonErrors(e => ({...e, [mod.id]: ''})); }}
+                                                    style={{ ...errInp(!!(lessonErrors[mod.id] && !lessonForms[mod.id]?.title?.trim())), marginBottom: 4 }}
                                                 />
+                                                {lessonErrors[mod.id] && (
+                                                    <p style={{ ...s.fieldErr, marginBottom: 8 }}>⚠ {lessonErrors[mod.id]}</p>
+                                                )}
                                                 <div style={{ display: 'grid', gap: 8, marginBottom: 8 }} className="r-two-col-equal">
                                                     <select
                                                         value={lessonForms[mod.id]?.type ?? 'video'}
@@ -340,6 +369,30 @@ export function CourseEditPage() {
                                                                         />
                                                                     </div>
                                                                 ))}
+                                                                <div style={{ marginTop: 8 }}>
+                                                                    <p style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', marginBottom: 4 }}>
+                                                                        💡 Пояснення (показується студенту після відповіді)
+                                                                    </p>
+                                                                    <textarea
+                                                                        rows={2}
+                                                                        placeholder="Поясніть чому правильна саме ця відповідь..."
+                                                                        value={q.explanation ?? ''}
+                                                                        onChange={e => setQuizQuestions(prev => {
+                                                                            const arr = [...(prev[mod.id] ?? [])];
+                                                                            arr[qi] = { ...arr[qi], explanation: e.target.value };
+                                                                            return { ...prev, [mod.id]: arr };
+                                                                        })}
+                                                                        style={{
+                                                                            width: '100%', boxSizing: 'border-box' as const,
+                                                                            padding: '6px 10px', borderRadius: 6,
+                                                                            border: '1.5px solid #bfdbfe',
+                                                                            background: '#eff6ff',
+                                                                            fontSize: '0.82rem', fontFamily: 'inherit',
+                                                                            resize: 'vertical' as const, outline: 'none',
+                                                                            color: '#1e40af',
+                                                                        }}
+                                                                    />
+                                                                </div>
                                                             </div>
                                                         ))}
                                                         <button
@@ -376,17 +429,20 @@ export function CourseEditPage() {
                                 </div>
                             ))}
 
-                            <div style={s.addModBox}>
-                                <input
-                                    placeholder="Назва нового модуля"
-                                    value={newModTitle}
-                                    onChange={e => setNewModTitle(e.target.value)}
-                                    onKeyDown={e => e.key === 'Enter' && addModule()}
-                                    style={{ ...inp, flex: 1 }}
-                                />
-                                <button onClick={addModule} disabled={addingMod || !newModTitle.trim()} style={s.btnAdd}>
-                                    {addingMod ? '...' : '+ Модуль'}
-                                </button>
+                            <div style={{ marginTop: 12 }}>
+                                <div style={s.addModBox}>
+                                    <input
+                                        placeholder="Назва нового модуля"
+                                        value={newModTitle}
+                                        onChange={e => { setNewModTitle(e.target.value); setModError(''); }}
+                                        onKeyDown={e => e.key === 'Enter' && addModule()}
+                                        style={{ ...errInp(!!modError), flex: 1 }}
+                                    />
+                                    <button onClick={addModule} disabled={addingMod} style={s.btnAdd}>
+                                        {addingMod ? '...' : '+ Модуль'}
+                                    </button>
+                                </div>
+                                {modError && <p style={s.fieldErr}>⚠ {modError}</p>}
                             </div>
                         </div>
                     </div>
@@ -396,13 +452,14 @@ export function CourseEditPage() {
     );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
     return (
         <div style={{ marginBottom: 12 }}>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>
+            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: error ? '#dc2626' : 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>
                 {label}
             </label>
             {children}
+            {error && <p style={{ fontSize: '0.75rem', color: '#dc2626', marginTop: 4 }}>⚠ {error}</p>}
         </div>
     );
 }
@@ -413,6 +470,14 @@ const inp: React.CSSProperties = {
     fontSize: '0.875rem', boxSizing: 'border-box', outline: 'none',
     background: 'var(--bg-elevated)', color: 'var(--text)',
 };
+
+function errInp(hasErr: boolean): React.CSSProperties {
+    return {
+        ...inp,
+        borderColor: hasErr ? '#fca5a5' : 'var(--border)',
+        background:  hasErr ? '#fff5f5' : 'var(--bg-elevated)',
+    };
+}
 
 const s: Record<string, React.CSSProperties> = {
     page:    { minHeight: '100vh', background: 'var(--bg-subtle)' },
@@ -436,4 +501,5 @@ const s: Record<string, React.CSSProperties> = {
     btnSecondary: { padding: '8px 16px', background: 'var(--bg-subtle)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 8, fontSize: '0.85rem', cursor: 'pointer' },
     btnAdd:    { padding: '8px 14px', background: 'var(--accent)', color: 'var(--bg-elevated)', border: 'none', borderRadius: 7, fontSize: '0.82rem', cursor: 'pointer', whiteSpace: 'nowrap' },
     btnDel:    { padding: '2px 6px', background: 'transparent', color: 'var(--border-strong)', border: 'none', borderRadius: 4, fontSize: '0.8rem', cursor: 'pointer', flexShrink: 0 },
+    fieldErr:  { fontSize: '0.75rem', color: '#dc2626', marginTop: 3, marginBottom: 0 },
 };

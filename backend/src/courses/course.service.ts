@@ -41,7 +41,7 @@ export class CourseService {
     return { data: data.map(this.safeAuthor), total, page, totalPages: Math.ceil(total / limit) };
   }
 
-  async findOne(id: string, userId?: string) {
+  async findOne(id: string, userId?: string, userRole?: string) {
     const course = await this.courseRepo.findOne({
       where: { id },
       relations: ['modules', 'modules.lessons', 'author'],
@@ -52,7 +52,9 @@ export class CourseService {
     if (userId) {
       isEnrolled = !!(await this.enrollmentRepo.findOne({ where: { userId, courseId: id } }));
     }
-    if (!isEnrolled) {
+    const isOwner = !!userId && course.authorId === userId;
+    const isPriv  = !!userRole && ['admin', 'moderator', 'super_admin'].includes(userRole);
+    if (!isEnrolled && !isOwner && !isPriv) {
       course.modules?.forEach(m => m.lessons?.forEach(l => { if (!l.isFree) l.contentUrl = null; }));
     }
     return { ...this.safeAuthor(course), isEnrolled };
@@ -157,15 +159,21 @@ export class CourseService {
   async updateProgress(dto: UpdateProgressDto, user: User) {
     const lesson = await this.lessonRepo.findOne({
       where: { id: dto.lessonId },
-      relations: ['module'],
+      relations: ['module', 'module.course'],
     });
     if (!lesson) throw new NotFoundException('Урок не знайдено');
     if (!lesson.module) throw new NotFoundException('Модуль уроку не знайдено');
 
-    const enrolled = await this.enrollmentRepo.findOne({
-      where: { userId: user.id, courseId: lesson.module.courseId },
-    });
-    if (!enrolled) throw new ForbiddenException('Спочатку запишись на курс');
+    const isPriv = [UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MODERATOR].includes(user.role as any);
+    const isOwner = lesson.module.course
+        ? lesson.module.course.authorId === user.id
+        : false;
+    if (!isPriv && !isOwner) {
+      const enrolled = await this.enrollmentRepo.findOne({
+        where: { userId: user.id, courseId: lesson.module.courseId },
+      });
+      if (!enrolled) throw new ForbiddenException('Спочатку запишись на курс');
+    }
 
     let p = await this.progressRepo.findOne({
       where: { userId: user.id, lessonId: dto.lessonId },

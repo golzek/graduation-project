@@ -97,7 +97,7 @@ export function LearningStats() {
                 <div style={s.card}>
                     <p style={s.label}>Streak</p>
                     <div style={s.streakRow}>
-                        <span style={s.flame}>{streak > 0 ? '🔥' : '💤'}</span>
+                        <span style={s.flame}>🔥</span>
                         <div>
                             <p style={s.big}>{streak}</p>
                             <p style={s.sub}>

@@ -112,7 +112,7 @@ export class CourseController {
   @ApiParam({ name: 'id', description: 'UUID курсу' })
   @ApiResponse({ status: 200, description: 'Деталі курсу' })
   @ApiResponse({ status: 404, description: 'Курс не знайдено' })
-  findOne(@Param('id') id: string, @CurrentUser() u?: any) { return this.svc.findOne(id, u?.id); }
+  findOne(@Param('id') id: string, @CurrentUser() u?: any) { return this.svc.findOne(id, u?.id, u?.role); }
 
   @Post(':id/enroll')
   @UseGuards(JwtAuthGuard)
