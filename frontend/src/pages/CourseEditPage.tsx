@@ -255,13 +255,16 @@ export function CourseEditPage() {
                                                         <option value="text">Текст</option>
                                                         <option value="quiz">Квіз</option>
                                                     </select>
-                                                    <input
-                                                        type="number" placeholder="Тривалість (сек)"
-                                                        value={lessonForms[mod.id]?.durationSec ?? 0}
-                                                        min={0}
-                                                        onChange={e => setLessonForms(f => ({ ...f, [mod.id]: { ...(f[mod.id] ?? { ...EMPTY_LESSON }), durationSec: Number(e.target.value) } }))}
-                                                        style={inp}
-                                                    />
+                                                    <div style={{ position: 'relative' as const }}>
+                                                        <input
+                                                            type="number" placeholder="0"
+                                                            value={lessonForms[mod.id]?.durationSec ? Math.round(lessonForms[mod.id].durationSec / 60) : ''}
+                                                            min={0}
+                                                            onChange={e => setLessonForms(f => ({ ...f, [mod.id]: { ...(f[mod.id] ?? { ...EMPTY_LESSON }), durationSec: Number(e.target.value) * 60 } }))}
+                                                            style={{ ...inp, paddingRight: 36 }}
+                                                        />
+                                                        <span style={{ position: 'absolute' as const, right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: '0.8rem', color: 'var(--text-tertiary)', pointerEvents: 'none' as const }}>хв</span>
+                                                    </div>
                                                 </div>
                                                 {(lessonForms[mod.id]?.type ?? 'video') === 'video' && (
                                                     <input

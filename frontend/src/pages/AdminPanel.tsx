@@ -121,7 +121,7 @@ export function AdminPanel() {
               <span style={s.headerDot} />
               Адмін-панель
             </div>
-            <div style={s.tabsRow} className="r-admin-tabs">
+            <div style={{ ...s.tabsRow, flex: 1 }} className="r-admin-tabs">
               {tabs.map(t => (
                   <button
                       key={t.key}
@@ -1692,12 +1692,14 @@ const s: Record<string, React.CSSProperties> = {
   },
   headerInner: {
     maxWidth: 1160, margin: '0 auto',
-    height: 56,
-    display: 'flex', alignItems: 'center', gap: 24,
+    minHeight: 56,
+    display: 'flex', alignItems: 'center', gap: 16,
+    flexWrap: 'wrap' as const,
+    padding: '8px 16px',
   },
   backLink: {
     fontSize: '0.8rem', color: 'var(--text-tertiary)',
-    whiteSpace: 'nowrap', flexShrink: 0,
+    whiteSpace: 'nowrap' as const, flexShrink: 0,
   },
   headerTitle: {
     display: 'flex', alignItems: 'center', gap: 8,
@@ -1709,11 +1711,12 @@ const s: Record<string, React.CSSProperties> = {
     width: 7, height: 7, borderRadius: '50%',
     background: 'var(--accent)', flexShrink: 0,
   },
-  tabsRow: { display: 'flex', gap: 2 },
+  tabsRow: { display: 'flex', gap: 2, overflowX: 'auto' as const, flexShrink: 1, minWidth: 0 },
   tabBtn: {
-    padding: '5px 14px', borderRadius: 6,
+    padding: '5px 12px', borderRadius: 6,
     border: 'none', background: 'transparent',
     fontSize: '0.875rem', color: 'var(--text-secondary)', cursor: 'pointer',
+    whiteSpace: 'nowrap' as const, flexShrink: 0,
   },
   tabBtnActive: { color: 'var(--text)', fontWeight: 500, background: 'var(--bg-muted)' },
   themeBtn: {

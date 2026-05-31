@@ -138,13 +138,16 @@ export class WayForPayService {
             orderReference,
             amount,
             currency,
-            authCode,
-            cardPan,
-            transactionStatus,
-            reasonCode,
+            authCode    ?? '',
+            cardPan     ?? '',
+            transactionStatus ?? '',
+            reasonCode  ?? '',
         ].join(';');
 
         const expectedSignature = this.sign(signatureString);
+        console.log('WFP callback body:', JSON.stringify(body));
+        console.log('WFP signatureString:', signatureString);
+        console.log('WFP expected:', expectedSignature, '| got:', body.merchantSignature);
         if (body.merchantSignature !== expectedSignature) {
             throw new BadRequestException('Невірний підпис WayForPay');
         }
