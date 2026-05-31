@@ -17,11 +17,24 @@ const mockRepo = () => ({
 });
 
 const makeUser = (overrides: Partial<User> = {}): User => ({
-    id: 'user-1', email: 'u@test.com', name: 'Студент',
-    role: UserRole.STUDENT, isActive: true,
-    password: 'hash', googleId: null, avatarUrl: null,
-    banReason: null, bannedAt: null, bannedBy: null,
-    createdAt: new Date(), updatedAt: new Date(),
+    id: 'user-1',
+    email: 'u@test.com',
+    password: '123',
+    name: 'Студент',
+    googleId: null,
+    role: UserRole.STUDENT,
+    avatarUrl: '',
+    isActive: true,
+    banReason: null,
+    bannedAt: null,
+    bannedBy: null,
+
+    resetPasswordToken: null,
+    resetPasswordExpires: null,
+
+    createdAt: new Date(),
+    updatedAt: new Date(),
+
     ...overrides,
 });
 

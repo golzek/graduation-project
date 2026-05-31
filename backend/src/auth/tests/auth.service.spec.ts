@@ -34,19 +34,24 @@ const mockReferral = () => ({
 });
 
 const makeUser = (overrides: Partial<User> = {}): User => ({
-    id:        'user-uuid-1',
-    email:     'test@example.com',
-    password:  bcrypt.hashSync('password123', 10),
-    name:      'Тест Юзер',
-    role:      UserRole.STUDENT,
-    isActive:  true,
-    googleId:  null,
-    avatarUrl: null,
+    id: 'user-1',
+    email: 'u@test.com',
+    password: '123',
+    name: 'Студент',
+    googleId: null,
+    role: UserRole.STUDENT,
+    avatarUrl: '',
+    isActive: true,
     banReason: null,
-    bannedAt:  null,
-    bannedBy:  null,
+    bannedAt: null,
+    bannedBy: null,
+
+    resetPasswordToken: null,
+    resetPasswordExpires: null,
+
     createdAt: new Date(),
     updatedAt: new Date(),
+
     ...overrides,
 });
 
