@@ -25,6 +25,9 @@ export enum NotificationType {
     CERTIFICATE_ISSUED     = 'certificate_issued',
     NEW_QA_QUESTION        = 'new_qa_question',
     NEW_QA_ANSWER          = 'new_qa_answer',
+    NEW_REVIEW_PENDING     = 'new_review_pending',
+    REVIEW_APPROVED        = 'review_approved',
+    NEW_REVIEW_ON_COURSE   = 'new_review_on_course',
 }
 
 @Entity('notifications')

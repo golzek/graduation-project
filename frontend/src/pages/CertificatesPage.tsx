@@ -49,9 +49,34 @@ export function MyCertificatesPage() {
   );
 }
 
+function StarRating({ value, onChange }: { value: number; onChange: (n: number) => void }) {
+  const [hovered, setHovered] = useState(0);
+
+  return (
+      <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
+        {[1, 2, 3, 4, 5].map(n => (
+            <button
+                key={n}
+                onClick={() => onChange(n)}
+                onMouseEnter={() => setHovered(n)}
+                onMouseLeave={() => setHovered(0)}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontSize: 28, padding: 0, lineHeight: 1,
+                  color: n <= (hovered || value) ? '#f59e0b' : '#d1d5db',
+                  transition: 'color 0.15s, transform 0.1s',
+                  transform: n <= (hovered || value) ? 'scale(1.15)' : 'scale(1)',
+                }}
+            >★</button>
+        ))}
+        <span style={{ alignSelf: 'center', fontSize: 13, color: 'var(--text-secondary)', marginLeft: 4 }}>
+          {['', 'Жахливо', 'Погано', 'Нормально', 'Добре', 'Відмінно'][hovered || value]}
+        </span>
+      </div>
+  );
+}
+
 function CertCard({ cert }: { cert: Cert }) {
-  const [claiming, setClaiming] = useState(false);
-  const [review, setReview]     = useState<{ rating: number; body: string } | null>(null);
   const [hasReview, setHasReview] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted]   = useState(false);
@@ -115,46 +140,58 @@ function CertCard({ cert }: { cert: Cert }) {
           </div>
 
           {submitted ? (
-              <p style={s.reviewSent}>✅ Відгук надіслано на модерацію</p>
+              <div style={s.reviewSent}>
+                <span style={{ fontSize: 16 }}>✅</span>
+                <span>Відгук надіслано на модерацію</span>
+              </div>
           ) : hasReview ? (
-              <p style={s.reviewSent}>✔ Ви вже залишили відгук</p>
+              <div style={s.reviewSent}>
+                <span style={{ fontSize: 16 }}>✔</span>
+                <span>Ви вже залишили відгук</span>
+              </div>
           ) : (
               <>
-                <button
-                    style={s.btnReview}
-                    onClick={() => setShowForm(f => !f)}
-                >
+                <button style={s.btnReview} onClick={() => setShowForm(f => !f)}>
                   {showForm ? 'Сховати' : '✍ Залишити відгук'}
                 </button>
 
                 {showForm && (
                     <div style={s.reviewForm}>
-                      <div style={{ display: 'flex', gap: 4, marginBottom: 10 }}>
-                        {[1,2,3,4,5].map(n => (
-                            <button
-                                key={n}
-                                onClick={() => setRating(n)}
-                                style={{ background: 'none', border: 'none', cursor: 'pointer',
-                                  fontSize: 24, color: n <= rating ? '#f59e0b' : '#d1d5db',
-                                  padding: '0 2px', lineHeight: 1 }}
-                            >★</button>
-                        ))}
-                      </div>
+                      <p style={s.reviewFormTitle}>Ваша оцінка курсу</p>
+
+                      <StarRating value={rating} onChange={setRating} />
+
                       <textarea
                           value={body}
                           onChange={e => setBody(e.target.value)}
-                          placeholder="Розкажіть про курс..."
-                          rows={3}
+                          placeholder="Розкажіть про курс — що сподобалось, що можна покращити..."
+                          rows={4}
                           style={s.textarea}
                       />
-                      {error && <p style={{ color: '#dc2626', fontSize: 13, margin: '4px 0 0' }}>{error}</p>}
-                      <button
-                          onClick={handleSubmit}
-                          disabled={submitting}
-                          style={{ ...s.btnDownload, marginTop: 10, display: 'block', textAlign: 'center' as const }}
-                      >
-                        {submitting ? 'Надсилання...' : 'Надіслати'}
-                      </button>
+
+                      {error && (
+                          <p style={{ color: '#dc2626', fontSize: 13, margin: '6px 0 0' }}>{error}</p>
+                      )}
+
+                      <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+                        <button
+                            onClick={handleSubmit}
+                            disabled={submitting}
+                            style={{
+                              ...s.btnSubmit,
+                              opacity: submitting ? 0.7 : 1,
+                              cursor: submitting ? 'default' : 'pointer',
+                            }}
+                        >
+                          {submitting ? 'Надсилання...' : 'Надіслати'}
+                        </button>
+                        <button
+                            onClick={() => { setShowForm(false); setError(''); }}
+                            style={s.btnCancel}
+                        >
+                          Скасувати
+                        </button>
+                      </div>
                     </div>
                 )}
               </>
@@ -183,7 +220,6 @@ export function VerifyCertPage() {
     } finally { setLoading(false); }
   };
 
-
   useEffect(() => { if (codeParam) check(codeParam); }, [codeParam]);
 
   const handleSubmit = () => {
@@ -195,7 +231,6 @@ export function VerifyCertPage() {
   return (
       <div style={sv.page}>
         <div style={sv.card}>
-          {}
           <div style={{ textAlign: 'center', marginBottom: 28 }}>
             <div style={{ fontSize: '2.5rem', marginBottom: 10 }}>🎓</div>
             <h1 style={{ fontSize: '1.3rem', fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>
@@ -206,7 +241,6 @@ export function VerifyCertPage() {
             </p>
           </div>
 
-          {}
           <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
             <input
                 value={input}
@@ -233,7 +267,6 @@ export function VerifyCertPage() {
             >{loading ? '...' : 'Перевірити'}</button>
           </div>
 
-          {}
           {loading && (
               <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
                 Перевірка...
@@ -307,32 +340,77 @@ const sv: Record<string, React.CSSProperties> = {
 };
 
 const s: Record<string, React.CSSProperties> = {
-  page: { minHeight: '100vh', background: 'var(--bg)', paddingBottom: 60 },
-  header: { background: '#1e1b4b', color: 'var(--bg-elevated)', padding: '48px 32px 32px', textAlign: 'center' },
-  title: { fontSize: 28, fontWeight: 700, margin: 0 },
-  sub: { opacity: 0.75, marginTop: 8 },
-  centered: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', color: 'var(--text-secondary)' },
-  empty: { textAlign: 'center', padding: '80px 32px' },
-  btnLink: { display: 'inline-block', marginTop: 20, padding: '12px 24px', background: '#4f46e5', color: 'var(--bg-elevated)', borderRadius: 10, textDecoration: 'none', fontWeight: 600 },
-  grid: { display: 'grid', gap: 24, maxWidth: 1100, margin: '40px auto' },
-  card: { background: 'var(--bg-elevated)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.08)' },
-  cardTop: { background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', padding: '24px', textAlign: 'center', color: 'var(--bg-elevated)' },
+  page:         { minHeight: '100vh', background: 'var(--bg)', paddingBottom: 60 },
+  header:       { background: 'var(--bg-elevated)', color: 'var(--text)', padding: '48px 32px 32px', textAlign: 'center', borderBottom: '1px solid var(--border)' },
+  title:        { fontSize: 28, fontWeight: 700, margin: 0, color: 'var(--text)' },
+  sub:          { opacity: 0.75, marginTop: 8, color: 'var(--text-secondary)' },
+  centered:     { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', color: 'var(--text-secondary)' },
+  empty:        { textAlign: 'center', padding: '80px 32px' },
+  btnLink:      { display: 'inline-block', marginTop: 20, padding: '12px 24px', background: '#4f46e5', color: 'var(--bg-elevated)', borderRadius: 10, textDecoration: 'none', fontWeight: 600 },
+  grid:         { display: 'grid', gap: 24, maxWidth: 1100, margin: '40px auto' },
+
+  card:         { background: 'var(--bg-elevated)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.08)' },
+  cardTop:      { background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', padding: '24px', textAlign: 'center', color: 'var(--bg-elevated)' },
   cardTopLabel: { margin: '8px 0 0', fontWeight: 600, opacity: 0.9, fontSize: 14 },
-  cardBody: { padding: 24 },
-  courseTitle: { fontSize: 16, fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' },
-  authorLine: { fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 4px' },
-  dateLine: { fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 16px' },
-  codeBlock: { background: 'var(--bg-muted)', borderRadius: 8, padding: '10px 14px', marginBottom: 16, display: 'flex', flexDirection: 'column' as const, gap: 4 },
-  codeLabel: { fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase' as const, letterSpacing: 1 },
-  code: { fontFamily: 'monospace', fontSize: 13, color: 'var(--text-secondary)', letterSpacing: 2 },
-  actions: { display: 'flex', gap: 10 },
-  btnDownload: { flex: 1, padding: '10px', background: '#4f46e5', color: 'var(--bg-elevated)', borderRadius: 8, textDecoration: 'none', textAlign: 'center' as const, fontSize: 13, fontWeight: 600 },
-  btnVerify: { padding: '10px 16px', background: 'var(--bg-muted)', color: 'var(--text-secondary)', borderRadius: 8, textDecoration: 'none', fontSize: 13, fontWeight: 500 },
-  btnReview: { marginTop: 12, width: '100%', padding: '9px', background: 'var(--bg-muted)', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer', color: 'var(--text-secondary)', fontFamily: 'inherit' },
-  reviewForm: { marginTop: 12, padding: '14px', background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 10 },
-  textarea: { width: '100%', padding: '10px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: 13, fontFamily: 'inherit', resize: 'vertical' as const, background: 'var(--bg-elevated)', color: 'var(--text)', boxSizing: 'border-box' as const, outline: 'none' },
-  reviewSent: { marginTop: 12, fontSize: 13, color: 'var(--text-tertiary)', textAlign: 'center' as const, padding: '8px', background: 'var(--bg-muted)', borderRadius: 8 },
-  verifyPage: { minHeight: '100vh', background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 32 },
-  verifyCard: { background: 'var(--bg-elevated)', borderRadius: 20, padding: '48px 40px', maxWidth: 480, width: '100%', boxShadow: '0 4px 24px rgba(0,0,0,0.08)' },
-  verifyRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid var(--border)', fontSize: 15 },
+  cardBody:     { padding: 24 },
+
+  courseTitle:  { fontSize: 16, fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' },
+  authorLine:   { fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 4px' },
+  dateLine:     { fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 16px' },
+
+  codeBlock:    { background: 'var(--bg-muted)', borderRadius: 8, padding: '10px 14px', marginBottom: 16, display: 'flex', flexDirection: 'column' as const, gap: 4 },
+  codeLabel:    { fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase' as const, letterSpacing: 1 },
+  code:         { fontFamily: 'monospace', fontSize: 13, color: 'var(--text-secondary)', letterSpacing: 2 },
+
+  actions:      { display: 'flex', gap: 10, marginBottom: 12 },
+  btnDownload:  { flex: 1, padding: '10px', background: '#4f46e5', color: 'var(--bg-elevated)', borderRadius: 8, textDecoration: 'none', textAlign: 'center' as const, fontSize: 13, fontWeight: 600 },
+  btnVerify:    { padding: '10px 16px', background: 'var(--bg-muted)', color: 'var(--text-secondary)', borderRadius: 8, textDecoration: 'none', fontSize: 13, fontWeight: 500 },
+
+  btnReview:    {
+    width: '100%', padding: '10px', marginTop: 4,
+    background: 'transparent', border: '1.5px dashed var(--border)',
+    borderRadius: 8, fontSize: 13, fontWeight: 500,
+    cursor: 'pointer', color: 'var(--text-secondary)', fontFamily: 'inherit',
+    transition: 'border-color 0.2s, color 0.2s',
+  },
+
+  reviewForm: {
+    marginTop: 14,
+    padding: '18px 16px',
+    background: 'var(--bg)',
+    border: '1.5px solid var(--border)',
+    borderRadius: 12,
+  },
+  reviewFormTitle: {
+    fontSize: 13, fontWeight: 600, color: 'var(--text)',
+    margin: '0 0 12px',
+  },
+  textarea: {
+    width: '100%', padding: '10px 12px', borderRadius: 8,
+    border: '1.5px solid var(--border)', fontSize: 13,
+    fontFamily: 'inherit', resize: 'vertical' as const,
+    background: 'var(--bg-elevated)', color: 'var(--text)',
+    boxSizing: 'border-box' as const, outline: 'none',
+    minHeight: 90,
+  },
+
+  btnSubmit: {
+    flex: 1, padding: '10px 0',
+    background: '#4f46e5', color: '#fff',
+    border: 'none', borderRadius: 8,
+    fontSize: 13, fontWeight: 600, fontFamily: 'inherit',
+  },
+  btnCancel: {
+    padding: '10px 18px',
+    background: 'var(--bg-muted)', color: 'var(--text-secondary)',
+    border: '1px solid var(--border)', borderRadius: 8,
+    fontSize: 13, fontWeight: 500, fontFamily: 'inherit', cursor: 'pointer',
+  },
+
+  reviewSent: {
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    gap: 8, marginTop: 12, fontSize: 13,
+    color: 'var(--text-secondary)', textAlign: 'center' as const,
+    padding: '10px 14px', background: 'var(--bg-muted)', borderRadius: 8,
+  },
 };

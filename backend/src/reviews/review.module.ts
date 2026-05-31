@@ -5,9 +5,13 @@ import { Course, Enrollment } from '../courses/course.entity';
 import { Certificate } from '../certificates/certificate.entity';
 import { ReviewController } from './review.controller';
 import { ReviewService } from './review.service';
+import { NotificationModule } from '../notifications/notification.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Review, Enrollment, Course, Certificate])],
+  imports: [
+    TypeOrmModule.forFeature([Review, Enrollment, Course, Certificate]),
+    NotificationModule,
+  ],
   controllers: [ReviewController],
   providers: [ReviewService],
 })

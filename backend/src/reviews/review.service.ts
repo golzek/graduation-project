@@ -1,6 +1,6 @@
 import {
   Injectable, NotFoundException, ConflictException,
-  ForbiddenException, BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -10,6 +10,7 @@ import { Review } from './review.entity';
 import { Course, Enrollment } from '../courses/course.entity';
 import { Certificate } from '../certificates/certificate.entity';
 import { User, UserRole } from '../users/user.entity';
+import { NotificationService } from '../notifications/notification.service';
 
 export class CreateReviewDto {
   @ApiProperty({ minimum: 1, maximum: 5 })
@@ -26,15 +27,30 @@ export class ReviewService {
       @InjectRepository(Enrollment)   private enrollmentRepo: Repository<Enrollment>,
       @InjectRepository(Course)       private courseRepo:     Repository<Course>,
       @InjectRepository(Certificate)  private certRepo:       Repository<Certificate>,
+      private notificationService: NotificationService,
   ) {}
 
   async create(courseId: string, dto: CreateReviewDto, user: User) {
     const cert = await this.certRepo.findOne({ where: { userId: user.id, courseId } });
     if (!cert) throw new ForbiddenException('Відгук можна залишити лише після отримання сертифіката');
+
     const existing = await this.reviewRepo.findOne({ where: { userId: user.id, courseId } });
     if (existing) throw new ConflictException('Ти вже залишив відгук на цей курс');
+
     const review = this.reviewRepo.create({ ...dto, userId: user.id, courseId, isApproved: false });
-    return this.reviewRepo.save(review);
+    const saved = await this.reviewRepo.save(review);
+
+    const course = await this.courseRepo.findOne({ where: { id: courseId } });
+    if (course) {
+      await this.notificationService.notifyAdminsNewReview(
+          user.name,
+          course.title,
+          saved.id,
+          courseId,
+      ).catch(() => {});
+    }
+
+    return saved;
   }
 
   async findByCourse(courseId: string, onlyApproved = true) {
@@ -77,11 +93,37 @@ export class ReviewService {
   }
 
   async approve(id: string) {
-    const r = await this.reviewRepo.findOne({ where: { id } });
+    const r = await this.reviewRepo.findOne({ where: { id }, relations: ['user'] });
     if (!r) throw new NotFoundException();
+
     r.isApproved = true;
     const saved = await this.reviewRepo.save(r);
     await this.recalcCourseRating(r.courseId);
+
+    const course = await this.courseRepo.findOne({
+      where: { id: r.courseId },
+      relations: ['author'],
+    });
+
+    if (course) {
+      await Promise.all([
+        this.notificationService.notifyStudentReviewApproved(
+            r.userId,
+            course.title,
+            r.courseId,
+        ),
+        ...(course.author
+            ? [this.notificationService.notifyTeacherNewReview(
+                course.author.id,
+                r.user?.name ?? 'Студент',
+                course.title,
+                r.courseId,
+                r.rating,
+            )]
+            : []),
+      ]).catch(() => {});
+    }
+
     return saved;
   }
 

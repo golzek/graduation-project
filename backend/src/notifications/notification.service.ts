@@ -81,6 +81,7 @@ export class NotificationService {
         }
     }
 
+
     async notifyStudentEnrolled(studentId: string, courseId: string, courseTitle: string) {
         await this.save(studentId, NotificationType.ENROLLMENT_CONFIRMED,
             '🎉 Ви записані на курс',
@@ -97,6 +98,7 @@ export class NotificationService {
         );
     }
 
+
     async notifyAdminsNewUser(userName: string, userEmail: string, userId: string) {
         const admins = await this.dataSource.query<{ id: string }[]>(
             `SELECT id FROM users WHERE role = $1 AND "isActive" = true`, [UserRole.ADMIN],
@@ -108,6 +110,22 @@ export class NotificationService {
                 { userId, userName, userEmail }),
         ));
     }
+
+    async notifyUserBanned(userId: string, reason: string) {
+        await this.save(userId, NotificationType.ACCOUNT_BANNED,
+            '🚫 Ваш акаунт заблоковано',
+            `Причина: ${reason}`,
+            { reason },
+        );
+    }
+
+    async notifyUserUnbanned(userId: string) {
+        await this.save(userId, NotificationType.ACCOUNT_UNBANNED,
+            '✅ Ваш акаунт розблоковано',
+            'Ваш акаунт було розблоковано. Ви знову можете користуватись платформою.',
+        );
+    }
+
 
     async notifyAdminsPromoCodePending(teacherName: string, courseTitle: string, promoCode: string, promoCodeId: string) {
         const admins = await this.dataSource.query<{ id: string }[]>(
@@ -133,24 +151,6 @@ export class NotificationService {
         );
     }
 
-    async notifyUserBanned(userId: string, reason: string) {
-        await this.save(
-            userId,
-            NotificationType.ACCOUNT_BANNED,
-            '🚫 Ваш акаунт заблоковано',
-            `Причина: ${reason}`,
-            { reason },
-        );
-    }
-
-    async notifyUserUnbanned(userId: string) {
-        await this.save(
-            userId,
-            NotificationType.ACCOUNT_UNBANNED,
-            '✅ Ваш акаунт розблоковано',
-            'Ваш акаунт було розблоковано. Ви знову можете користуватись платформою.',
-        );
-    }
 
     async notifyAdminsPayoutRequest(teacherId: string, amount: number) {
         const admins = await this.dataSource.query<{ id: string }[]>(
@@ -192,6 +192,8 @@ export class NotificationService {
             { amount, status },
         );
     }
+
+
     async notifyCertificateIssued(userId: string, courseId: string, courseTitle: string, verifyCode: string, pdfUrl: string) {
         await this.save(
             userId,
@@ -201,6 +203,7 @@ export class NotificationService {
             { courseId, courseTitle, verifyCode, pdfUrl },
         );
     }
+
 
     async notifyTeacherNewQuestion(teacherId: string, studentName: string, courseTitle: string, courseId: string, questionId: string) {
         await this.save(
@@ -219,6 +222,38 @@ export class NotificationService {
             '💬 Викладач відповів на ваше питання',
             `${instructorName} відповів на ваше питання у курсі «${courseTitle}».`,
             { courseId, questionId },
+        );
+    }
+
+    async notifyAdminsNewReview(studentName: string, courseTitle: string, reviewId: string, courseId: string) {
+        const admins = await this.dataSource.query<{ id: string }[]>(
+            `SELECT id FROM users WHERE role = $1 AND "isActive" = true`, [UserRole.ADMIN],
+        );
+        await Promise.all(admins.map(a =>
+            this.save(a.id, NotificationType.NEW_REVIEW_PENDING,
+                '⭐ Новий відгук на перевірку',
+                `${studentName} залишив відгук на курс «${courseTitle}». Перейдіть до адмін-панелі для модерації.`,
+                { reviewId, courseId, courseTitle, studentName }),
+        ));
+    }
+
+    async notifyStudentReviewApproved(studentId: string, courseTitle: string, courseId: string) {
+        await this.save(
+            studentId,
+            NotificationType.REVIEW_APPROVED,
+            '✅ Ваш відгук опубліковано',
+            `Ваш відгук на курс «${courseTitle}» пройшов модерацію і тепер видний іншим студентам.`,
+            { courseId, courseTitle },
+        );
+    }
+
+    async notifyTeacherNewReview(teacherId: string, studentName: string, courseTitle: string, courseId: string, rating: number) {
+        await this.save(
+            teacherId,
+            NotificationType.NEW_REVIEW_ON_COURSE,
+            '💬 Новий відгук на вашому курсі',
+            `${studentName} залишив відгук (${rating}★) на курс «${courseTitle}».`,
+            { courseId, courseTitle, studentName, rating },
         );
     }
 }

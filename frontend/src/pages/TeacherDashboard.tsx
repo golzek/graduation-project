@@ -616,10 +616,10 @@ function MiniBarChart({ data }: { data: { date: string; count: number }[] }) {
 const s: Record<string, React.CSSProperties> = {
   page: { minHeight: '100vh', background: 'var(--bg)' },
   centered: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', color: 'var(--text-secondary)' },
-  header: { background: '#1e1b4b', color: 'var(--bg-elevated)', padding: '36px 32px' },
+  header: { background: 'var(--bg-elevated)', color: 'var(--text)', padding: '36px 32px', borderBottom: '1px solid var(--border)' },
   headerRow: { maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  title: { fontSize: 26, fontWeight: 700, margin: 0 },
-  sub: { opacity: 0.7, marginTop: 4 },
+  title: { fontSize: 26, fontWeight: 700, margin: 0, color: 'var(--text)' },
+  sub: { opacity: 0.7, marginTop: 4, color: 'var(--text-secondary)' },
   btnCreate: { padding: '12px 24px', background: '#4f46e5', color: 'var(--bg-elevated)', borderRadius: 10, textDecoration: 'none', fontWeight: 600, fontSize: 14 },
   body: { maxWidth: 1200, margin: '32px auto',  },
   metricsRow: { display: 'grid', gap: 16, marginBottom: 28 },
