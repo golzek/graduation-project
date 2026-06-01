@@ -80,8 +80,33 @@ function CertCard({ cert }: { cert: Cert }) {
   const [hasReview, setHasReview] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted]   = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
   const [rating, setRating]   = useState(5);
   const [body, setBody]       = useState('');
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      const token = localStorage.getItem('accessToken');
+      const API = process.env.REACT_APP_API_URL ?? 'http://localhost:3000';
+      const res = await fetch(`${API}/certificates/download/${cert.verifyCode}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Не вдалося завантажити PDF');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `certificate-${cert.verifyCode}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      alert('Помилка завантаження PDF');
+    } finally {
+      setDownloading(false);
+    }
+  };
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState('');
 
@@ -131,9 +156,13 @@ function CertCard({ cert }: { cert: Cert }) {
           </div>
 
           <div style={s.actions}>
-            <a href={cert.pdfUrl} target="_blank" rel="noreferrer" style={s.btnDownload}>
-              ⬇ Завантажити PDF
-            </a>
+            <button
+                onClick={handleDownload}
+                disabled={downloading}
+                style={{ ...s.btnDownload, opacity: downloading ? 0.7 : 1, cursor: downloading ? 'default' : 'pointer', border: 'none', fontFamily: 'inherit' }}
+            >
+              {downloading ? '⏳ Завантаження...' : '⬇ Завантажити PDF'}
+            </button>
             <Link to={`/certificates/verify/${cert.verifyCode}`} style={s.btnVerify}>
               Перевірити
             </Link>

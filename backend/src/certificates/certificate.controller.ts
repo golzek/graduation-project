@@ -50,6 +50,20 @@ export class CertificateController {
     res.end(buffer);
   }
 
+  @Post('regenerate/:courseId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT')
+  @ApiOperation({
+    summary: 'Перегенерувати PDF сертифіката',
+    description: 'Відновлює PDF для вже виданого сертифіката (якщо pdfData відсутній).',
+  })
+  @ApiParam({ name: 'courseId', description: 'UUID курсу' })
+  @ApiResponse({ status: 201, description: 'PDF перегенеровано' })
+  @ApiResponse({ status: 404, description: 'Сертифікат не знайдено' })
+  regenerate(@Param('courseId') id: string, @CurrentUser() u: any) {
+    return this.svc.regeneratePdf(id, u);
+  }
+
   @Get('verify/:code')
   @ApiOperation({
     summary: 'Публічна верифікація сертифіката',

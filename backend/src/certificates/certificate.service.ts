@@ -89,12 +89,35 @@ export class CertificateService {
     return Buffer.from(cert.pdfData, 'base64');
   }
 
-  findMyAll(userId: string) {
-    return this.certRepo.find({
+  async findMyAll(userId: string) {
+    const certs = await this.certRepo.find({
       where: { userId },
       relations: ['course', 'course.author'],
       order: { issuedAt: 'DESC' },
     });
+    return certs.map(c => ({ ...c, pdfUrl: `/certificates/download/${c.verifyCode}` }));
+  }
+
+  async regeneratePdf(courseId: string, user: User): Promise<Certificate> {
+    const cert = await this.certRepo.findOne({ where: { userId: user.id, courseId } });
+    if (!cert) throw new NotFoundException('Сертифікат не знайдено');
+
+    const course = await this.courseRepo.findOne({
+      where: { id: courseId },
+      relations: ['author'],
+    });
+    if (!course) throw new NotFoundException('Курс не знайдено');
+
+    const pdfBuffer = await this.generatePdf({
+      studentName: user.name,
+      courseName:  course.title,
+      authorName:  (course.author as any)?.name ?? 'Викладач',
+      verifyCode:  cert.verifyCode,
+      issuedAt:    cert.issuedAt,
+    });
+
+    cert.pdfData = pdfBuffer.toString('base64');
+    return this.certRepo.save(cert);
   }
 
   private generatePdf(data: {
