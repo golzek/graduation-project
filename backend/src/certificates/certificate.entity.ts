@@ -11,5 +11,6 @@ export class Certificate {
   @ManyToOne(() => Course) @JoinColumn({ name: 'course_id' }) course: Course;
   @Column({ name: 'course_id' }) courseId: string;
   @Column({ nullable: true }) pdfUrl: string;
+  @Column({ type: 'text', nullable: true }) pdfData: string;
   @CreateDateColumn() issuedAt: Date;
 }

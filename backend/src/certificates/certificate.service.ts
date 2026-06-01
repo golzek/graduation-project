@@ -37,7 +37,6 @@ export class CertificateService {
     const allIds = course.modules.flatMap(m => m.lessons.map(l => l.id));
     if (!allIds.length) throw new BadRequestException('Курс не має уроків');
 
-
     const done = await this.progressRepo.createQueryBuilder('p')
         .where('p.user_id = :uid', { uid: user.id })
         .andWhere('p.lesson_id IN (:...ids)', { ids: allIds })
@@ -55,16 +54,16 @@ export class CertificateService {
       issuedAt: new Date(),
     });
 
-    const pdfUrl = await this.storage.uploadBuffer(
-        pdfBuffer,
-        `${verifyCode}.pdf`,
-    );
+    const pdfData = pdfBuffer.toString('base64');
 
     const cert = await this.certRepo.save(
-        this.certRepo.create({ userId: user.id, courseId, verifyCode, pdfUrl }),
+        this.certRepo.create({ userId: user.id, courseId, verifyCode, pdfData }),
     );
 
-    fireAndForget(this.notifSvc.notifyCertificateIssued(user.id, courseId, course.title, verifyCode, pdfUrl), 'notif:notifyCertificateIssued');
+    fireAndForget(
+        this.notifSvc.notifyCertificateIssued(user.id, courseId, course.title, verifyCode, null),
+        'notif:notifyCertificateIssued',
+    );
 
     return cert;
   }
@@ -81,8 +80,13 @@ export class CertificateService {
       courseName:  cert.course.title,
       issuedAt:    cert.issuedAt,
       verifyCode:  cert.verifyCode,
-      pdfUrl:      cert.pdfUrl,
     };
+  }
+
+  async getPdfBuffer(code: string, userId: string): Promise<Buffer> {
+    const cert = await this.certRepo.findOne({ where: { verifyCode: code, userId } });
+    if (!cert || !cert.pdfData) throw new NotFoundException('Сертифікат не знайдено');
+    return Buffer.from(cert.pdfData, 'base64');
   }
 
   findMyAll(userId: string) {
