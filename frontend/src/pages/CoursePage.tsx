@@ -111,7 +111,25 @@ export function CoursePage() {
                         )}
 
                         {course.isEnrolled ? (
-                            <button style={s.btnOutline}>Продовжити навчання</button>
+                            progress?.percent === 100 ? (
+                                <button
+                                    style={s.btnPrimary}
+                                    onClick={async () => {
+                                        try {
+                                            const cert = await issueCertificate(course.id);
+                                            setCertModal({ pdfUrl: cert.pdfUrl, verifyCode: cert.verifyCode });
+                                        } catch (e: any) {
+                                            if (e?.message?.includes('вже виданий')) {
+                                                navigate('/certificates');
+                                            }
+                                        }
+                                    }}
+                                >
+                                    🎓 Отримати сертифікат
+                                </button>
+                            ) : (
+                                <button style={s.btnOutline}>Продовжити навчання</button>
+                            )
                         ) : isOwner || isPriv ? (
                             <button style={s.btnOutline} disabled>
                                 {isOwner ? 'Це ваш курс' : 'Перегляд як адміністратор'}
