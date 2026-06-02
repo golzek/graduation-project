@@ -576,7 +576,7 @@ const s: Record<string, any> = {
   filterLabel: { fontSize: '0.68rem', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: 'var(--text-tertiary)', marginBottom: 8 },
   filterList: { display: 'flex', flexWrap: 'wrap' as const, gap: 4 },
   filterChip: {
-    padding: '4px 10px', borderRadius: 99, border: '1.5px solid var(--border)',
+    padding: '4px 10px', borderRadius: 99, borderWidth: '1.5px', borderStyle: 'solid', borderColor: 'var(--border)',
     background: 'var(--bg-elevated)', fontSize: '0.75rem', color: 'var(--text-secondary)', cursor: 'pointer',
     transition: 'all 0.12s', fontFamily: 'inherit', outline: 'none',
   },

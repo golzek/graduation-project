@@ -472,7 +472,7 @@ function LessonPlayer({ lesson, isEnrolled, onProgressSaved, courseAuthorId, com
     };
 
     if (lesson.type === 'quiz') {
-        return <QuizPlayer lesson={lesson} isEnrolled={isEnrolled} onDone={() => markDone(0)} completed={completed} courseAuthorId={courseAuthorId} />;
+        return <QuizPlayer lesson={lesson} isEnrolled={isEnrolled} onDone={() => markDone(lesson.durationSec ?? 60)} completed={completed} courseAuthorId={courseAuthorId} />;
     }
 
     const ytId = lesson.type === 'video' && lesson.contentUrl ? getYouTubeId(lesson.contentUrl) : null;
@@ -508,7 +508,7 @@ function LessonPlayer({ lesson, isEnrolled, onProgressSaved, courseAuthorId, com
                             {completed ? (
                                 <div style={ps.btnDone}>✓ Урок завершено</div>
                             ) : ytId ? (
-                                <button style={ps.btnMark} onClick={() => markDone(0)}>
+                                <button style={ps.btnMark} onClick={() => markDone(lesson.durationSec ?? 60)}>
                                     Позначити як завершений
                                 </button>
                             ) : (

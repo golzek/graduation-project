@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiParam, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { PayoutService, CreatePayoutRequestDto, ReviewPayoutDto } from './payout.service';
 import { PayoutStatus } from './payout-request.entity';
@@ -55,5 +55,14 @@ export class PayoutController {
     @ApiResponse({ status: 200, description: 'Статус запиту оновлено' })
     adminReview(@Param('id') id: string, @Body() dto: ReviewPayoutDto, @CurrentUser() admin: any) {
         return this.svc.adminReview(id, dto, admin.id);
+    }
+
+    @Delete('my/request/:id')
+    @UseGuards(RolesGuard)
+    @Roles(UserRole.TEACHER, UserRole.ADMIN)
+    @ApiOperation({ summary: 'Скасувати свій pending-запит на виплату' })
+    @ApiResponse({ status: 200, description: 'Запит скасовано' })
+    cancelRequest(@Param('id') id: string, @CurrentUser() user: any) {
+        return this.svc.cancelRequest(user.id, id);
     }
 }

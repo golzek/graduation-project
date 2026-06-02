@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Course, Enrollment } from '../courses/course.entity';
+import { User } from '../users/user.entity';
 import { PaymentController } from './payment.controller';
 import { WayForPayService } from './wayforpay.service';
 import { PromoCodeModule } from '../promo-codes/promo-code.module';
@@ -9,7 +10,7 @@ import { NotificationModule } from '../notifications/notification.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Course, Enrollment]),
+    TypeOrmModule.forFeature([Course, Enrollment, User]),
     PromoCodeModule,
     SubscriptionModule,
     NotificationModule,

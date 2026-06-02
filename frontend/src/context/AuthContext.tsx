@@ -27,7 +27,7 @@ async function apiFetch<T>(path: string, opts: RequestInit = {}): Promise<T> {
     ...opts,
     headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts.headers },
   });
-  if (!res.ok) { const e = await res.json().catch(() => ({ message: 'Помилка' })); throw new Error(e.message); }
+  if (!res.ok) { const e = await res.json().catch(() => ({ message: 'Помилка сервера' })); throw new Error(e.message || 'Невірний email або пароль'); }
   return res.json();
 }
 

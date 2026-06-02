@@ -181,7 +181,9 @@ export class CourseService {
     if (!p) p = this.progressRepo.create({ userId: user.id, lessonId: dto.lessonId, watchedSec: 0 });
 
     p.completed  = dto.completed;
-    p.watchedSec = Math.max(p.watchedSec ?? 0, dto.watchedSec ?? 0);
+    const incoming = dto.watchedSec ?? 0;
+    const fallback = (dto.completed && incoming === 0) ? (lesson.durationSec ?? 0) : incoming;
+    p.watchedSec = Math.max(p.watchedSec ?? 0, fallback);
     return this.progressRepo.save(p);
   }
   async getCourseProgress(courseId: string, userId: string) {

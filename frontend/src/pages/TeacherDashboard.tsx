@@ -233,6 +233,27 @@ function PayoutsPanel() {
     return digits.replace(/(.{4})/g, '$1 ').trimEnd();
   };
 
+  const cardDigitCount = (val: string): number => {
+    if (/^UA/i.test(val.replace(/\s+/g, ''))) return 0;
+    return val.replace(/\D/g, '').length;
+  };
+
+  const isCardValid = (val: string): boolean => {
+    const normalized = val.replace(/\s+/g, '');
+    if (/^UA/i.test(normalized)) return /^UA\d{27}$/i.test(normalized);
+    const digits = normalized.replace(/\D/g, '');
+    return digits.length >= 13 && digits.length <= 19;
+  };
+
+  const cancelRequest = async (id: string) => {
+    try {
+      await apiFetch(`/payouts/my/request/${id}`, { method: 'DELETE' });
+      load();
+    } catch (e: any) {
+      alert(e.message || 'Помилка скасування');
+    }
+  };
+
   const displayPaymentDetails = (val: string): string => {
     const normalized = val.replace(/\s+/g, '');
     if (/^UA/i.test(normalized)) return normalized.toUpperCase();
@@ -291,10 +312,16 @@ function PayoutsPanel() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <h3 style={{ ...s.sectionTitle, margin: 0 }}>💸 Виплати</h3>
           {data && data.available > 0 && !showForm && (
-              <button
-                  onClick={() => { setShowForm(true); setErr(''); setOk(''); }}
-                  style={{ padding: '8px 18px', background: '#059669', color: 'var(--bg-elevated)', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
-              >Запит на виплату</button>
+              data.requests.some(r => r.status === 'pending') ? (
+                  <span style={{ fontSize: 12, color: '#d97706', background: '#fffbeb', padding: '5px 12px', borderRadius: 8, border: '1px solid #fde68a' }}>
+                ⏳ Запит очікує розгляду
+              </span>
+              ) : (
+                  <button
+                      onClick={() => { setShowForm(true); setErr(''); setOk(''); }}
+                      style={{ padding: '8px 18px', background: '#059669', color: 'var(--bg-elevated)', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+                  >Запит на виплату</button>
+              )
           )}
         </div>
 
@@ -365,8 +392,13 @@ function PayoutsPanel() {
                             onChange={e => setDetails(formatPaymentInput(e.target.value))}
                             inputMode="text"
                             autoComplete="cc-number"
-                            style={inp}
+                            style={{ ...inp, borderColor: details && !isCardValid(details) ? '#f87171' : undefined }}
                         />
+                        {details && !(/^UA/i.test(details.replace(/\s+/g,''))) && (
+                            <p style={{ fontSize: 11, marginTop: 3, color: cardDigitCount(details) >= 13 && cardDigitCount(details) <= 19 ? '#16a34a' : '#d97706' }}>
+                              {cardDigitCount(details)} / 16 цифр{cardDigitCount(details) >= 13 && cardDigitCount(details) <= 19 ? ' ✓' : ''}
+                            </p>
+                        )}
                       </div>
                     </div>
                     {err && <p style={{ fontSize: 12, color: '#dc2626', marginBottom: 8 }}>{err}</p>}
@@ -409,6 +441,12 @@ function PayoutsPanel() {
                             <span style={{ fontSize: 11, color: 'var(--text-tertiary)', flexShrink: 0 }}>
                               {new Date(r.createdAt).toLocaleDateString('uk-UA')}
                             </span>
+                            {r.status === 'pending' && (
+                                <button
+                                    onClick={() => cancelRequest(r.id)}
+                                    style={{ fontSize: 11, padding: '3px 10px', border: '1px solid #fca5a5', background: '#fef2f2', color: '#dc2626', borderRadius: 6, cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit' }}
+                                >Скасувати</button>
+                            )}
                           </div>
                       ))}
                     </div>

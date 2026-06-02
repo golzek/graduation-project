@@ -11,6 +11,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { v4 as uuidv4 } from 'uuid';
 import { WayForPayService } from './wayforpay.service';
 import { Course, Enrollment } from '../courses/course.entity';
+import { User } from '../users/user.entity';
 import { JwtAuthGuard, CurrentUser } from '../auth/auth.guards';
 import { PromoCodeService } from '../promo-codes/promo-code.service';
 import { SubscriptionService, SUBSCRIPTION_PRICES } from '../subscription/subscription.service';
@@ -39,6 +40,7 @@ export class PaymentController {
       private readonly wfp:              WayForPayService,
       @InjectRepository(Course)     private courseRepo:     Repository<Course>,
       @InjectRepository(Enrollment) private enrollmentRepo: Repository<Enrollment>,
+      @InjectRepository(User)       private userRepo:       Repository<User>,
       private readonly promoSvc:    PromoCodeService,
       private readonly subSvc:      SubscriptionService,
       private readonly notifSvc:    NotificationService,
@@ -210,8 +212,10 @@ export class PaymentController {
         await this.enrollmentRepo.save(this.enrollmentRepo.create({ userId, courseId, paidPrice }));
         const courseForNotif = await this.courseRepo.findOne({ where: { id: courseId } });
         if (courseForNotif) {
+          const studentForNotif = await this.userRepo.findOne({ where: { id: userId } });
+          const studentName = studentForNotif?.name ?? 'Студент';
           fireAndForget(this.notifSvc.notifyStudentEnrolled(userId, courseId, courseForNotif.title), 'notif:notifyStudentEnrolled');
-          fireAndForget(this.notifSvc.notifyTeacherNewEnrollment(courseForNotif.authorId, userId, courseId, courseForNotif.title), 'notif:notifyTeacherNewEnrollment');
+          fireAndForget(this.notifSvc.notifyTeacherNewEnrollment(courseForNotif.authorId, studentName, courseId, courseForNotif.title), 'notif:notifyTeacherNewEnrollment');
         }
       }
 

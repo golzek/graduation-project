@@ -144,9 +144,11 @@ export function LoginPage() {
     e.preventDefault(); setError(''); setLoading(true);
     try {
       const loggedUser = await login(email, password);
-      navigate(from ?? getRoleHome(loggedUser.role), { replace: true });
+      if (loggedUser) {
+        navigate(from ?? getRoleHome(loggedUser.role), { replace: true });
+      }
     }
-    catch (err: any) { setError(err.message); }
+    catch (err: any) { setError(err.message || 'Невірний email або пароль'); }
     finally { setLoading(false); }
   };
 

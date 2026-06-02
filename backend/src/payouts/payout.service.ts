@@ -179,25 +179,38 @@ export class PayoutService {
 
 
     async adminReview(id: string, dto: ReviewPayoutDto, adminId: string) {
-        const req = await this.payoutRepo.findOne({ where: { id }, relations: ['teacher'] });
+        const req = await this.payoutRepo.findOne({ where: { id } });
         if (!req) throw new NotFoundException('Заявку не знайдено');
 
         if (req.status === PayoutStatus.PAID) {
             throw new BadRequestException('Заявка вже виплачена і не може бути змінена');
         }
 
-        req.status       = dto.status as PayoutStatus;
-        req.adminComment = dto.adminComment ?? null;
-        req.processedBy  = adminId;
-        req.processedAt  = new Date();
+        await this.payoutRepo.update(id, {
+            status:       dto.status as PayoutStatus,
+            adminComment: dto.adminComment ?? null,
+            processedBy:  adminId,
+            processedAt:  new Date(),
+        });
 
-        const saved = await this.payoutRepo.save(req);
+        const saved = await this.payoutRepo.findOne({ where: { id } });
 
         fireAndForget(this.notifSvc.notifyTeacherPayoutReviewed(req.teacherId, req.amount, dto.status), 'notif:notifyTeacherPayoutReviewed');
 
-        return this.mapRequest(saved);
+        return this.mapRequest(saved!);
     }
 
+
+
+    async cancelRequest(teacherId: string, id: string) {
+        const req = await this.payoutRepo.findOne({ where: { id, teacherId } });
+        if (!req) throw new NotFoundException('Заявку не знайдено');
+        if (req.status !== PayoutStatus.PENDING) {
+            throw new BadRequestException('Можна скасувати лише заявку зі статусом "Очікує"');
+        }
+        await this.payoutRepo.remove(req);
+        return { success: true };
+    }
 
     private mapRequest(r: PayoutRequest) {
         return {
