@@ -80,8 +80,8 @@ const s: Record<string, React.CSSProperties> = {
   dividerLine: { flex: 1, height: 1, background: 'var(--border)' },
   error: {
     padding: '10px 14px', borderRadius: 8,
-    background: 'var(--bg)', border: '1.5px solid var(--border-strong)',
-    fontSize: '0.85rem', color: 'var(--text)',
+    background: '#fff1f1', border: '1.5px solid #fca5a5',
+    fontSize: '0.85rem', color: '#b91c1c',
     marginBottom: 16,
   },
   switch: {

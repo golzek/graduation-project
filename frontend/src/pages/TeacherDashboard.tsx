@@ -226,6 +226,13 @@ function PayoutsPanel() {
 
   useEffect(() => { load(); }, [load]);
 
+  useEffect(() => {
+    const hasPending = data?.requests.some(r => r.status === 'pending' || r.status === 'approved');
+    if (!hasPending) return;
+    const id = setInterval(() => { load(); }, 30_000);
+    return () => clearInterval(id);
+  }, [data, load]);
+
   const formatPaymentInput = (raw: string): string => {
     const trimmed = raw.replace(/\s+/g, '');
     if (/^UA/i.test(trimmed)) return trimmed.toUpperCase();

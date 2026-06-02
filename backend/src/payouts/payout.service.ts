@@ -193,11 +193,18 @@ export class PayoutService {
             processedAt:  new Date(),
         });
 
-        const saved = await this.payoutRepo.findOne({ where: { id } });
+        const saved = await this.payoutRepo.findOne({ where: { id }, relations: ['teacher'] });
 
         fireAndForget(this.notifSvc.notifyTeacherPayoutReviewed(req.teacherId, req.amount, dto.status), 'notif:notifyTeacherPayoutReviewed');
 
-        return this.mapRequest(saved!);
+        return {
+            ...this.mapRequest(saved!),
+            teacher: saved!.teacher ? {
+                id:    saved!.teacher.id,
+                name:  saved!.teacher.name,
+                email: saved!.teacher.email,
+            } : null,
+        };
     }
 
 
