@@ -31,9 +31,9 @@ export class PayoutRequest {
 
     @Column({ type: 'text', nullable: true }) adminComment: string | null;
 
-    @Column({ name: 'processedBy', nullable: true }) processedBy: string | null;
+    @Column({ name: 'processed_by', nullable: true }) processedBy: string | null;
 
-    @Column({ name: 'processedAt', type: 'timestamptz', nullable: true }) processedAt: Date | null;
+    @Column({ name: 'processed_at', type: 'timestamptz', nullable: true }) processedAt: Date | null;
 
     @CreateDateColumn() createdAt: Date;
     @UpdateDateColumn() updatedAt: Date;

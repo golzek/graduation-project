@@ -1316,7 +1316,12 @@ function PayoutsTab() {
       });
       const labels: Record<string, string> = { approved: 'Схвалено', rejected: 'Відхилено', paid: 'Виплачено' };
       toast.success(labels[status]);
-      setPayouts(prev => prev.map(p => p.id === id ? { ...p, ...updated } : p));
+      setPayouts(prev => {
+        if (statusF && updated.status !== statusF) {
+          return prev.filter(p => p.id !== id);
+        }
+        return prev.map(p => p.id === id ? { ...p, ...updated } : p);
+      });
     } catch { toast.error('Помилка'); }
   };
 

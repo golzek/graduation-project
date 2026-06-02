@@ -69,6 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     const d = await apiFetch<any>('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+    if (!d?.accessToken || !d?.user) throw new Error('Невірний email або пароль');
     Tokens.set(d.accessToken, d.refreshToken); setUser(d.user);
     return d.user;
   }, []);
