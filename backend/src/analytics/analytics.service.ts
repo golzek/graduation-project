@@ -28,9 +28,9 @@ export class AnalyticsService {
       const activityByDay = await this.progressRepo
           .createQueryBuilder('p')
           .select("DATE(p.updatedAt)", 'day')
-          .addSelect('SUM(p.watchedSec)', 'seconds')
+          .addSelect('COUNT(*)', 'seconds') // used only for heatmap intensity, not displayed as time
           .where('p.userId = :userId', { userId })
-          .andWhere('p.watchedSec > 0')
+          .andWhere('(p.watchedSec > 0 OR p.completed = true)')
           .andWhere("p.updatedAt > NOW() - INTERVAL '60 days'")
           .groupBy("DATE(p.updatedAt)")
           .orderBy('day', 'ASC')
@@ -40,10 +40,11 @@ export class AnalyticsService {
 
       const weeklySeconds = await this.progressRepo
           .createQueryBuilder('p')
+          .leftJoin('p.lesson', 'l')
           .select("DATE_TRUNC('week', p.updatedAt)", 'week')
-          .addSelect('SUM(p.watchedSec)', 'seconds')
+          .addSelect('SUM(CASE WHEN p.watchedSec > 0 THEN p.watchedSec ELSE COALESCE(l.durationSec, 0) END)', 'seconds')
           .where('p.userId = :userId', { userId })
-          .andWhere('p.watchedSec > 0')
+          .andWhere('(p.watchedSec > 0 OR p.completed = true)')
           .andWhere("p.updatedAt > NOW() - INTERVAL '8 weeks'")
           .groupBy("DATE_TRUNC('week', p.updatedAt)")
           .orderBy('week', 'ASC')
@@ -51,20 +52,22 @@ export class AnalyticsService {
 
       const hourHeatmap = await this.progressRepo
           .createQueryBuilder('p')
+          .leftJoin('p.lesson', 'l')
           .select('EXTRACT(HOUR FROM p.updatedAt)::int', 'hour')
-          .addSelect('SUM(p.watchedSec)', 'seconds')
+          .addSelect('SUM(CASE WHEN p.watchedSec > 0 THEN p.watchedSec ELSE COALESCE(l.durationSec, 0) END)', 'seconds')
           .where('p.userId = :userId', { userId })
-          .andWhere('p.watchedSec > 0')
+          .andWhere('(p.watchedSec > 0 OR p.completed = true)')
           .groupBy('EXTRACT(HOUR FROM p.updatedAt)')
           .orderBy('hour', 'ASC')
           .getRawMany<{ hour: string; seconds: string }>();
 
       const weekdaySeconds = await this.progressRepo
           .createQueryBuilder('p')
+          .leftJoin('p.lesson', 'l')
           .select('EXTRACT(DOW FROM p.updatedAt)::int', 'dow')
-          .addSelect('SUM(p.watchedSec)', 'seconds')
+          .addSelect('SUM(CASE WHEN p.watchedSec > 0 THEN p.watchedSec ELSE COALESCE(l.durationSec, 0) END)', 'seconds')
           .where('p.userId = :userId', { userId })
-          .andWhere('p.watchedSec > 0')
+          .andWhere('(p.watchedSec > 0 OR p.completed = true)')
           .groupBy('EXTRACT(DOW FROM p.updatedAt)')
           .orderBy('dow', 'ASC')
           .getRawMany<{ dow: string; seconds: string }>();

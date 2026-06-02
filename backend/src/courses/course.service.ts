@@ -182,7 +182,9 @@ export class CourseService {
 
     p.completed  = dto.completed;
     const incoming = dto.watchedSec ?? 0;
-    const fallback = (dto.completed && incoming === 0) ? (lesson.durationSec ?? 0) : incoming;
+    const fallback = (dto.completed && incoming === 0)
+        ? (lesson.durationSec ?? p.watchedSec ?? 0)
+        : incoming;
     p.watchedSec = Math.max(p.watchedSec ?? 0, fallback);
     return this.progressRepo.save(p);
   }

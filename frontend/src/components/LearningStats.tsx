@@ -11,6 +11,7 @@ interface StudentStats {
 }
 
 function fmtTime(sec: number): string {
+    if (!sec || sec <= 0) return '—';
     if (sec < 60)   return `${sec}с`;
     if (sec < 3600) return `${Math.floor(sec / 60)}хв`;
     const h = Math.floor(sec / 3600);
