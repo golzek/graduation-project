@@ -24,12 +24,12 @@ export class PayoutRequest {
 
     @Column({ type: 'decimal', precision: 10, scale: 2 }) amount: number;
 
-    @Column({ type: 'text' }) paymentDetails: string;
+    @Column({ name: 'payment_details', type: 'text' }) paymentDetails: string;
 
     @Column({ type: 'enum', enum: PayoutStatus, default: PayoutStatus.PENDING })
     status: PayoutStatus;
 
-    @Column({ type: 'text', nullable: true }) adminComment: string | null;
+    @Column({ name: 'admin_comment', type: 'text', nullable: true }) adminComment: string | null;
 
     @Column({ name: 'processed_by', nullable: true }) processedBy: string | null;
 
