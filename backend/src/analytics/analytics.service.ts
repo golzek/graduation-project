@@ -19,20 +19,20 @@ export class AnalyticsService {
       const timeRow = await this.progressRepo
           .createQueryBuilder('p')
           .leftJoin('p.lesson', 'l')
-          .select('SUM(CASE WHEN p.watchedSec > 0 THEN p.watchedSec ELSE COALESCE(l.durationSec, 0) END)', 'total')
+          .select(`SUM(CASE WHEN p."watchedSec" > 0 THEN p."watchedSec" ELSE COALESCE(l."durationSec", 0) END)`, 'total')
           .where('p.userId = :userId', { userId })
-          .andWhere('(p.watchedSec > 0 OR p.completed = true)')
+          .andWhere(`(p."watchedSec" > 0 OR p.completed = true)`)
           .getRawOne();
       const totalWatchedSec = parseInt(timeRow?.total ?? '0') || 0;
 
       const activityByDay = await this.progressRepo
           .createQueryBuilder('p')
-          .select("DATE(p.updatedAt)", 'day')
-          .addSelect('COUNT(*)', 'seconds') // used only for heatmap intensity, not displayed as time
+          .select('DATE(p.updated_at)', 'day')
+          .addSelect('COUNT(*)', 'seconds')
           .where('p.userId = :userId', { userId })
-          .andWhere('(p.watchedSec > 0 OR p.completed = true)')
-          .andWhere("p.updatedAt > NOW() - INTERVAL '60 days'")
-          .groupBy("DATE(p.updatedAt)")
+          .andWhere(`(p."watchedSec" > 0 OR p.completed = true)`)
+          .andWhere("p.updated_at > NOW() - INTERVAL '60 days'")
+          .groupBy('DATE(p.updated_at)')
           .orderBy('day', 'ASC')
           .getRawMany<{ day: string; seconds: string }>();
 
@@ -41,34 +41,34 @@ export class AnalyticsService {
       const weeklySeconds = await this.progressRepo
           .createQueryBuilder('p')
           .leftJoin('p.lesson', 'l')
-          .select("DATE_TRUNC('week', p.updatedAt)", 'week')
-          .addSelect('SUM(CASE WHEN p.watchedSec > 0 THEN p.watchedSec ELSE COALESCE(l.durationSec, 0) END)', 'seconds')
+          .select("DATE_TRUNC('week', p.updated_at)", 'week')
+          .addSelect(`SUM(CASE WHEN p."watchedSec" > 0 THEN p."watchedSec" ELSE COALESCE(l."durationSec", 0) END)`, 'seconds')
           .where('p.userId = :userId', { userId })
-          .andWhere('(p.watchedSec > 0 OR p.completed = true)')
-          .andWhere("p.updatedAt > NOW() - INTERVAL '8 weeks'")
-          .groupBy("DATE_TRUNC('week', p.updatedAt)")
+          .andWhere(`(p."watchedSec" > 0 OR p.completed = true)`)
+          .andWhere("p.updated_at > NOW() - INTERVAL '8 weeks'")
+          .groupBy("DATE_TRUNC('week', p.updated_at)")
           .orderBy('week', 'ASC')
           .getRawMany<{ week: string; seconds: string }>();
 
       const hourHeatmap = await this.progressRepo
           .createQueryBuilder('p')
           .leftJoin('p.lesson', 'l')
-          .select('EXTRACT(HOUR FROM p.updatedAt)::int', 'hour')
-          .addSelect('SUM(CASE WHEN p.watchedSec > 0 THEN p.watchedSec ELSE COALESCE(l.durationSec, 0) END)', 'seconds')
+          .select('EXTRACT(HOUR FROM p.updated_at)::int', 'hour')
+          .addSelect(`SUM(CASE WHEN p."watchedSec" > 0 THEN p."watchedSec" ELSE COALESCE(l."durationSec", 0) END)`, 'seconds')
           .where('p.userId = :userId', { userId })
-          .andWhere('(p.watchedSec > 0 OR p.completed = true)')
-          .groupBy('EXTRACT(HOUR FROM p.updatedAt)')
+          .andWhere(`(p."watchedSec" > 0 OR p.completed = true)`)
+          .groupBy('EXTRACT(HOUR FROM p.updated_at)')
           .orderBy('hour', 'ASC')
           .getRawMany<{ hour: string; seconds: string }>();
 
       const weekdaySeconds = await this.progressRepo
           .createQueryBuilder('p')
           .leftJoin('p.lesson', 'l')
-          .select('EXTRACT(DOW FROM p.updatedAt)::int', 'dow')
-          .addSelect('SUM(CASE WHEN p.watchedSec > 0 THEN p.watchedSec ELSE COALESCE(l.durationSec, 0) END)', 'seconds')
+          .select('EXTRACT(DOW FROM p.updated_at)::int', 'dow')
+          .addSelect(`SUM(CASE WHEN p."watchedSec" > 0 THEN p."watchedSec" ELSE COALESCE(l."durationSec", 0) END)`, 'seconds')
           .where('p.userId = :userId', { userId })
-          .andWhere('(p.watchedSec > 0 OR p.completed = true)')
-          .groupBy('EXTRACT(DOW FROM p.updatedAt)')
+          .andWhere(`(p."watchedSec" > 0 OR p.completed = true)`)
+          .groupBy('EXTRACT(DOW FROM p.updated_at)')
           .orderBy('dow', 'ASC')
           .getRawMany<{ dow: string; seconds: string }>();
 
