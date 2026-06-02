@@ -578,7 +578,7 @@ const s: Record<string, any> = {
   filterChip: {
     padding: '4px 10px', borderRadius: 99, border: '1.5px solid var(--border)',
     background: 'var(--bg-elevated)', fontSize: '0.75rem', color: 'var(--text-secondary)', cursor: 'pointer',
-    transition: 'all 0.12s', fontFamily: 'inherit',
+    transition: 'all 0.12s', fontFamily: 'inherit', outline: 'none',
   },
   filterChipActive: { background: 'var(--accent)', color: 'var(--accent-inv)', borderColor: 'var(--accent)' },
 

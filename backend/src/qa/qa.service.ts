@@ -20,7 +20,7 @@ export class QaService {
         private readonly notifSvc: NotificationService,
     ) {}
 
-    async getByLesson(lessonId: string, requesterId?: string): Promise<QaQuestion[]> {
+    async getByLesson(lessonId: string, requesterId?: string, requesterRole?: string): Promise<QaQuestion[]> {
         const all = await this.questionRepo.find({
             where: { lessonId },
             relations: ['answers'],
@@ -28,6 +28,9 @@ export class QaService {
         });
 
         if (!requesterId) return [];
+
+        const isAdmin = ['admin', 'super_admin', 'moderator'].includes(requesterRole ?? '');
+        if (isAdmin) return all;
 
         const course = await this.courseRepo
             .createQueryBuilder('c')

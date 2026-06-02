@@ -37,8 +37,9 @@ export class InstructorService {
             totalStudents = parseInt(result?.count ?? '0', 10);
         }
 
-        const avgRating = courses.length > 0
-            ? courses.reduce((sum, c) => sum + Number(c.rating ?? 0), 0) / courses.length
+        const ratedCourses = courses.filter(c => c.rating !== null && c.rating !== undefined);
+        const avgRating = ratedCourses.length > 0
+            ? ratedCourses.reduce((sum, c) => sum + Number(c.rating), 0) / ratedCourses.length
             : 0;
 
         let totalReviews = 0;

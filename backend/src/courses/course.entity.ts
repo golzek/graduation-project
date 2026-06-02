@@ -75,5 +75,5 @@ export class Progress {
   @Column({ name: 'lesson_id' }) lessonId: string;
   @Column({ default: false }) completed:  boolean;
   @Column({ default: 0 })     watchedSec: number;
-  @UpdateDateColumn() updatedAt: Date;
+  @UpdateDateColumn({ name: 'updated_at' }) updatedAt: Date;
 }

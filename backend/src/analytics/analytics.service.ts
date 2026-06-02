@@ -15,65 +15,77 @@ export class AnalyticsService {
 
 
   async getStudentStats(userId: string) {
-    const timeRow = await this.progressRepo
-        .createQueryBuilder('p')
-        .select('SUM(p.watchedSec)', 'total')
-        .where('p.userId = :userId', { userId })
-        .getRawOne();
-    const totalWatchedSec = parseInt(timeRow?.total ?? '0') || 0;
+    try {
+      const timeRow = await this.progressRepo
+          .createQueryBuilder('p')
+          .select('SUM(p.watchedSec)', 'total')
+          .where('p.userId = :userId', { userId })
+          .getRawOne();
+      const totalWatchedSec = parseInt(timeRow?.total ?? '0') || 0;
 
-    const activityByDay = await this.progressRepo
-        .createQueryBuilder('p')
-        .select("DATE(p.updatedAt)", 'day')
-        .addSelect('SUM(p.watchedSec)', 'seconds')
-        .where('p.userId = :userId', { userId })
-        .andWhere('p.watchedSec > 0')
-        .andWhere("p.updatedAt > NOW() - INTERVAL '60 days'")
-        .groupBy("DATE(p.updatedAt)")
-        .orderBy('day', 'ASC')
-        .getRawMany<{ day: string; seconds: string }>();
+      const activityByDay = await this.progressRepo
+          .createQueryBuilder('p')
+          .select("DATE(p.updatedAt)", 'day')
+          .addSelect('SUM(p.watchedSec)', 'seconds')
+          .where('p.userId = :userId', { userId })
+          .andWhere('p.watchedSec > 0')
+          .andWhere("p.updatedAt > NOW() - INTERVAL '60 days'")
+          .groupBy("DATE(p.updatedAt)")
+          .orderBy('day', 'ASC')
+          .getRawMany<{ day: string; seconds: string }>();
 
-    const streak = this.calcStreak(activityByDay.map(r => r.day));
+      const streak = this.calcStreak(activityByDay.map(r => r.day));
 
-    const weeklySeconds = await this.progressRepo
-        .createQueryBuilder('p')
-        .select("DATE_TRUNC('week', p.updatedAt)", 'week')
-        .addSelect('SUM(p.watchedSec)', 'seconds')
-        .where('p.userId = :userId', { userId })
-        .andWhere('p.watchedSec > 0')
-        .andWhere("p.updatedAt > NOW() - INTERVAL '8 weeks'")
-        .groupBy("DATE_TRUNC('week', p.updatedAt)")
-        .orderBy('week', 'ASC')
-        .getRawMany<{ week: string; seconds: string }>();
+      const weeklySeconds = await this.progressRepo
+          .createQueryBuilder('p')
+          .select("DATE_TRUNC('week', p.updatedAt)", 'week')
+          .addSelect('SUM(p.watchedSec)', 'seconds')
+          .where('p.userId = :userId', { userId })
+          .andWhere('p.watchedSec > 0')
+          .andWhere("p.updatedAt > NOW() - INTERVAL '8 weeks'")
+          .groupBy("DATE_TRUNC('week', p.updatedAt)")
+          .orderBy('week', 'ASC')
+          .getRawMany<{ week: string; seconds: string }>();
 
-    const hourHeatmap = await this.progressRepo
-        .createQueryBuilder('p')
-        .select('EXTRACT(HOUR FROM p.updatedAt)::int', 'hour')
-        .addSelect('SUM(p.watchedSec)', 'seconds')
-        .where('p.userId = :userId', { userId })
-        .andWhere('p.watchedSec > 0')
-        .groupBy('EXTRACT(HOUR FROM p.updatedAt)')
-        .orderBy('hour', 'ASC')
-        .getRawMany<{ hour: string; seconds: string }>();
+      const hourHeatmap = await this.progressRepo
+          .createQueryBuilder('p')
+          .select('EXTRACT(HOUR FROM p.updatedAt)::int', 'hour')
+          .addSelect('SUM(p.watchedSec)', 'seconds')
+          .where('p.userId = :userId', { userId })
+          .andWhere('p.watchedSec > 0')
+          .groupBy('EXTRACT(HOUR FROM p.updatedAt)')
+          .orderBy('hour', 'ASC')
+          .getRawMany<{ hour: string; seconds: string }>();
 
-    const weekdaySeconds = await this.progressRepo
-        .createQueryBuilder('p')
-        .select('EXTRACT(DOW FROM p.updatedAt)::int', 'dow')
-        .addSelect('SUM(p.watchedSec)', 'seconds')
-        .where('p.userId = :userId', { userId })
-        .andWhere('p.watchedSec > 0')
-        .groupBy('EXTRACT(DOW FROM p.updatedAt)')
-        .orderBy('dow', 'ASC')
-        .getRawMany<{ dow: string; seconds: string }>();
+      const weekdaySeconds = await this.progressRepo
+          .createQueryBuilder('p')
+          .select('EXTRACT(DOW FROM p.updatedAt)::int', 'dow')
+          .addSelect('SUM(p.watchedSec)', 'seconds')
+          .where('p.userId = :userId', { userId })
+          .andWhere('p.watchedSec > 0')
+          .groupBy('EXTRACT(DOW FROM p.updatedAt)')
+          .orderBy('dow', 'ASC')
+          .getRawMany<{ dow: string; seconds: string }>();
 
-    return {
-      totalWatchedSec,
-      streak,
-      activityByDay:  activityByDay.map(r  => ({ day:     r.day,             seconds: parseInt(r.seconds) })),
-      weeklySeconds:  weeklySeconds.map(r  => ({ week:    r.week,            seconds: parseInt(r.seconds) })),
-      hourHeatmap:    hourHeatmap.map(r    => ({ hour:    parseInt(r.hour),  seconds: parseInt(r.seconds) })),
-      weekdaySeconds: weekdaySeconds.map(r => ({ dow:     parseInt(r.dow),   seconds: parseInt(r.seconds) })),
-    };
+      return {
+        totalWatchedSec,
+        streak,
+        activityByDay:  activityByDay.map(r  => ({ day:     r.day,             seconds: parseInt(r.seconds) })),
+        weeklySeconds:  weeklySeconds.map(r  => ({ week:    r.week,            seconds: parseInt(r.seconds) })),
+        hourHeatmap:    hourHeatmap.map(r    => ({ hour:    parseInt(r.hour),  seconds: parseInt(r.seconds) })),
+        weekdaySeconds: weekdaySeconds.map(r => ({ dow:     parseInt(r.dow),   seconds: parseInt(r.seconds) })),
+      };
+    } catch (err) {
+      console.error('[AnalyticsService] getStudentStats error:', err);
+      return {
+        totalWatchedSec: 0,
+        streak: 0,
+        activityByDay: [],
+        weeklySeconds: [],
+        hourHeatmap: [],
+        weekdaySeconds: [],
+      };
+    }
   }
 
   private calcStreak(days: string[]): number {

@@ -22,7 +22,7 @@ export class QaController {
     @ApiParam({ name: 'lessonId', description: 'UUID уроку' })
     @ApiResponse({ status: 200, description: 'Список питань з відповідями' })
     getByLesson(@Param('lessonId') lessonId: string, @CurrentUser() u: any) {
-        return this.svc.getByLesson(lessonId, u?.id);
+        return this.svc.getByLesson(lessonId, u?.id, u?.role);
     }
 
     @Post('questions')
