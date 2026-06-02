@@ -471,6 +471,16 @@ function LessonPlayer({ lesson, isEnrolled, onProgressSaved, courseAuthorId, com
         }
     };
 
+    useEffect(() => {
+        if (lesson.type !== 'video' || completed || !isEnrolled) return;
+        const interval = setInterval(() => {
+            const v = videoRef.current;
+            if (!v || v.paused || v.currentTime === 0) return;
+            updateProgress(lesson.id, false, Math.round(v.currentTime)).catch(() => {});
+        }, 30_000);
+        return () => clearInterval(interval);
+    }, [lesson.id, lesson.type, completed, isEnrolled, updateProgress]);
+
     if (lesson.type === 'quiz') {
         return <QuizPlayer lesson={lesson} isEnrolled={isEnrolled} onDone={() => markDone(lesson.durationSec ?? 60)} completed={completed} courseAuthorId={courseAuthorId} />;
     }

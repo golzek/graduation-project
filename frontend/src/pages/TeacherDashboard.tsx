@@ -226,12 +226,13 @@ function PayoutsPanel() {
 
   useEffect(() => { load(); }, [load]);
 
+  const hasActivePayout = data?.requests.some(r => r.status === 'pending' || r.status === 'approved') ?? false;
+
   useEffect(() => {
-    const hasPending = data?.requests.some(r => r.status === 'pending' || r.status === 'approved');
-    if (!hasPending) return;
+    if (!hasActivePayout) return;
     const id = setInterval(() => { load(); }, 30_000);
     return () => clearInterval(id);
-  }, [data, load]);
+  }, [hasActivePayout, load]);
 
   const formatPaymentInput = (raw: string): string => {
     const trimmed = raw.replace(/\s+/g, '');

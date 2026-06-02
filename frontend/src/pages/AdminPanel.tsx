@@ -1310,18 +1310,13 @@ function PayoutsTab() {
 
   const review = async (id: string, status: 'approved' | 'rejected' | 'paid') => {
     try {
-      const updated = await apiFetch<AdminPayoutRequest>(`/payouts/admin/${id}/review`, {
+      await apiFetch<AdminPayoutRequest>(`/payouts/admin/${id}/review`, {
         method: 'PATCH',
         body: JSON.stringify({ status, adminComment: comment[id] || undefined }),
       });
       const labels: Record<string, string> = { approved: 'Схвалено', rejected: 'Відхилено', paid: 'Виплачено' };
       toast.success(labels[status]);
-      setPayouts(prev => {
-        if (statusF && updated.status !== statusF) {
-          return prev.filter(p => p.id !== id);
-        }
-        return prev.map(p => p.id === id ? { ...p, ...updated } : p);
-      });
+      load();
     } catch { toast.error('Помилка'); }
   };
 

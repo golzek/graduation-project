@@ -3,7 +3,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { IsString, IsNotEmpty, MaxLength, IsNumber, Min, registerDecorator, ValidationOptions, ValidationArguments } from 'class-validator';
+import { IsString, IsNotEmpty, MaxLength, IsNumber, Min, IsOptional, registerDecorator, ValidationOptions, ValidationArguments } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -57,7 +57,7 @@ export class ReviewPayoutDto {
     status: 'approved' | 'rejected' | 'paid';
 
     @ApiPropertyOptional({ description: 'Коментар адміна' })
-    @IsString() @MaxLength(500)
+    @IsOptional() @IsString() @MaxLength(500)
     adminComment?: string;
 }
 
@@ -133,10 +133,13 @@ export class PayoutService {
         }
 
         const pending = await this.payoutRepo.findOne({
-            where: { teacherId, status: PayoutStatus.PENDING },
+            where: [
+                { teacherId, status: PayoutStatus.PENDING },
+                { teacherId, status: PayoutStatus.APPROVED },
+            ],
         });
         if (pending) {
-            throw new BadRequestException('Вже є заявка в очікуванні. Зачекайте поки адмін її опрацює.');
+            throw new BadRequestException('Вже є активна заявка. Зачекайте поки адмін її опрацює.');
         }
 
         const rawDetails = dto.paymentDetails.replace(/\s+/g, '');

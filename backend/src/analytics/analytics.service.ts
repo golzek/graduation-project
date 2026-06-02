@@ -18,8 +18,10 @@ export class AnalyticsService {
     try {
       const timeRow = await this.progressRepo
           .createQueryBuilder('p')
-          .select('SUM(p.watchedSec)', 'total')
+          .leftJoin('p.lesson', 'l')
+          .select('SUM(CASE WHEN p.watchedSec > 0 THEN p.watchedSec ELSE COALESCE(l.durationSec, 0) END)', 'total')
           .where('p.userId = :userId', { userId })
+          .andWhere('(p.watchedSec > 0 OR p.completed = true)')
           .getRawOne();
       const totalWatchedSec = parseInt(timeRow?.total ?? '0') || 0;
 
