@@ -449,11 +449,11 @@ function PayoutsPanel() {
                             <span style={{ fontSize: 11, color: 'var(--text-tertiary)', flexShrink: 0 }}>
                               {new Date(r.createdAt).toLocaleDateString('uk-UA')}
                             </span>
-                            {r.status === 'pending' && (
+                            {(r.status === 'pending' || r.status === 'rejected') && (
                                 <button
                                     onClick={() => cancelRequest(r.id)}
                                     style={{ fontSize: 11, padding: '3px 10px', border: '1px solid #fca5a5', background: '#fef2f2', color: '#dc2626', borderRadius: 6, cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit' }}
-                                >Скасувати</button>
+                                >{r.status === 'pending' ? 'Скасувати' : 'Видалити'}</button>
                             )}
                           </div>
                       ))}

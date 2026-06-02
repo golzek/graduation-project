@@ -215,8 +215,8 @@ export class PayoutService {
     async cancelRequest(teacherId: string, id: string) {
         const req = await this.payoutRepo.findOne({ where: { id, teacherId } });
         if (!req) throw new NotFoundException('Заявку не знайдено');
-        if (req.status !== PayoutStatus.PENDING) {
-            throw new BadRequestException('Можна скасувати лише заявку зі статусом "Очікує"');
+        if (req.status !== PayoutStatus.PENDING && req.status !== PayoutStatus.REJECTED) {
+            throw new BadRequestException('Можна видалити лише заявку зі статусом "Очікує" або "Відхилено"');
         }
         await this.payoutRepo.remove(req);
         return { success: true };

@@ -1292,7 +1292,7 @@ interface AdminPayoutRequest {
 function PayoutsTab() {
   const toast = useToast();
   const [payouts, setPayouts]     = useState<AdminPayoutRequest[]>([]);
-  const [statusF, setStatusF]     = useState<'pending'|'approved'|'rejected'|'paid'|''>('pending');
+  const [statusF, setStatusF]     = useState<'pending'|'approved'|'rejected'|'paid'|''>('');
   const [loading, setLoading]     = useState(true);
   const [comment, setComment]     = useState<Record<string, string>>({});
 
