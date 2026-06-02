@@ -11,8 +11,8 @@ interface AuthCtx {
   user: AuthUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  register: (name: string, email: string, password: string, referralToken?: string) => Promise<void>;
-  login:    (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string, referralToken?: string) => Promise<AuthUser>;
+  login:    (email: string, password: string) => Promise<AuthUser>;
   loginWithGoogle: () => void;
   handleGoogleCallback: (params: URLSearchParams) => void;
   logout:   () => void;

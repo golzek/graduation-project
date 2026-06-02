@@ -3,9 +3,32 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { IsString, IsNotEmpty, MaxLength, IsNumber, Min } from 'class-validator';
+import { IsString, IsNotEmpty, MaxLength, IsNumber, Min, registerDecorator, ValidationOptions, ValidationArguments } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+function IsCardOrIban(validationOptions?: ValidationOptions) {
+    return function (object: object, propertyName: string) {
+        registerDecorator({
+            name: 'isCardOrIban',
+            target: (object as any).constructor,
+            propertyName,
+            options: {
+                message: 'paymentDetails має бути валідним номером картки (13–19 цифр) або IBAN (UA + 27 цифр)',
+                ...validationOptions,
+            },
+            validator: {
+                validate(value: any, _args: ValidationArguments) {
+                    if (typeof value !== 'string') return false;
+                    const normalized = value.replace(/\s+/g, '');
+                    const isCard = /^\d{13,19}$/.test(normalized);
+                    const isIban = /^UA\d{27}$/i.test(normalized);
+                    return isCard || isIban;
+                },
+            },
+        });
+    };
+}
 
 import { PayoutRequest, PayoutStatus } from './payout-request.entity';
 import { Enrollment }                  from '../courses/course.entity';
@@ -19,8 +42,12 @@ export class CreatePayoutRequestDto {
     @IsNumber() @Min(1) @Type(() => Number)
     amount: number;
 
-    @ApiProperty({ description: 'Реквізити для виплати (IBAN / картка)', example: 'UA123456789012345678901234567' })
+    @ApiProperty({
+        description: 'Реквізити для виплати: номер картки (13–19 цифр, можна з пробілами) або IBAN (UA + 27 цифр)',
+        example: 'UA123456789012345678901234567',
+    })
     @IsString() @IsNotEmpty() @MaxLength(500)
+    @IsCardOrIban()
     paymentDetails: string;
 }
 
@@ -112,10 +139,15 @@ export class PayoutService {
             throw new BadRequestException('Вже є заявка в очікуванні. Зачекайте поки адмін її опрацює.');
         }
 
+        const rawDetails = dto.paymentDetails.replace(/\s+/g, '');
+        const normalizedDetails = /^UA/i.test(rawDetails)
+            ? rawDetails.toUpperCase()
+            : rawDetails.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trimEnd();
+
         const req = this.payoutRepo.create({
             teacherId,
             amount: dto.amount,
-            paymentDetails: dto.paymentDetails,
+            paymentDetails: normalizedDetails,
             status: PayoutStatus.PENDING,
         });
         const saved = await this.payoutRepo.save(req);

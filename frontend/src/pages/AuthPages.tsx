@@ -143,9 +143,8 @@ export function LoginPage() {
   const submit = async (e: FormEvent) => {
     e.preventDefault(); setError(''); setLoading(true);
     try {
-      const loggedUser = await login(email, password) as any;
-      const role = loggedUser?.role ?? user?.role ?? 'student';
-      navigate(from ?? getRoleHome(role), { replace: true });
+      const loggedUser = await login(email, password);
+      navigate(from ?? getRoleHome(loggedUser.role), { replace: true });
     }
     catch (err: any) { setError(err.message); }
     finally { setLoading(false); }
@@ -223,8 +222,8 @@ export function RegisterPage() {
     if (password.length < 6) { setError('Пароль мінімум 6 символів'); return; }
     setLoading(true);
     try {
-      const newUser = await register(name, email, password, referralToken) as any;
-      navigate(getRoleHome(newUser?.role ?? 'student'), { replace: true });
+      const newUser = await register(name, email, password, referralToken);
+      navigate(getRoleHome(newUser.role), { replace: true });
     }
     catch (err: any) { setError(err.message); }
     finally { setLoading(false); }

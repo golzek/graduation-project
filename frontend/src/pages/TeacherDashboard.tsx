@@ -226,6 +226,23 @@ function PayoutsPanel() {
 
   useEffect(() => { load(); }, [load]);
 
+  const formatPaymentInput = (raw: string): string => {
+    const trimmed = raw.replace(/\s+/g, '');
+    if (/^UA/i.test(trimmed)) return trimmed.toUpperCase();
+    const digits = trimmed.replace(/\D/g, '').slice(0, 19);
+    return digits.replace(/(.{4})/g, '$1 ').trimEnd();
+  };
+
+  const displayPaymentDetails = (val: string): string => {
+    const normalized = val.replace(/\s+/g, '');
+    if (/^UA/i.test(normalized)) return normalized.toUpperCase();
+    const digits = normalized.replace(/\D/g, '');
+    if (digits.length >= 13 && digits.length <= 19) {
+      return digits.replace(/(.{4})/g, '$1 ').trimEnd();
+    }
+    return val;
+  };
+
   const handleRequest = async () => {
     setErr(''); setOk('');
     if (!amount || Number(amount) <= 0) { setErr('Введіть суму виплати'); return; }
@@ -345,7 +362,9 @@ function PayoutsPanel() {
                         <input
                             placeholder="UA123456… або 4111 1111 1111 1111"
                             value={details}
-                            onChange={e => setDetails(e.target.value)}
+                            onChange={e => setDetails(formatPaymentInput(e.target.value))}
+                            inputMode="text"
+                            autoComplete="cc-number"
                             style={inp}
                         />
                       </div>
@@ -380,7 +399,7 @@ function PayoutsPanel() {
                               {statusLabel[r.status]}
                             </span>
                             <span style={{ fontSize: 12, color: 'var(--text-tertiary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              {r.paymentDetails}
+                              {displayPaymentDetails(r.paymentDetails)}
                             </span>
                             {r.adminComment && (
                                 <span style={{ fontSize: 11, color: 'var(--text-tertiary)', maxWidth: 160 }} title={r.adminComment}>
