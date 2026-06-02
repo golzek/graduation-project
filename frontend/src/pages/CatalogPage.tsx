@@ -403,7 +403,7 @@ function CourseCard({ course, progress, lessonsCount, isAuthenticated }: {
                 }}>
                   <div style={{
                     background: isDone ? '#16a34a' : 'rgba(255,255,255,0.95)',
-                    color: isDone ? 'var(--accent-inv)' : 'var(--text)',
+                    color: isDone ? '#fff' : '#111',
                     borderRadius: 99, padding: '6px 16px',
                     fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.02em',
                   }}>
