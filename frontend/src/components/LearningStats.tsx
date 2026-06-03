@@ -81,6 +81,16 @@ export function LearningStats() {
         return '#1b5e20';
     };
 
+    const weekRangeLabel = (weekStr: string) => {
+        const start = new Date(weekStr.slice(0, 10) + 'T00:00:00');
+        const end = new Date(start);
+        end.setDate(end.getDate() + 6);
+        if (start.getMonth() === end.getMonth()) {
+            return `${start.getDate()}–${end.getDate()} ${MONTHS_UA[start.getMonth()]}`;
+        }
+        return `${start.getDate()} ${MONTHS_UA[start.getMonth()]}–${end.getDate()} ${MONTHS_UA[end.getMonth()]}`;
+    };
+
     return (
         <div style={s.wrap}>
             <div style={s.row} className="r-two-col-equal">
@@ -125,16 +135,17 @@ export function LearningStats() {
                     <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 64 }}>
                         {weeklySeconds.map((w, i) => {
                             const h = Math.max(4, Math.round((w.seconds / maxWeekSec) * 56));
-                            const d = new Date(w.week.slice(0, 10) + 'T00:00:00');
-                            const label = `${d.getDate()} ${MONTHS_UA[d.getMonth()]}`;
+                            const isLast = i === weeklySeconds.length - 1;
+                            const label = weekRangeLabel(w.week);
                             return (
                                 <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                                     <div
                                         title={fmtTime(w.seconds)}
                                         style={{
                                             width: '100%', height: h,
-                                            background: '#4f46e5', borderRadius: 3,
-                                            opacity: i === weeklySeconds.length - 1 ? 1 : 0.45,
+                                            background: '#818cf8',
+                                            opacity: isLast ? 1 : 0.4,
+                                            borderRadius: 3,
                                             transition: 'height 0.4s',
                                         }}
                                     />
