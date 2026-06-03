@@ -32,7 +32,11 @@ export function PaymentResultPage() {
     }
 
     if (!courseId) {
-      setState('failure');
+      if (status === 'success' || status === 'sandbox') {
+        setState('success');
+      } else {
+        setState('failure');
+      }
       return;
     }
 

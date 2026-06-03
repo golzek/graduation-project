@@ -11,7 +11,6 @@ interface StudentStats {
 }
 
 function fmtTime(sec: number): string {
-    if (!sec || sec <= 0) return '—';
     if (sec < 60)   return `${sec}с`;
     if (sec < 3600) return `${Math.floor(sec / 60)}хв`;
     const h = Math.floor(sec / 3600);
@@ -126,7 +125,7 @@ export function LearningStats() {
                     <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 64 }}>
                         {weeklySeconds.map((w, i) => {
                             const h = Math.max(4, Math.round((w.seconds / maxWeekSec) * 56));
-                            const d = new Date(w.week);
+                            const d = new Date(w.week.slice(0, 10) + 'T00:00:00');
                             const label = `${d.getDate()} ${MONTHS_UA[d.getMonth()]}`;
                             return (
                                 <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
@@ -134,7 +133,7 @@ export function LearningStats() {
                                         title={fmtTime(w.seconds)}
                                         style={{
                                             width: '100%', height: h,
-                                            background: 'var(--accent)', borderRadius: 3,
+                                            background: '#4f46e5', borderRadius: 3,
                                             opacity: i === weeklySeconds.length - 1 ? 1 : 0.45,
                                             transition: 'height 0.4s',
                                         }}
