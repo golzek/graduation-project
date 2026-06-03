@@ -13,75 +13,73 @@ export class AnalyticsService {
       @InjectRepository(Certificate)  private certRepo:        Repository<Certificate>,
   ) {}
 
-
   async getStudentStats(userId: string) {
     try {
-      const timeRow = await this.progressRepo
-          .createQueryBuilder('p')
-          .leftJoin('p.lesson', 'l')
-          .select(`SUM(CASE WHEN p."watchedSec" > 0 THEN p."watchedSec" ELSE COALESCE(l."durationSec", 0) END)`, 'total')
-          .where('p.user_id = :userId', { userId })
-          .andWhere(`(p."watchedSec" > 0 OR p.completed = true)`)
-          .getRawOne();
+      const [timeRow] = await this.progressRepo.query(`
+        SELECT SUM(CASE WHEN p."watchedSec" > 0 THEN p."watchedSec" ELSE COALESCE(l."durationSec", 0) END) AS total
+        FROM progress p
+        LEFT JOIN lessons l ON l.id = p.lesson_id
+        WHERE p.user_id = $1
+          AND (p."watchedSec" > 0 OR p.completed = true)
+      `, [userId]);
       const totalWatchedSec = parseInt(timeRow?.total ?? '0') || 0;
 
-      const activityByDay = await this.progressRepo
-          .createQueryBuilder('p')
-          .select('DATE(p.updated_at)', 'day')
-          .addSelect('COUNT(*)', 'seconds')
-          .where('p.user_id = :userId', { userId })
-          .andWhere(`(p."watchedSec" > 0 OR p.completed = true)`)
-          .andWhere("p.updated_at > NOW() - INTERVAL '60 days'")
-          .groupBy('DATE(p.updated_at)')
-          .orderBy('day', 'ASC')
-          .getRawMany<{ day: string; seconds: string }>();
+      const activityByDay: { day: string; seconds: string }[] = await this.progressRepo.query(`
+        SELECT DATE(p.updated_at) AS day, COUNT(*) AS seconds
+        FROM progress p
+        WHERE p.user_id = $1
+          AND (p."watchedSec" > 0 OR p.completed = true)
+          AND p.updated_at > NOW() - INTERVAL '60 days'
+        GROUP BY DATE(p.updated_at)
+        ORDER BY day ASC
+      `, [userId]);
 
       const streak = this.calcStreak(activityByDay.map(r => r.day));
 
-      const weeklySeconds = await this.progressRepo
-          .createQueryBuilder('p')
-          .leftJoin('p.lesson', 'l')
-          .select("DATE_TRUNC('week', p.updated_at)", 'week')
-          .addSelect(`SUM(CASE WHEN p."watchedSec" > 0 THEN p."watchedSec" ELSE COALESCE(l."durationSec", 0) END)`, 'seconds')
-          .where('p.user_id = :userId', { userId })
-          .andWhere(`(p."watchedSec" > 0 OR p.completed = true)`)
-          .andWhere("p.updated_at > NOW() - INTERVAL '8 weeks'")
-          .groupBy("DATE_TRUNC('week', p.updated_at)")
-          .orderBy('week', 'ASC')
-          .getRawMany<{ week: string; seconds: string }>();
+      const weeklySeconds: { week: string; seconds: string }[] = await this.progressRepo.query(`
+        SELECT DATE_TRUNC('week', p.updated_at) AS week,
+               SUM(CASE WHEN p."watchedSec" > 0 THEN p."watchedSec" ELSE COALESCE(l."durationSec", 0) END) AS seconds
+        FROM progress p
+        LEFT JOIN lessons l ON l.id = p.lesson_id
+        WHERE p.user_id = $1
+          AND (p."watchedSec" > 0 OR p.completed = true)
+          AND p.updated_at > NOW() - INTERVAL '8 weeks'
+        GROUP BY DATE_TRUNC('week', p.updated_at)
+        ORDER BY week ASC
+      `, [userId]);
 
-      const hourHeatmap = await this.progressRepo
-          .createQueryBuilder('p')
-          .leftJoin('p.lesson', 'l')
-          .select('EXTRACT(HOUR FROM p.updated_at)::int', 'hour')
-          .addSelect(`SUM(CASE WHEN p."watchedSec" > 0 THEN p."watchedSec" ELSE COALESCE(l."durationSec", 0) END)`, 'seconds')
-          .where('p.user_id = :userId', { userId })
-          .andWhere(`(p."watchedSec" > 0 OR p.completed = true)`)
-          .groupBy('EXTRACT(HOUR FROM p.updated_at)')
-          .orderBy('hour', 'ASC')
-          .getRawMany<{ hour: string; seconds: string }>();
+      const hourHeatmap: { hour: string; seconds: string }[] = await this.progressRepo.query(`
+        SELECT EXTRACT(HOUR FROM p.updated_at)::int AS hour,
+               SUM(CASE WHEN p."watchedSec" > 0 THEN p."watchedSec" ELSE COALESCE(l."durationSec", 0) END) AS seconds
+        FROM progress p
+        LEFT JOIN lessons l ON l.id = p.lesson_id
+        WHERE p.user_id = $1
+          AND (p."watchedSec" > 0 OR p.completed = true)
+        GROUP BY EXTRACT(HOUR FROM p.updated_at)
+        ORDER BY hour ASC
+      `, [userId]);
 
-      const weekdaySeconds = await this.progressRepo
-          .createQueryBuilder('p')
-          .leftJoin('p.lesson', 'l')
-          .select('EXTRACT(DOW FROM p.updated_at)::int', 'dow')
-          .addSelect(`SUM(CASE WHEN p."watchedSec" > 0 THEN p."watchedSec" ELSE COALESCE(l."durationSec", 0) END)`, 'seconds')
-          .where('p.user_id = :userId', { userId })
-          .andWhere(`(p."watchedSec" > 0 OR p.completed = true)`)
-          .groupBy('EXTRACT(DOW FROM p.updated_at)')
-          .orderBy('dow', 'ASC')
-          .getRawMany<{ dow: string; seconds: string }>();
+      const weekdaySeconds: { dow: string; seconds: string }[] = await this.progressRepo.query(`
+        SELECT EXTRACT(DOW FROM p.updated_at)::int AS dow,
+               SUM(CASE WHEN p."watchedSec" > 0 THEN p."watchedSec" ELSE COALESCE(l."durationSec", 0) END) AS seconds
+        FROM progress p
+        LEFT JOIN lessons l ON l.id = p.lesson_id
+        WHERE p.user_id = $1
+          AND (p."watchedSec" > 0 OR p.completed = true)
+        GROUP BY EXTRACT(DOW FROM p.updated_at)
+        ORDER BY dow ASC
+      `, [userId]);
 
       return {
         totalWatchedSec,
         streak,
-        activityByDay:  activityByDay.map(r  => ({ day:     r.day,             seconds: parseInt(r.seconds) })),
-        weeklySeconds:  weeklySeconds.map(r  => ({ week:    r.week,            seconds: parseInt(r.seconds) })),
-        hourHeatmap:    hourHeatmap.map(r    => ({ hour:    parseInt(r.hour),  seconds: parseInt(r.seconds) })),
-        weekdaySeconds: weekdaySeconds.map(r => ({ dow:     parseInt(r.dow),   seconds: parseInt(r.seconds) })),
+        activityByDay:  activityByDay.map(r  => ({ day:  r.day,            seconds: parseInt(r.seconds) })),
+        weeklySeconds:  weeklySeconds.map(r  => ({ week: r.week,           seconds: parseInt(r.seconds) })),
+        hourHeatmap:    hourHeatmap.map(r    => ({ hour: parseInt(r.hour), seconds: parseInt(r.seconds) })),
+        weekdaySeconds: weekdaySeconds.map(r => ({ dow:  parseInt(r.dow),  seconds: parseInt(r.seconds) })),
       };
     } catch (err) {
-      console.error('[AnalyticsService] getStudentStats error:', err);
+      console.error('[AnalyticsService] getStudentStats error:', JSON.stringify(err, Object.getOwnPropertyNames(err)));
       return {
         totalWatchedSec: 0,
         streak: 0,
@@ -109,6 +107,7 @@ export class AnalyticsService {
     }
     return streak;
   }
+
   async getTeacherStats(teacherId: string) {
     const courses   = await this.courseRepo.find({ where: { authorId: teacherId } });
     const courseIds = courses.map(c => c.id);
