@@ -132,24 +132,31 @@ export function LearningStats() {
             {weeklySeconds.length > 0 && (
                 <div style={s.card}>
                     <p style={s.label}>Час навчання по тижнях</p>
-                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 64 }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 80, flexWrap: 'nowrap' }}>
                         {weeklySeconds.map((w, i) => {
-                            const h = Math.max(4, Math.round((w.seconds / maxWeekSec) * 56));
+                            const h = Math.max(4, Math.round((w.seconds / maxWeekSec) * 64));
                             const isLast = i === weeklySeconds.length - 1;
+                            const isMid  = i === Math.floor(weeklySeconds.length / 2);
+                            const showLabel = i === 0 || isLast || isMid;
                             const label = weekRangeLabel(w.week);
                             return (
-                                <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                                    <div
-                                        title={fmtTime(w.seconds)}
-                                        style={{
-                                            width: '100%', height: h,
-                                            background: '#818cf8',
-                                            opacity: isLast ? 1 : 0.4,
-                                            borderRadius: 3,
-                                            transition: 'height 0.4s',
-                                        }}
-                                    />
-                                    <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>{label}</span>
+                                <div key={i} title={`${label}: ${fmtTime(w.seconds)}`}
+                                     style={{ width: 40, minWidth: 40, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'default' }}>
+                                    <div style={{
+                                        width: '100%', height: h,
+                                        background: 'linear-gradient(180deg, #818cf8, #6366f1)',
+                                        opacity: isLast ? 0.9 : 0.4,
+                                        borderRadius: '3px 3px 0 0',
+                                        transition: 'height 0.4s',
+                                    }} />
+                                    <span style={{
+                                        fontSize: '0.58rem',
+                                        color: 'var(--text-tertiary)',
+                                        whiteSpace: 'nowrap',
+                                        visibility: showLabel ? 'visible' : 'hidden',
+                                    }}>
+                                        {label}
+                                    </span>
                                 </div>
                             );
                         })}
