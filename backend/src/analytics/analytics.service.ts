@@ -18,7 +18,7 @@ export class AnalyticsService {
       const [timeRow] = await this.progressRepo.query(`
         SELECT SUM(CASE WHEN p."watchedSec" > 0 THEN p."watchedSec" ELSE COALESCE(l."durationSec", 0) END) AS total
         FROM progress p
-        LEFT JOIN lessons l ON l.id = p.lesson_id
+               LEFT JOIN lessons l ON l.id = p.lesson_id
         WHERE p.user_id = $1
           AND (p."watchedSec" > 0 OR p.completed = true)
       `, [userId]);
@@ -34,13 +34,13 @@ export class AnalyticsService {
         ORDER BY day ASC
       `, [userId]);
 
-      const streak = this.calcStreak(activityByDay.map(r => r.day));
+      const streak = this.calcStreak(activityByDay.map(r => new Date(r.day).toISOString().slice(0, 10)));
 
       const weeklySeconds: { week: string; seconds: string }[] = await this.progressRepo.query(`
         SELECT DATE_TRUNC('week', p.updated_at) AS week,
                SUM(CASE WHEN p."watchedSec" > 0 THEN p."watchedSec" ELSE COALESCE(l."durationSec", 0) END) AS seconds
         FROM progress p
-        LEFT JOIN lessons l ON l.id = p.lesson_id
+               LEFT JOIN lessons l ON l.id = p.lesson_id
         WHERE p.user_id = $1
           AND (p."watchedSec" > 0 OR p.completed = true)
           AND p.updated_at > NOW() - INTERVAL '8 weeks'
@@ -52,7 +52,7 @@ export class AnalyticsService {
         SELECT EXTRACT(HOUR FROM p.updated_at)::int AS hour,
                SUM(CASE WHEN p."watchedSec" > 0 THEN p."watchedSec" ELSE COALESCE(l."durationSec", 0) END) AS seconds
         FROM progress p
-        LEFT JOIN lessons l ON l.id = p.lesson_id
+          LEFT JOIN lessons l ON l.id = p.lesson_id
         WHERE p.user_id = $1
           AND (p."watchedSec" > 0 OR p.completed = true)
         GROUP BY EXTRACT(HOUR FROM p.updated_at)
@@ -61,9 +61,9 @@ export class AnalyticsService {
 
       const weekdaySeconds: { dow: string; seconds: string }[] = await this.progressRepo.query(`
         SELECT EXTRACT(DOW FROM p.updated_at)::int AS dow,
-               SUM(CASE WHEN p."watchedSec" > 0 THEN p."watchedSec" ELSE COALESCE(l."durationSec", 0) END) AS seconds
+          SUM(CASE WHEN p."watchedSec" > 0 THEN p."watchedSec" ELSE COALESCE(l."durationSec", 0) END) AS seconds
         FROM progress p
-        LEFT JOIN lessons l ON l.id = p.lesson_id
+               LEFT JOIN lessons l ON l.id = p.lesson_id
         WHERE p.user_id = $1
           AND (p."watchedSec" > 0 OR p.completed = true)
         GROUP BY EXTRACT(DOW FROM p.updated_at)
@@ -93,7 +93,7 @@ export class AnalyticsService {
 
   private calcStreak(days: string[]): number {
     if (!days.length) return 0;
-    const set = new Set(days.map(d => d.slice(0, 10)));
+    const set = new Set(days.map(d => new Date(d).toISOString().slice(0, 10)));
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     let streak = 0;
@@ -164,11 +164,11 @@ export class AnalyticsService {
 
     const enrollsByDay = await this.enrollmentRepo
         .createQueryBuilder('e')
-        .select("DATE_TRUNC('day', e.enrolledAt)", 'day')
+        .select("TO_CHAR(e.enrolledAt, 'YYYY-MM-DD')", 'day')
         .addSelect('COUNT(*)', 'count')
         .where('e.courseId = :courseId', { courseId })
         .andWhere("e.enrolledAt > NOW() - INTERVAL '30 days'")
-        .groupBy("DATE_TRUNC('day', e.enrolledAt)")
+        .groupBy("TO_CHAR(e.enrolledAt, 'YYYY-MM-DD')")
         .orderBy('day', 'ASC')
         .getRawMany();
 
@@ -195,7 +195,7 @@ export class AnalyticsService {
       revenue:            parseFloat(summary?.revenue) || 0,
       certificates:       certs,
       avgProgressPercent: Math.round(parseFloat(avgP?.avg) || 0),
-      enrollsByDay:       enrollsByDay.map(r => ({ date: r.day,   count: parseInt(r.count) })),
+      enrollsByDay:       enrollsByDay.map(r => ({ date: r.day, count: parseInt(r.count) })),
       topLessons:         topLessons.map(l  => ({
         title:         l.title,
         views:         parseInt(l.views),

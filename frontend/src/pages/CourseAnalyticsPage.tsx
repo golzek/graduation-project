@@ -36,7 +36,10 @@ export function CourseAnalyticsPage() {
         return `${sec} сек`;
     };
 
-    const fmtDate = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' });
+    const fmtDate = (d: string) => {
+        const dateOnly = d.length > 10 ? d.slice(0, 10) : d;
+        return new Date(dateOnly + 'T00:00:00').toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' });
+    };
 
     if (loading) return (
         <div style={s.page}>
