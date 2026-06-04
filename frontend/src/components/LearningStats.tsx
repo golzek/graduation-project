@@ -60,6 +60,13 @@ export function LearningStats() {
 
     const maxWeekSec = Math.max(...weeklySeconds.map(w => w.seconds), 1);
 
+    const toLocalDateKey = (d: Date) => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    };
+
     const activityMap = new Map(activityByDay.map(d => [d.day.slice(0, 10), d.seconds]));
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -67,7 +74,7 @@ export function LearningStats() {
     for (let i = 59; i >= 0; i--) {
         const d = new Date(today);
         d.setDate(d.getDate() - i);
-        const key = d.toISOString().slice(0, 10);
+        const key = toLocalDateKey(d);
         calDays.push({ date: d, sec: activityMap.get(key) ?? 0 });
     }
     const maxCalSec = Math.max(...calDays.map(d => d.sec), 1);

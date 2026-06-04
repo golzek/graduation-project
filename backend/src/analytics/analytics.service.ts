@@ -25,48 +25,48 @@ export class AnalyticsService {
       const totalWatchedSec = parseInt(timeRow?.total ?? '0') || 0;
 
       const activityByDay: { day: string; seconds: string }[] = await this.progressRepo.query(`
-        SELECT DATE(p.updated_at) AS day, COUNT(*) AS seconds
+        SELECT DATE(p.updated_at AT TIME ZONE 'Europe/Kyiv') AS day, COUNT(*) AS seconds
         FROM progress p
         WHERE p.user_id = $1
           AND (p."watchedSec" > 0 OR p.completed = true)
           AND p.updated_at > NOW() - INTERVAL '60 days'
-        GROUP BY DATE(p.updated_at)
+        GROUP BY DATE(p.updated_at AT TIME ZONE 'Europe/Kyiv')
         ORDER BY day ASC
       `, [userId]);
 
       const streak = this.calcStreak(activityByDay.map(r => new Date(r.day).toISOString().slice(0, 10)));
 
       const weeklySeconds: { week: string; seconds: string }[] = await this.progressRepo.query(`
-        SELECT DATE_TRUNC('week', p.updated_at) AS week,
+        SELECT DATE_TRUNC('week', p.updated_at AT TIME ZONE 'Europe/Kyiv') AS week,
                SUM(CASE WHEN p."watchedSec" > 0 THEN p."watchedSec" ELSE COALESCE(l."durationSec", 0) END) AS seconds
         FROM progress p
                LEFT JOIN lessons l ON l.id = p.lesson_id
         WHERE p.user_id = $1
           AND (p."watchedSec" > 0 OR p.completed = true)
           AND p.updated_at > NOW() - INTERVAL '8 weeks'
-        GROUP BY DATE_TRUNC('week', p.updated_at)
+        GROUP BY DATE_TRUNC('week', p.updated_at AT TIME ZONE 'Europe/Kyiv')
         ORDER BY week ASC
       `, [userId]);
 
       const hourHeatmap: { hour: string; seconds: string }[] = await this.progressRepo.query(`
-        SELECT EXTRACT(HOUR FROM p.updated_at)::int AS hour,
+        SELECT EXTRACT(HOUR FROM p.updated_at AT TIME ZONE 'Europe/Kyiv')::int AS hour,
                SUM(CASE WHEN p."watchedSec" > 0 THEN p."watchedSec" ELSE COALESCE(l."durationSec", 0) END) AS seconds
         FROM progress p
           LEFT JOIN lessons l ON l.id = p.lesson_id
         WHERE p.user_id = $1
           AND (p."watchedSec" > 0 OR p.completed = true)
-        GROUP BY EXTRACT(HOUR FROM p.updated_at)
+        GROUP BY EXTRACT(HOUR FROM p.updated_at AT TIME ZONE 'Europe/Kyiv')
         ORDER BY hour ASC
       `, [userId]);
 
       const weekdaySeconds: { dow: string; seconds: string }[] = await this.progressRepo.query(`
-        SELECT EXTRACT(DOW FROM p.updated_at)::int AS dow,
+        SELECT EXTRACT(DOW FROM p.updated_at AT TIME ZONE 'Europe/Kyiv')::int AS dow,
           SUM(CASE WHEN p."watchedSec" > 0 THEN p."watchedSec" ELSE COALESCE(l."durationSec", 0) END) AS seconds
         FROM progress p
                LEFT JOIN lessons l ON l.id = p.lesson_id
         WHERE p.user_id = $1
           AND (p."watchedSec" > 0 OR p.completed = true)
-        GROUP BY EXTRACT(DOW FROM p.updated_at)
+        GROUP BY EXTRACT(DOW FROM p.updated_at AT TIME ZONE 'Europe/Kyiv')
         ORDER BY dow ASC
       `, [userId]);
 
@@ -93,15 +93,21 @@ export class AnalyticsService {
 
   private calcStreak(days: string[]): number {
     if (!days.length) return 0;
-    const set = new Set(days.map(d => new Date(d).toISOString().slice(0, 10)));
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const set = new Set(days.map(d => d.slice(0, 10)));
+    const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Kyiv' }));
+    now.setHours(0, 0, 0, 0);
+    const toKey = (d: Date) => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    };
     let streak = 0;
-    const cur = new Date(today);
-    if (!set.has(cur.toISOString().slice(0, 10))) {
+    const cur = new Date(now);
+    if (!set.has(toKey(cur))) {
       cur.setDate(cur.getDate() - 1);
     }
-    while (set.has(cur.toISOString().slice(0, 10))) {
+    while (set.has(toKey(cur))) {
       streak++;
       cur.setDate(cur.getDate() - 1);
     }
