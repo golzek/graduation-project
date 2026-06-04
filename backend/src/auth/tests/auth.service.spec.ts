@@ -8,11 +8,12 @@ import { AuthService } from '../auth.service';
 import { User, UserRole } from '../../users/user.entity';
 import { NotificationService } from '../../notifications/notification.service';
 import { ReferralService } from '../../referral/referral.service';
+import { EmailService } from '../email.service';
 
 const mockUserRepo = () => ({
     findOne: jest.fn(),
-    create:  jest.fn(),
-    save:    jest.fn(),
+    create:  jest.fn().mockImplementation((dto) => dto),
+    save:    jest.fn().mockImplementation((user) => Promise.resolve(user)),
 });
 
 const mockJwt = () => ({
@@ -33,10 +34,16 @@ const mockReferral = () => ({
     track:       jest.fn().mockResolvedValue(undefined),
 });
 
+const mockEmail = () => ({
+    sendPasswordReset: jest.fn().mockResolvedValue(undefined),
+});
+
+const HASHED_PASSWORD = '$2b$10$89NO7YVCVp.xXwBoOYq2Neh5dMDDRrZfl6CBowYnLz3C8czD/aCbq';
+
 const makeUser = (overrides: Partial<User> = {}): User => ({
     id: 'user-1',
     email: 'u@test.com',
-    password: '123',
+    password: HASHED_PASSWORD,
     name: 'Студент',
     googleId: null,
     role: UserRole.STUDENT,
@@ -68,6 +75,7 @@ describe('AuthService', () => {
                 { provide: ConfigService,             useFactory: mockConfig },
                 { provide: NotificationService,       useFactory: mockNotif },
                 { provide: ReferralService,           useFactory: mockReferral },
+                { provide: EmailService,              useFactory: mockEmail },
             ],
         }).compile();
 
@@ -78,10 +86,7 @@ describe('AuthService', () => {
 
     describe('register', () => {
         it('повертає токени при успішній реєстрації', async () => {
-            const user = makeUser();
             userRepo.findOne.mockResolvedValue(null);
-            userRepo.create.mockReturnValue(user);
-            userRepo.save.mockResolvedValue(user);
 
             const result = await service.register({
                 name: 'Тест Юзер', email: 'test@example.com', password: 'password123',

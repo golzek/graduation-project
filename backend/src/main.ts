@@ -38,7 +38,6 @@ async function bootstrap() {
       `,
       )
       .setVersion('1.0')
-      .setContact('Підтримка', '', 'support@elearning.ua')
       .addBearerAuth(
           { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', description: 'Введіть JWT accessToken' },
           'JWT',

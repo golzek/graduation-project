@@ -1,0 +1,29 @@
+stages:
+  - test
+  - docker
+
+test:
+  stage: test
+  image: node:20
+  cache:
+    paths:
+      - backend/node_modules/
+  script:
+    - cd backend
+    - npm ci
+    - npm test
+  only:
+    - main
+    - merge_requests
+
+docker:
+  stage: docker
+  image: docker:24
+  services:
+    - docker:24-dind
+  needs: [test]
+  script:
+    - docker compose build
+  only:
+    - main
+    - merge_requests

@@ -6,6 +6,7 @@ import { Review } from '../review.entity';
 import { Course, Enrollment } from '../../courses/course.entity';
 import { Certificate } from '../../certificates/certificate.entity';
 import { User, UserRole } from '../../users/user.entity';
+import { NotificationService } from '../../notifications/notification.service';
 
 const mockRepo = () => ({
     findOne: jest.fn(),
@@ -14,6 +15,12 @@ const mockRepo = () => ({
     save:    jest.fn(),
     remove:  jest.fn(),
     update:  jest.fn(),
+});
+
+const mockNotif = () => ({
+    notifyAdminsNewReview:       jest.fn().mockResolvedValue(undefined),
+    notifyStudentReviewApproved: jest.fn().mockResolvedValue(undefined),
+    notifyTeacherNewReview:      jest.fn().mockResolvedValue(undefined),
 });
 
 const makeUser = (overrides: Partial<User> = {}): User => ({
@@ -53,10 +60,11 @@ describe('ReviewService', () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 ReviewService,
-                { provide: getRepositoryToken(Review),      useFactory: mockRepo },
-                { provide: getRepositoryToken(Enrollment),  useFactory: mockRepo },
-                { provide: getRepositoryToken(Course),      useFactory: mockRepo },
-                { provide: getRepositoryToken(Certificate), useFactory: mockRepo },
+                { provide: getRepositoryToken(Review),       useFactory: mockRepo },
+                { provide: getRepositoryToken(Enrollment),   useFactory: mockRepo },
+                { provide: getRepositoryToken(Course),       useFactory: mockRepo },
+                { provide: getRepositoryToken(Certificate),  useFactory: mockRepo },
+                { provide: NotificationService,              useFactory: mockNotif },
             ],
         }).compile();
 
@@ -77,6 +85,7 @@ describe('ReviewService', () => {
             reviewRepo.findOne.mockResolvedValue(null);
             reviewRepo.create.mockReturnValue(review);
             reviewRepo.save.mockResolvedValue(review);
+            courseRepo.findOne.mockResolvedValue(null);
 
             const result = await service.create(COURSE_ID, REVIEW_DTO, makeUser());
 
@@ -114,6 +123,7 @@ describe('ReviewService', () => {
             reviewRepo.find.mockResolvedValue([
                 { rating: 4 }, { rating: 5 },
             ]);
+            courseRepo.findOne.mockResolvedValue(null);
             courseRepo.update.mockResolvedValue(undefined);
 
             const result = await service.approve('rev-1');
