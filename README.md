@@ -2,7 +2,7 @@
 
 Вебплатформа для онлайн-навчання — від реєстрації до сертифіката.
 
-**Живий сайт:** https://learnhub-frontend.onrender.com  
+**Живий сайт:** https://graduation-frontend.onrender.com  
 **API docs:** https://elearning-backend-hhfg.onrender.com/api/docs
 
 ---
