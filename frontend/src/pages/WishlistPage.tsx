@@ -34,6 +34,14 @@ function StarRating({ rating }: { rating: number | string | null }) {
     );
 }
 
+function formatPrice(value: number): string {
+    return new Intl.NumberFormat('uk-UA', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+        useGrouping: true,
+    }).format(value).replace(/\u00A0|\u202F/g, '\u0020');
+}
+
 export function WishlistPage() {
     const { items, loading, remove, reload } = useWishlistItems();
     const { success: toastSuccess, error: toastError } = useToast();
@@ -90,7 +98,7 @@ export function WishlistPage() {
                         <p style={s.subtitle}>
                             {items.length === 0
                                 ? 'Тут з\'являться збережені курси'
-                                : `${items.length} ${pluralCourses(items.length)} · загальна вартість ${totalValue.toLocaleString('uk-UA')} ₴`}
+                                : `${items.length} ${pluralCourses(items.length)} · загальна вартість ${formatPrice(totalValue)} ₴`}
                         </p>
                     </div>
 
@@ -204,7 +212,7 @@ function WishlistCard({ item, removing, onRemove }: CardProps) {
                         {course.price === 0 ? (
                             <span style={s.priceFree}>Безкоштовно</span>
                         ) : (
-                            <span style={s.price}>{course.price.toLocaleString('uk-UA')} ₴</span>
+                            <span style={s.price}>{formatPrice(course.price)} ₴</span>
                         )}
                     </div>
                 </div>
