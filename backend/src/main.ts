@@ -22,15 +22,6 @@ async function bootstrap() {
   });
   app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' });
 
-  if (process.env.RUN_SEED === 'true') {
-    try {
-      const dataSource = app.get(getDataSourceToken());
-      await seed(dataSource);
-      console.log('✅ Seed виконано');
-    } catch (err) {
-      console.error('❌ Seed помилка:', err);
-    }
-  }
 
   const swagger = new DocumentBuilder()
       .setTitle('E-Learning Platform API')
