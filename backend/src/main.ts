@@ -5,6 +5,8 @@ import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import * as express from 'express';
+import { AppDataSource } from './database/data-source';
+import { seed } from './database/seed';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -19,6 +21,17 @@ async function bootstrap() {
     credentials: true,
   });
   app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' });
+
+  if (process.env.RUN_SEED === 'true') {
+    try {
+      await AppDataSource.initialize();
+      await seed(AppDataSource);
+      await AppDataSource.destroy();
+      console.log('✅ Seed виконано');
+    } catch (err) {
+      console.error('❌ Seed помилка:', err);
+    }
+  }
 
   const swagger = new DocumentBuilder()
       .setTitle('E-Learning Platform API')
