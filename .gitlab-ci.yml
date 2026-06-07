@@ -19,8 +19,6 @@ test:
 docker:
   stage: docker
   image: docker:24
-  services:
-    - docker:24-dind
   needs: [test]
   script:
     - docker compose build
