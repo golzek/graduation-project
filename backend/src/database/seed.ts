@@ -29,14 +29,16 @@ export async function seed(ds: DataSource): Promise<void> {
 
   const hash = await bcrypt.hash('password123', 10);
 
-  const admin    = ds.getRepository(User).create({ name: 'Адміністратор',   email: 'admin@elearning.com',    password: hash, role: UserRole.ADMIN   });
-  const teacher1 = ds.getRepository(User).create({ name: 'Олена Коваль',    email: 'teacher@elearning.com',  password: hash, role: UserRole.TEACHER  });
-  const teacher2 = ds.getRepository(User).create({ name: 'Дмитро Бондар',   email: 'teacher2@elearning.com', password: hash, role: UserRole.TEACHER  });
-  const teacher3 = ds.getRepository(User).create({ name: 'Наталія Мороз',   email: 'teacher3@elearning.com', password: hash, role: UserRole.TEACHER  });
-  const student1 = ds.getRepository(User).create({ name: 'Іван Петренко',  email: 'student@elearning.com',  password: hash, role: UserRole.STUDENT });
-  const student2 = ds.getRepository(User).create({ name: 'Марія Шевченко', email: 'student2@elearning.com', password: hash, role: UserRole.STUDENT });
-  await ds.getRepository(User).save([admin, teacher1, teacher2, teacher3, student1, student2]);
-  console.log('  Користувачів: 6');
+  let teacher3 = await ds.getRepository(User).findOne({ where: { email: 'teacher3@elearning.com' } });
+  if (!teacher3) {
+    teacher3 = ds.getRepository(User).create({ name: 'Наталія Мороз', email: 'teacher3@elearning.com', password: hash, role: UserRole.TEACHER });
+    await ds.getRepository(User).save(teacher3);
+    console.log('  Додано teacher3');
+  }
+
+  const teacher1 = await ds.getRepository(User).findOne({ where: { email: 'teacher@elearning.com' } });
+  const teacher2 = await ds.getRepository(User).findOne({ where: { email: 'teacher2@elearning.com' } });
+
 
   const course1 = ds.getRepository(Course).create({
     title: 'JavaScript для початківців',
@@ -219,48 +221,6 @@ export async function seed(ds: DataSource): Promise<void> {
     mkLesson(ds, { title: 'Передача макетів розробникам',    type: LessonType.VIDEO, moduleId: m19.id, orderIndex: 2, durationSec: 540, isFree: false, contentUrl: null }),
   ]);
 
-  console.log('  Курсів: 7, Модулів: 22, Уроків: 74');
-
-  await ds.getRepository(Enrollment).save([
-    ds.getRepository(Enrollment).create({ userId: student1.id, courseId: course1.id, paidPrice: 0    }),
-    ds.getRepository(Enrollment).create({ userId: student1.id, courseId: course2.id, paidPrice: 749  }),
-    ds.getRepository(Enrollment).create({ userId: student1.id, courseId: course4.id, paidPrice: 699  }),
-    ds.getRepository(Enrollment).create({ userId: student1.id, courseId: course6.id, paidPrice: 899  }),
-    ds.getRepository(Enrollment).create({ userId: student2.id, courseId: course1.id, paidPrice: 0    }),
-    ds.getRepository(Enrollment).create({ userId: student2.id, courseId: course3.id, paidPrice: 849  }),
-    ds.getRepository(Enrollment).create({ userId: student2.id, courseId: course5.id, paidPrice: 1199 }),
-    ds.getRepository(Enrollment).create({ userId: student2.id, courseId: course7.id, paidPrice: 649  }),
-  ]);
-  console.log('  Записів: 8');
-
-  await ds.getRepository(Progress).save([
-    ds.getRepository(Progress).create({ userId: student1.id, lessonId: jsLessons[0].id,   completed: true,  watchedSec: 420 }),
-    ds.getRepository(Progress).create({ userId: student1.id, lessonId: jsLessons[1].id,   completed: true,  watchedSec: 540 }),
-    ds.getRepository(Progress).create({ userId: student1.id, lessonId: jsLessons[2].id,   completed: true,  watchedSec: 660 }),
-    ds.getRepository(Progress).create({ userId: student1.id, lessonId: jsLessons[3].id,   completed: false, watchedSec: 300 }),
-    ds.getRepository(Progress).create({ userId: student2.id, lessonId: algoLessons[0].id, completed: true,  watchedSec: 600 }),
-    ds.getRepository(Progress).create({ userId: student2.id, lessonId: algoLessons[1].id, completed: true,  watchedSec: 720 }),
-    ds.getRepository(Progress).create({ userId: student2.id, lessonId: algoLessons[2].id, completed: false, watchedSec: 0   }),
-  ]);
-
-  await ds.getRepository(Review).save([
-    ds.getRepository(Review).create({ userId: student1.id, courseId: course1.id, rating: 5, body: 'Ідеальний старт у JS! Все зрозуміло з нуля.',   isApproved: true  }),
-    ds.getRepository(Review).create({ userId: student2.id, courseId: course1.id, rating: 5, body: 'Безкоштовно і дуже якісно, рекомендую.',         isApproved: true  }),
-    ds.getRepository(Review).create({ userId: student1.id, courseId: course2.id, rating: 4, body: 'SQL нарешті перестав бути страшним.',             isApproved: true  }),
-    ds.getRepository(Review).create({ userId: student2.id, courseId: course3.id, rating: 5, body: 'Задачі з LeetCode пояснені дуже доступно!',      isApproved: false }),
-    ds.getRepository(Review).create({ userId: student1.id, courseId: course4.id, rating: 5, body: 'Нарешті зрозумів дженерики! Супер.',             isApproved: true  }),
-    ds.getRepository(Review).create({ userId: student2.id, courseId: course5.id, rating: 4, body: 'Pandas пояснено дуже доступно.',                  isApproved: true  }),
-    ds.getRepository(Review).create({ userId: student1.id, courseId: course6.id, rating: 5, body: 'Docker тепер не страшний, дякую!',               isApproved: true  }),
-    ds.getRepository(Review).create({ userId: student2.id, courseId: course7.id, rating: 4, body: 'Figma курс дуже практичний.',                    isApproved: true  }),
-  ]);
-  console.log('  Відгуків: 8');
-
-  console.log('\nБаза заповнена!\n');
-  console.log('Тестові акаунти (пароль: password123):');
-  console.log('  admin@elearning.com');
-  console.log('  teacher@elearning.com');
-  console.log('  teacher2@elearning.com');
-  console.log('  teacher3@elearning.com');
-  console.log('  student@elearning.com');
-  console.log('  student2@elearning.com');
+  console.log('  Курсів: 7 нових додано');
+  console.log('\nГотово! Нові курси та teacher3 додані.\n');
 }
