@@ -62,12 +62,12 @@ export function WishlistPage() {
     };
 
     const sorted = [...items].sort((a, b) => {
-        if (sortBy === 'price')  return a.course.price - b.course.price;
+        if (sortBy === 'price')  return Number(a.course.price) - Number(b.course.price);
         if (sortBy === 'rating') return (b.course.rating ?? 0) - (a.course.rating ?? 0);
         return new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime();
     });
 
-    const totalValue = items.reduce((sum, i) => sum + i.course.price, 0);
+    const totalValue = items.reduce((sum, i) => sum + Number(i.course.price), 0);
 
     if (loading) {
         return (
@@ -212,7 +212,7 @@ function WishlistCard({ item, removing, onRemove }: CardProps) {
                         {course.price === 0 ? (
                             <span style={s.priceFree}>Безкоштовно</span>
                         ) : (
-                            <span style={s.price}>{formatPrice(course.price)} ₴</span>
+                            <span style={s.price}>{formatPrice(Number(course.price))} ₴</span>
                         )}
                     </div>
                 </div>
