@@ -162,20 +162,20 @@ export class AnalyticsService {
 
     const avgP = allIds.length
         ? await this.progressRepo.query(`
-            SELECT AVG(student_pct) AS avg FROM (
-              SELECT
-                e.user_id,
-                COUNT(CASE WHEN p.completed = true THEN 1 END)::float
-                  / NULLIF(:lessonCount, 0) * 100 AS student_pct
-              FROM enrollments e
-              LEFT JOIN progress p
-                ON p.user_id = e.user_id
-                AND p.lesson_id = ANY(:lessonIds::uuid[])
-              WHERE e.course_id = :courseId
-              GROUP BY e.user_id
+          SELECT AVG(student_pct) AS avg FROM (
+            SELECT
+            e.user_id,
+            COUNT(CASE WHEN p.completed = true THEN 1 END)::float
+            / NULLIF($1, 0) * 100 AS student_pct
+            FROM enrollments e
+            LEFT JOIN progress p
+            ON p.user_id = e.user_id
+            AND p.lesson_id = ANY($2::uuid[])
+            WHERE e.course_id = $3
+            GROUP BY e.user_id
             ) sub
-          `, { lessonCount: allIds.length, lessonIds: allIds, courseId })
-            .then((rows: { avg: string }[]) => ({ avg: rows[0]?.avg ?? 0 }))
+        `, [allIds.length, allIds, courseId])
+            .then((rows: { avg: string | number | null }[]) => ({ avg: rows[0]?.avg ?? 0 }))
         : { avg: 0 };
 
     const enrollsByDay = await this.enrollmentRepo
@@ -210,7 +210,7 @@ export class AnalyticsService {
       students:           parseInt(summary?.students) || 0,
       revenue:            parseFloat(summary?.revenue) || 0,
       certificates:       certs,
-      avgProgressPercent: Math.round(parseFloat(avgP?.avg) || 0),
+      avgProgressPercent: Math.round(parseFloat(String(avgP?.avg)) || 0),
       enrollsByDay:       enrollsByDay.map(r => ({ date: r.day, count: parseInt(r.count) })),
       topLessons:         topLessons.map(l  => ({
         title:         l.title,
