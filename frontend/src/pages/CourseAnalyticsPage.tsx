@@ -144,7 +144,7 @@ export function CourseAnalyticsPage() {
                                 <div style={{ display: 'flex', gap: 5, marginTop: 4 }}>
                                     {stats.enrollsByDay.map((d, i) => (
                                         <div key={i} style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-                                            {(i === 0 || i === stats.enrollsByDay.length - 1 || i === Math.floor(stats.enrollsByDay.length / 2)) && (
+                                            {d.count > 0 && (
                                                 <span style={{ fontSize: '0.58rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>{fmtDate(d.date)}</span>
                                             )}
                                         </div>
