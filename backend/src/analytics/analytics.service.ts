@@ -161,11 +161,21 @@ export class AnalyticsService {
         .getRawOne();
 
     const avgP = allIds.length
-        ? await this.progressRepo
-            .createQueryBuilder('p')
-            .select('AVG(CASE WHEN p.completed = true THEN 1 ELSE 0 END) * 100', 'avg')
-            .where('p.lessonId IN (:...ids)', { ids: allIds })
-            .getRawOne()
+        ? await this.progressRepo.query(`
+            SELECT AVG(student_pct) AS avg FROM (
+              SELECT
+                e.user_id,
+                COUNT(CASE WHEN p.completed = true THEN 1 END)::float
+                  / NULLIF(:lessonCount, 0) * 100 AS student_pct
+              FROM enrollments e
+              LEFT JOIN progress p
+                ON p.user_id = e.user_id
+                AND p.lesson_id = ANY(:lessonIds::uuid[])
+              WHERE e.course_id = :courseId
+              GROUP BY e.user_id
+            ) sub
+          `, { lessonCount: allIds.length, lessonIds: allIds, courseId })
+            .then((rows: { avg: string }[]) => ({ avg: rows[0]?.avg ?? 0 }))
         : { avg: 0 };
 
     const enrollsByDay = await this.enrollmentRepo

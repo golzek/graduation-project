@@ -122,26 +122,34 @@ export function CourseAnalyticsPage() {
                         {stats.enrollsByDay.length === 0 ? (
                             <p style={s.empty}>Записів за цей період немає</p>
                         ) : (
-                            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 5, height: 120, marginTop: 8 }}>
-                                {stats.enrollsByDay.map((d, i) => {
-                                    const h = Math.max((d.count / maxEnrolls) * 90, d.count > 0 ? 6 : 0);
-                                    return (
-                                        <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-                                            {d.count > 0 && <span style={{ fontSize: '0.6rem', color: 'var(--text-tertiary)' }}>{d.count}</span>}
-                                            <div
-                                                title={`${fmtDate(d.date)}: ${d.count}`}
-                                                style={{
-                                                    width: '100%', height: `${h}px`,
-                                                    background: 'linear-gradient(180deg, #6366f1, #4f46e5)',
-                                                    borderRadius: '3px 3px 0 0', opacity: 0.85,
-                                                }}
-                                            />
+                            <div style={{ marginTop: 8 }}>
+                                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 5, height: 100 }}>
+                                    {stats.enrollsByDay.map((d, i) => {
+                                        const h = Math.max((d.count / maxEnrolls) * 90, d.count > 0 ? 6 : 0);
+                                        return (
+                                            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                                                {d.count > 0 && <span style={{ fontSize: '0.6rem', color: 'var(--text-tertiary)' }}>{d.count}</span>}
+                                                <div
+                                                    title={`${fmtDate(d.date)}: ${d.count}`}
+                                                    style={{
+                                                        width: '100%', height: `${h}px`,
+                                                        background: 'linear-gradient(180deg, #6366f1, #4f46e5)',
+                                                        borderRadius: '3px 3px 0 0', opacity: 0.85,
+                                                    }}
+                                                />
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                <div style={{ display: 'flex', gap: 5, marginTop: 4 }}>
+                                    {stats.enrollsByDay.map((d, i) => (
+                                        <div key={i} style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
                                             {(i === 0 || i === stats.enrollsByDay.length - 1 || i === Math.floor(stats.enrollsByDay.length / 2)) && (
                                                 <span style={{ fontSize: '0.58rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>{fmtDate(d.date)}</span>
                                             )}
                                         </div>
-                                    );
-                                })}
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </div>
